@@ -1,0 +1,60 @@
+class:: TTruncNormalRand
+summary:: Triggered true truncated-normal sampler
+categories:: UGens>Generators>Stochastic>Distributions
+related:: Guides/StochasticDynamicsUGens, Classes/TGaussRand
+
+description::
+
+Samples a normal distribution conditioned on code::lo <= x <= hi:: by mapping an open uniform variate through the truncated CDF interval and Acklam's inverse-normal approximation. It does not fold or clip an ordinary normal draw.
+
+Like link::Classes/TGaussRand::, it exposes normal mean and deviation; unlike TGaussRand, every result lies in an explicit interval and the conditioned density is preserved.
+
+subsection:: Conditioned density
+
+image::truncated-normal-density.png#An ordinary standard-normal density in muted teal and the true density conditioned to [-1, 1] in blue. Probability outside the interval is removed and the density inside is renormalized, not clipped or folded.::
+
+classmethods::
+
+method:: ar
+argument:: mean
+Untruncated normal mean.
+argument:: deviation
+Normal deviation; magnitude is used. Zero returns clipped mean.
+argument:: lo
+Lower boundary; reversed boundaries are exchanged.
+argument:: hi
+Upper boundary.
+argument:: trig
+Resample on a rising edge.
+argument:: seed
+Init-rate local seed.
+argument:: reset
+Restore the seed and sample a new initial value.
+argument:: mul
+Output multiplier.
+argument:: add
+Output offset.
+
+method:: kr
+Control-rate version with the same arguments.
+
+instancemethods::
+
+examples::
+
+code::
+(
+{ TTruncNormalRand.kr(0, 1, -0.5, 0.5, Impulse.kr(5)).poll }.play
+)
+::
+
+code::
+(
+{ SinOsc.ar(TTruncNormalRand.kr(800, 500, 100, 3000, Impulse.kr(12)), 0, 0.08) }.play
+)
+::
+
+subsection:: See also
+
+link::Guides/StochasticDynamicsUGens::
+link::Classes/TGaussRand::

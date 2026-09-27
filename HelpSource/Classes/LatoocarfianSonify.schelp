@@ -1,0 +1,76 @@
+class:: LatoocarfianSonify
+summary:: Explicit Latoocarfian-map clock and level sonifier
+categories:: UGens>Generators>Chaotic
+related:: Guides/StochasticDynamicsUGens, Classes/LatoocarfianMap, Classes/HenonSonify
+
+description::
+
+Uses link::Classes/LatoocarfianMap::'s documented recurrence, explicitly folding selected coordinates into iteration frequency and bipolar level. Frequency is bounded and at most one iteration occurs per sample.
+
+Interpolation is hold, linear, or cubic Hermite. Unlike LatoocarfianMap, this class deliberately maps mathematical state into an audio signal.
+
+subsection:: Visualizing the internal dynamics
+
+See link::Classes/LatoocarfianMap:: for the recurrence's static portrait and exact-state live view. The sonifier does not expose its internal coordinates, so a separately clocked copy should not be presented as the orbit producing the sound.
+
+classmethods::
+
+method:: ar
+argument:: minFreq
+Mapped minimum iteration hertz.
+argument:: maxFreq
+Mapped maximum iteration hertz.
+argument:: clockLo
+Lower clock-coordinate folding bound.
+argument:: clockHi
+Upper clock-coordinate folding bound.
+argument:: outputLo
+Lower level-coordinate folding bound.
+argument:: outputHi
+Upper level-coordinate folding bound.
+argument:: clockIndex
+Init-rate clock coordinate: 0 x, 1 y.
+argument:: outputIndex
+Init-rate level coordinate: 0 x, 1 y.
+argument:: interp
+Init-rate 0 hold, 1 linear, 2 cubic Hermite.
+argument:: a
+y-equation sine coefficient.
+argument:: b
+x-equation sine coefficient.
+argument:: c
+x-equation second sine weight.
+argument:: d
+y-equation second sine weight.
+argument:: x0
+Initial x state.
+argument:: y0
+Initial y state.
+argument:: reset
+Restore map, phase, and interpolation state.
+argument:: mul
+Output multiplier.
+argument:: add
+Output offset.
+
+instancemethods::
+
+examples::
+
+code::
+(
+{ LatoocarfianSonify.ar * 0.08 }.play
+)
+::
+
+code::
+(
+{ LatoocarfianSonify.ar(40, 6000, interp: 1) * 0.08 }.play
+)
+::
+
+subsection:: See also
+
+link::Guides/StochasticDynamicsUGens::
+link::Classes/LatoocarfianMap::
+link::Classes/HenonSonify::

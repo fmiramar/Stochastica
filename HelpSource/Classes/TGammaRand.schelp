@@ -1,0 +1,57 @@
+class:: TGammaRand
+summary:: Triggered gamma-distribution sampler
+categories:: UGens>Generators>Stochastic>Distributions
+related:: Guides/StochasticDynamicsUGens, Classes/TWeibullRand, Classes/TGaussRand
+
+description::
+
+Samples the gamma distribution with Marsaglia–Tsang rejection and the standard shape-below-one transform. Rejection is capped at 64 attempts, then the mean code::shape*scale:: is returned.
+
+Like link::Classes/TGaussRand::, it samples on triggers and holds; unlike TGaussRand, it uses a positive gamma law and a local resettable PCG32 sequence.
+
+subsection:: Distribution shape
+
+image::gamma-density.png#Gamma densities with scale = 1 and shape = 0.7, 2, and 5, shown in muted teal, blue, and plum. Shape below one concentrates near zero; larger shape moves the mode outward and makes it more symmetric.::
+
+classmethods::
+
+method:: ar
+argument:: shape
+Positive shape. Invalid values use a finite fallback.
+argument:: scale
+Nonnegative scale. Mean is code::shape*scale::.
+argument:: trig
+Resample on a rising edge.
+argument:: seed
+Init-rate local seed.
+argument:: reset
+Restore the seed and sample a new initial value on a rising edge.
+argument:: mul
+Output multiplier.
+argument:: add
+Output offset.
+
+method:: kr
+Control-rate version with the same arguments.
+
+instancemethods::
+
+examples::
+
+code::
+(
+{ TGammaRand.kr(2, 1, Impulse.kr(4)).poll }.play
+)
+::
+
+code::
+(
+{ SinOsc.ar(TGammaRand.kr(2, 300, Impulse.kr(8)) + 80, 0, 0.08) }.play
+)
+::
+
+subsection:: See also
+
+link::Guides/StochasticDynamicsUGens::
+link::Classes/TWeibullRand::
+link::Classes/TGaussRand::

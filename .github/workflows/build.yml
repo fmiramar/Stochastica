@@ -1,0 +1,97 @@
+name: build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            platform: linux
+            arch: x64
+            supernova: "ON"
+          - os: macos-13
+            platform: macos
+            arch: x64
+            supernova: "ON"
+          - os: macos-14
+            platform: macos
+            arch: arm64
+            supernova: "ON"
+          - os: windows-2022
+            platform: windows
+            arch: x64
+            supernova: "OFF"
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch SuperCollider SDK source
+        shell: bash
+        run: |
+          git clone --branch Version-3.14.1 --depth 1 \
+            --recurse-submodules --shallow-submodules \
+            https://github.com/supercollider/supercollider.git supercollider
+
+      - name: Configure
+        shell: bash
+        run: |
+          cmake -S . -B build \
+            -DSC_PATH="$GITHUB_WORKSPACE/supercollider" \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX="$GITHUB_WORKSPACE/stage" \
+            -DBUILD_TESTING=ON \
+            -DSTRICT=ON \
+            -DSCSYNTH=ON \
+            -DSUPERNOVA=${{ matrix.supernova }}
+
+      - name: Build
+        run: cmake --build build --config Release --parallel
+
+      - name: Test
+        run: ctest --test-dir build -C Release --output-on-failure
+
+      - name: Stage extension
+        run: cmake --install build --config Release
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.repository_owner }}-StochasticDynamicsUGens-v0.1.0-${{ matrix.platform }}-${{ matrix.arch }}
+          path: stage/StochasticDynamicsUGens
+          if-no-files-found: error
+
+  sanitize:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch SuperCollider SDK source
+        run: |
+          git clone --branch Version-3.14.1 --depth 1 \
+            --recurse-submodules --shallow-submodules \
+            https://github.com/supercollider/supercollider.git supercollider
+
+      - name: Configure tests with sanitizers
+        run: |
+          cmake -S . -B build-sanitize \
+            -DSC_PATH="$GITHUB_WORKSPACE/supercollider" \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DBUILD_TESTING=ON \
+            -DSTRICT=ON \
+            -DSD_SANITIZE=ON \
+            -DSCSYNTH=OFF \
+            -DSUPERNOVA=OFF
+
+      - name: Build tests
+        run: cmake --build build-sanitize --parallel
+
+      - name: Run tests
+        run: ctest --test-dir build-sanitize --output-on-failure

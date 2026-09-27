@@ -1,0 +1,55 @@
+class:: TGeometricRand
+summary:: Triggered geometric failures-before-success sampler
+categories:: UGens>Generators>Stochastic>Distributions
+related:: Guides/StochasticDynamicsUGens, Classes/TPoissonRand, Classes/TIRand
+
+description::
+
+Returns the number of failures before the first success using an inverse logarithmic transform. Probability at or above one returns zero; probability at or below zero returns the largest exactly representable integer float.
+
+Like link::Classes/TIRand::, it returns discrete triggered values; unlike TIRand, its support begins at zero and follows a geometric tail.
+
+subsection:: Probability mass
+
+image::geometric-mass.png#Failures-before-success mass functions for probability = 0.2, 0.5, and 0.8, shown in muted teal, blue, and plum. A smaller success probability produces the longer discrete tail.::
+
+classmethods::
+
+method:: ar
+argument:: probability
+Success probability in code::(0, 1):: with explicit endpoint fallbacks.
+argument:: trig
+Resample on a rising edge.
+argument:: seed
+Init-rate local seed.
+argument:: reset
+Restore the seed and sample a new initial value.
+argument:: mul
+Output multiplier.
+argument:: add
+Output offset.
+
+method:: kr
+Control-rate version with the same arguments.
+
+instancemethods::
+
+examples::
+
+code::
+(
+{ TGeometricRand.kr(0.3, Impulse.kr(5)).poll }.play
+)
+::
+
+code::
+(
+{ SinOsc.ar((TGeometricRand.kr(0.35, Impulse.kr(8)) + 1) * 140, 0, 0.08) }.play
+)
+::
+
+subsection:: See also
+
+link::Guides/StochasticDynamicsUGens::
+link::Classes/TPoissonRand::
+link::Classes/TIRand::

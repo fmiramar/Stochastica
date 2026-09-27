@@ -1,0 +1,65 @@
+class:: RenewalTrig
+summary:: Renewal-process events with selectable interval distributions
+categories:: UGens>Triggers>Stochastic
+related:: Guides/StochasticDynamicsUGens, Classes/HawkesTrig, Classes/Dust
+
+description::
+
+Schedules independent inter-event intervals from exponential, gamma, Weibull, lognormal, or Erlang distributions. The random component has mean code::1/rate:: and code::minInterval:: is added as a refractory duration.
+
+The first interval is scheduled without an event. At most one event is emitted per calculation and negative timing remainder is carried. Like link::Classes/Dust::, RenewalTrig generates stochastic impulses; unlike Dust, it exposes and controls the complete interval law.
+
+subsection:: Event and interval view
+
+image::renewal-process-events.png#Left: event times from an exponential renewal process at rate = 4 with minInterval = 0.05. Right: the empirical interval density; the hard empty region before 0.05 is the refractory period.::
+
+classmethods::
+
+method:: ar
+argument:: rate
+Reciprocal mean of the random interval in events per second. Nonpositive disables events.
+argument:: distribution
+Code: 0 exponential, 1 gamma, 2 Weibull, 3 lognormal, 4 Erlang.
+argument:: shape
+Positive distribution shape, or log-domain deviation for lognormal.
+argument:: minInterval
+Nonnegative refractory seconds added after sampling.
+argument:: seed
+Init-rate local seed.
+argument:: reset
+Restore the seed and schedule a new first interval without emitting.
+returns:: Trigger and currently scheduled interval seconds.
+
+method:: kr
+Control-rate scheduler with at most one event per control block.
+
+instancemethods::
+
+examples::
+
+code::
+(
+{ Decay2.ar(RenewalTrig.ar(8)[0], 0.001, 0.04) * 0.1 }.play
+)
+::
+
+code::
+(
+{ Decay2.ar(RenewalTrig.ar(12, 1, 4)[0], 0.001, 0.03) * WhiteNoise.ar(0.1) }.play
+)
+::
+
+code::
+(
+{
+    var event = RenewalTrig.ar(10, 2, 0.7, 0.03)[0];
+    SinOsc.ar(TExpRand.ar(200, 3000, event), 0, Decay2.ar(event, 0.001, 0.08) * 0.1)
+}.play
+)
+::
+
+subsection:: See also
+
+link::Guides/StochasticDynamicsUGens::
+link::Classes/HawkesTrig::
+link::Classes/Dust::

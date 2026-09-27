@@ -1,0 +1,63 @@
+class:: TStableRand
+summary:: Triggered alpha-stable sampler in Nolan S0 parameterization
+categories:: UGens>Generators>Stochastic>Distributions
+related:: Guides/StochasticDynamicsUGens, Classes/TCauchyRand, Classes/TGaussRand
+
+description::
+
+Samples Nolan's S0 alpha-stable parameterization with the Chambers–Mallows–Stuck construction and a separate alpha-one form. Parameterizations are not interchangeable: this class is specifically S0.
+
+Alpha 2 is Gaussian under this parameterization; alpha 1 with beta 0 is Cauchy. Moments may not exist, and extreme finite values are expected and may require explicit user-side limiting before direct audio use.
+
+Like link::Classes/TGaussRand::, alpha 2 produces Gaussian-shaped draws; unlike it, TStableRand spans skewed heavy-tailed stable laws with a local resettable seed.
+
+subsection:: Stable-family shape
+
+image::stable-density.png#Smoothed empirical S0 densities with beta = 0, scale = 1, and alpha = 2, 1.5, and 1, shown in muted teal, blue, and plum over a finite display interval. Smaller alpha makes the center sharper and the tails heavier.::
+
+classmethods::
+
+method:: ar
+argument:: alpha
+Stability exponent, clipped to 0.01 through 2.
+argument:: beta
+Skew parameter, clipped to -1 through 1.
+argument:: scale
+Scale magnitude.
+argument:: location
+S0 location.
+argument:: trig
+Resample on a rising edge.
+argument:: seed
+Init-rate local seed.
+argument:: reset
+Restore the seed and sample a new initial value.
+argument:: mul
+Output multiplier.
+argument:: add
+Output offset.
+
+method:: kr
+Control-rate version with the same arguments.
+
+instancemethods::
+
+examples::
+
+code::
+(
+{ TStableRand.kr(1.5, 0, 1, 0, Impulse.kr(4)).poll }.play
+)
+::
+
+code::
+(
+{ SinOsc.ar(TStableRand.kr(1.8, 0, 300, 800, Impulse.kr(8)).clip(80, 4000), 0, 0.08) }.play
+)
+::
+
+subsection:: See also
+
+link::Guides/StochasticDynamicsUGens::
+link::Classes/TCauchyRand::
+link::Classes/TGaussRand::

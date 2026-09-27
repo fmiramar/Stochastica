@@ -1,0 +1,64 @@
+class:: OUProcess
+summary:: Exact finite-step Ornstein–Uhlenbeck process
+categories:: UGens>Generators>Stochastic>Processes
+related:: Guides/StochasticDynamicsUGens, Classes/BrownNoise, Classes/FBrownianMotion
+
+description::
+
+Generates the mean-reverting diffusion described by Ornstein and Uhlenbeck. Positive reversion uses the exact finite-time Gaussian transition; zero or negative reversion uses the Brownian limit.
+
+Unlike link::Classes/BrownNoise::, OUProcess has explicit elapsed-time scaling, stationary mean/variance when reversion is positive, local deterministic seeding, and no hidden bounding.
+
+subsection:: Process and stationary law
+
+image::ou-process-dynamics.png#Left: an exact finite-step OU trace with mean = 0, reversion = 1, and diffusion = 1. Right: its stationary Gaussian density; the process fluctuates continually but is pulled back toward the center.::
+
+classmethods::
+
+method:: ar
+argument:: mean
+Long-run process mean.
+argument:: reversion
+Nonnegative pull toward the mean per model-time unit; negative becomes zero.
+argument:: diffusion
+Noise coefficient in state units per square-root model time.
+argument:: timeScale
+Model time per audio second; nonpositive values hold.
+argument:: initial
+State restored by reset.
+argument:: seed
+Init-rate local seed. Zero derives from the parent Synth.
+argument:: reset
+Restore initial state and original seed on a rising edge.
+returns:: One audio-rate unbounded process state.
+
+method:: kr
+Control-rate version using the full control duration in the exact update.
+
+instancemethods::
+
+examples::
+
+code::
+(
+{ OUProcess.kr(reversion: 2).poll }.play
+)
+::
+
+code::
+(
+{ SinOsc.ar(OUProcess.kr(600, 3, 180).clip(80, 4000), 0, 0.08) }.play
+)
+::
+
+code::
+(
+{ Pan2.ar(PinkNoise.ar(0.08), OUProcess.kr(reversion: 1.5, diffusion: 0.8).tanh) }.play
+)
+::
+
+subsection:: See also
+
+link::Guides/StochasticDynamicsUGens::
+link::Classes/BrownNoise::
+link::Classes/FBrownianMotion::

@@ -1,0 +1,69 @@
+class:: CoupledMapLattice
+summary:: Periodic lattice of diffusively coupled logistic maps
+categories:: UGens>Generators>Chaotic>Maps
+related:: Guides/StochasticDynamicsUGens, Classes/CoupledLogisticMap
+
+description::
+
+Implements a one-dimensional periodic coupled-map lattice. Each cell mixes its logistic image with the images of its left and right neighbors. Two preallocated arrays make each trigger update atomic.
+
+The outputs are raw state coordinates. They are not normalized audio signals and may diverge for some parameters. The technique follows the coupled-map-lattice literature.
+
+Like link::Classes/Stepper::, each cell holds between trigger edges; unlike Stepper, all 2–64 outputs are updated from a coupled periodic neighborhood.
+
+subsection:: Space-time view
+
+image::coupled-map-lattice-space-time.png#A 48-cell lattice over 400 iterations with r = 3.88 and coupling = 0.14. Cell position runs horizontally and time downward; the restrained light-blue-plum scale encodes state from low to high.::
+
+classmethods::
+
+method:: ar
+argument:: numCells
+Init-rate output count, clipped to 2 through 64.
+argument:: trig
+Advance the complete lattice on a rising edge.
+argument:: r
+Logistic coefficient sampled at an event.
+argument:: coupling
+Diffusive neighbor-coupling coefficient; not clipped.
+argument:: initialBuf
+Buffer with at least code::numCells:: samples. Missing data uses 0.5.
+argument:: reset
+Reread the initial Buffer on a rising edge.
+returns:: code::numCells:: audio-rate outputs.
+
+method:: kr
+Control-rate version with the same arguments and output count.
+
+instancemethods::
+
+examples::
+
+code::
+(
+Routine {
+    b = Buffer.loadCollection(s, Array.fill(8, { 0.2.rand + 0.1 }));
+    s.sync;
+    x = { Splay.ar(CoupledMapLattice.ar(8, Impulse.ar(200), initialBuf: b) * 0.03) }.play;
+}.play;
+)
+::
+
+code::
+(
+Routine {
+    var cells = 16;
+    b = Buffer.loadCollection(s, Array.fill(cells, { 0.2.rand + 0.3 }));
+    s.sync;
+    x = {
+        var lattice = CoupledMapLattice.ar(cells, Impulse.ar(120), 3.88, 0.14, b);
+        Splay.ar(SinOsc.ar(lattice.linexp(0.05, 0.95, 80, 6000), 0, 0.008))
+    }.play;
+}.play;
+)
+::
+
+subsection:: See also
+
+link::Guides/StochasticDynamicsUGens::
+link::Classes/CoupledLogisticMap::

@@ -1,0 +1,73 @@
+class:: MultiGaussNoise
+summary:: Triggered vector of correlated Gaussian values
+categories:: UGens>Generators>Stochastic>Processes
+related:: Guides/StochasticDynamicsUGens, Classes/MarkovChain, Classes/TGaussRand
+
+description::
+
+Reads a row-major covariance matrix, symmetrizes it, and computes a Cholesky factor at construction, reset, or reload. A trigger multiplies independent normal draws by the factor and adds the optional mean vector.
+
+Failed factorization adds diagonal jitter in eight bounded attempts, then falls back to nonnegative diagonal variance. Like link::Classes/TGaussRand::, each component has a Gaussian marginal; unlike it, MultiGaussNoise produces a covariance-controlled vector with one local seed.
+
+subsection:: Covariance view
+
+image::multigauss-correlation.png#Samples from covariance [[1, 0.8], [0.8, 1]]. The green arrow marks the high-variance principal direction and the red arrow the low-variance direction; the elongated cloud is the correlation made geometric.::
+
+classmethods::
+
+method:: ar
+argument:: numChannels
+Init-rate output dimension, clipped to 1 through 32.
+argument:: trig
+Sample a new vector on a rising edge.
+argument:: covarianceBuf
+One-channel Buffer containing a row-major square covariance matrix.
+argument:: meanBuf
+Optional one-channel mean vector; negative uses zero.
+argument:: reload
+Reread and refactor Buffers on a rising edge.
+argument:: seed
+Init-rate local seed.
+argument:: reset
+Restore seed, reload Buffers, and sample the reset vector.
+returns:: code::numChannels:: correlated outputs.
+
+method:: kr
+Control-rate version with the same arguments and output count.
+
+instancemethods::
+
+examples::
+
+code::
+(
+Routine {
+    b = Buffer.loadCollection(s, [1, 0.8, 0.8, 1]);
+    s.sync;
+    x = { MultiGaussNoise.kr(2, Impulse.kr(5), b).poll }.play;
+}.play;
+)
+::
+
+code::
+(
+Routine {
+    b = Buffer.loadCollection(s, [
+        1, 0.8, 0.4,
+        0.8, 1, 0.6,
+        0.4, 0.6, 1
+    ]);
+    s.sync;
+    x = {
+        var values = MultiGaussNoise.kr(3, Impulse.kr(10), b);
+        Splay.ar(SinOsc.ar(values.linlin(-3, 3, 120, 1800), 0, 0.04))
+    }.play;
+}.play;
+)
+::
+
+subsection:: See also
+
+link::Guides/StochasticDynamicsUGens::
+link::Classes/MarkovChain::
+link::Classes/TGaussRand::

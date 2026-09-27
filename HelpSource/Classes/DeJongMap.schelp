@@ -1,0 +1,80 @@
+class:: DeJongMap
+summary:: Trigger-driven raw Peter de Jong map coordinates
+categories:: UGens>Generators>Chaotic>Maps
+related:: Guides/StochasticDynamicsUGens, Classes/CliffordMap
+
+description::
+
+Implements Peter de Jong's recurrence code::x' = sin(a*y) - cos(b*x):: and code::y' = sin(c*x) - cos(d*y)::. The exact equation is stated because related attractor formulas have several naming conventions.
+
+The outputs are raw state coordinates. They are not normalized audio signals and may diverge for some parameters.
+
+Like link::Classes/Stepper::, DeJongMap advances on trigger edges; unlike Stepper, it computes two coupled trigonometric coordinates.
+
+subsection:: State-space portrait
+
+image::dejong-map-phase.png#The Peter de Jong attractor at the documented defaults. x is horizontal and y is vertical; density, rather than a connected line, describes this discrete orbit.::
+
+classmethods::
+
+method:: ar
+argument:: trig
+Advance on a rising edge.
+argument:: a
+Sine coefficient in the x equation.
+argument:: b
+Cosine coefficient in the x equation.
+argument:: c
+Sine coefficient in the y equation.
+argument:: d
+Cosine coefficient in the y equation.
+argument:: x0
+Initial x coordinate.
+argument:: y0
+Initial y coordinate.
+argument:: reset
+Restore initial coordinates on a rising edge.
+returns:: Two audio-rate outputs: x and y.
+
+method:: kr
+Control-rate version with the same arguments and outputs.
+
+instancemethods::
+
+examples::
+
+code::
+(
+{ DeJongMap.ar(Impulse.ar(900))[1] * 0.08 }.play
+)
+::
+
+code::
+(
+{ Pan2.ar(Decay2.ar(Impulse.ar(12), 0.001, 0.04), DeJongMap.kr(Impulse.kr(12))[0].tanh) * 0.1 }.play
+)
+::
+
+subsection:: Real-time phase portrait
+
+code::
+(
+SDPhaseView.open(
+    "Peter de Jong map: x-y phase portrait",
+    [-2.1, 2.1], [-2.1, 2.1],
+    { DeJongMap.kr(Impulse.kr(120)) },
+    { |state|
+        Pan2.ar(
+            SinOsc.ar(state[0].clip(-2.1, 2.1).linexp(-2.1, 2.1, 100, 1800), 0, 0.06),
+            state[1].clip(-2.1, 2.1).linlin(-2.1, 2.1, -1, 1)
+        )
+    }
+);
+)
+::
+
+subsection:: See also
+
+link::Guides/StochasticDynamicsUGens::
+link::Classes/SDPhaseView::
+link::Classes/CliffordMap::

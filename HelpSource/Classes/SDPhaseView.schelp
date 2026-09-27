@@ -1,0 +1,60 @@
+class:: SDPhaseView
+summary:: Language-side live phase portrait for two-output state UGens
+categories:: GUI>Views
+related:: Guides/StochasticDynamicsUGens, Classes/HenonMap, Classes/Chua
+
+description::
+
+Creates a bounded, animated two-dimensional phase trail from the first two values returned by code::stateFunction::. The same state is passed to code::soundFunction::, so a help example can visualize and sonify one UGen instance rather than an unsynchronized copy.
+
+The server sends only code::fps:: state messages per second. The language process stores at most code::maxPoints:: coordinate pairs and performs all GUI drawing. Closing the window or pressing Cmd-period frees the Synth and OSC responder.
+
+This is a language-side documentation and exploration utility, not a server UGen. Unlike link::Classes/ScopeView::, it displays two model coordinates against one another instead of signal amplitude against time.
+
+classmethods::
+
+method:: open
+argument:: title
+Window title.
+argument:: xRange
+Two-element visible range for the first state output.
+argument:: yRange
+Two-element visible range for the second state output.
+argument:: stateFunction
+Function evaluated inside the Synth graph. It must return at least two UGen signals.
+argument:: soundFunction
+Function receiving the state array and returning the audible graph. Nil produces silence.
+argument:: fps
+Display-message and animation rate, clipped to 5 through 60 frames per second.
+argument:: maxPoints
+Maximum retained coordinate pairs, clipped to 60 through 10,000.
+returns:: An SDPhaseView instance. The server is booted automatically if necessary.
+
+instancemethods::
+
+method:: free
+Close the window and release its Synth and responder.
+
+examples::
+
+code::
+(
+SDPhaseView.open(
+    "Hénon map",
+    [-1.5, 1.5],
+    [-0.5, 0.5],
+    { HenonMap.kr(Impulse.kr(90)) },
+    { |state|
+        var frequency = state[0].clip(-1.5, 1.5).linexp(-1.5, 1.5, 100, 1800);
+        Pan2.ar(SinOsc.ar(frequency, 0, 0.07), state[1].clip(-0.5, 0.5) * 2)
+    }
+)
+)
+::
+
+subsection:: See also
+
+link::Guides/StochasticDynamicsUGens::
+link::Classes/HenonMap::
+link::Classes/Chua::
+link::Classes/ScopeView::

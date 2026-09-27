@@ -1,0 +1,74 @@
+title:: Stochastica
+summary:: Raw maps, flows, stochastic processes, distributions, state processes, and explicit sonifiers
+categories:: UGens>Generators>Stochastic, UGens>Generators>Chaotic
+related:: Classes/HenonMap, Classes/OUProcess, Classes/TGammaRand, Classes/MarkovChain
+
+description::
+
+Stochastica is a SuperCollider suite of chaotic and dynamic UGens. It implements established map equations, dynamical systems, probability algorithms, and stochastic-process models. Whether you are creating complex generative music, simulating unpredictable physical systems, or adding organic variations to sound, this collection provides the mathematical tools to do so natively on the audio server.
+
+A distribution sampler produces independent values when triggered. A stochastic process has memory over time. A discrete map updates a state through a recurrence. A continuous system integrates differential equations. A sonifier maps an internal state to an audible signal and is therefore not the same object as the mathematical system it uses.
+
+Seeded classes use a local PCG32 generator. A nonzero seed is deterministic; zero derives a seed from the parent Synth. Rising triggers and resets use a shared nonpositive-to-positive edge rule.
+
+subsection:: Class overview
+
+table::
+## strong::Category:: || strong::Classes::
+## Raw maps || link::Classes/HenonMap::, link::Classes/GbmanMap::, link::Classes/LatoocarfianMap::, link::Classes/IkedaMap::, link::Classes/LoziMap::, link::Classes/TinkerbellMap::, link::Classes/CliffordMap::, link::Classes/DeJongMap::, link::Classes/CircleMap::, link::Classes/CoupledLogisticMap::, link::Classes/CoupledMapLattice::, link::Classes/RulkovMap::
+## Continuous systems || link::Classes/MackeyGlass::, link::Classes/Chua::, link::Classes/Izhikevich::
+## Processes || link::Classes/OUProcess::, link::Classes/RenewalTrig::, link::Classes/HawkesTrig::, link::Classes/FractionalNoise::, link::Classes/FBrownianMotion::, link::Classes/BoundedWalk::
+## Distributions || link::Classes/TGammaRand::, link::Classes/TWeibullRand::, link::Classes/TLogNormalRand::, link::Classes/TCauchyRand::, link::Classes/TPoissonRand::, link::Classes/TGeometricRand::, link::Classes/TNegBinomialRand::, link::Classes/TTruncNormalRand::, link::Classes/TStableRand::, link::Classes/TLevyRand::
+## State and vector processes || link::Classes/MarkovChain::, link::Classes/SemiMarkov::, link::Classes/MultiGaussNoise::
+## Explicit sonifiers || link::Classes/HenonSonify::, link::Classes/GbmanSonify::, link::Classes/LatoocarfianSonify::
+::
+
+subsection:: Raw state and sound
+
+Raw maps expose mathematical coordinates and may diverge. They do not clip, fold, interpolate, or interpret a coordinate as frequency. Use ordinary SuperCollider mapping operators in a SynthDef, or choose an explicitly named sonifier when its folding and interpolation model is useful.
+
+Continuous systems likewise expose unnormalized state. Begin with low output levels and map a state only after observing its useful range.
+
+subsection:: Choosing a visualization
+
+Use a phase portrait for a two-state map, a 3D orbit with orthogonal projections for link::Classes/Chua::, a delay embedding plus time series for link::Classes/MackeyGlass::, and a space-time heatmap for link::Classes/CoupledMapLattice::. Stochastic scalar processes are better represented by time series, distributions, correlations, or spectra; event processes by rasters and interval statistics; and Markov processes by transition graphs and state timelines.
+
+A terrain surface should be shown only when a sonifier actually reads a scalar field or wavetable at the displayed coordinates. The current map and flow UGens produce trajectories rather than terrains. See link::Classes/Chua:: for the three-state static and real-time form; the live example transports the exact state being sonified at display rate and keeps all drawing in the language process. The other class pages now apply the map, flow, process, event, state, covariance, and probability views appropriate to their own mathematics.
+
+link::Classes/SDPhaseView:: provides the same exact-state rule for two-output map examples. It is a bounded language-side GUI helper, not a UGen, and sends state from the server only at display rate.
+
+subsection:: Buffers
+
+link::Classes/CoupledMapLattice::, link::Classes/MarkovChain::, link::Classes/SemiMarkov::, and link::Classes/MultiGaussNoise:: validate their buffer dimensions and use the server's shared buffer lock. Allocate or fill each Buffer inside a Routine, call code::s.sync::, and only then create the Synth.
+
+subsection:: Distribution, process, and map
+
+code::
+(
+{
+    var trigger = Impulse.kr(8);
+    var independent = TGammaRand.kr(2, 200, trigger);
+    var continuous = OUProcess.kr(0, 2, 0.5);
+    var map = HenonMap.kr(trigger);
+    var freq = independent + map[0].linlin(-1.5, 1.5, 100, 1000);
+    Pan2.ar(SinOsc.ar(freq, 0, 0.08), continuous.tanh)
+}.play
+)
+::
+
+subsection:: Self-exciting events
+
+code::
+(
+{
+    var event = HawkesTrig.ar(0.4, 18, 22)[0];
+    var freq = TLogNormalRand.ar(6.5, 0.6, event).clip(100, 8000);
+    var env = Decay2.ar(event, 0.001, 0.08);
+    SinOsc.ar(freq, 0, env * 0.1)
+}.play
+)
+::
+
+subsection:: See also
+
+link::Classes/WhiteNoise::, link::Classes/BrownNoise::, link::Classes/TIRand::, link::Classes/Stepper::

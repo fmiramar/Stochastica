@@ -1,0 +1,53 @@
+class:: FBrownianMotion
+summary:: Finite-memory control-rate fractional Brownian approximation
+categories:: UGens>Generators>Stochastic>Processes
+related:: Guides/StochasticDynamicsUGens, Classes/FractionalNoise, Classes/OUProcess
+
+description::
+
+Builds fractional Gaussian-like increments with a finite ARFIMA-style coefficient sequence and integrates them at control rate. Hurst values below 0.5 are anti-persistent, 0.5 is Brownian-like, and values above 0.5 are persistent.
+
+This is a finite-memory control-rate approximation. Its output is nonstationary and unbounded. Unlike link::Classes/BrownNoise::, it exposes Hurst behavior, time scaling, memory size, deterministic seed, and reset.
+
+subsection:: Persistence view
+
+image::fbrownian-paths.png#Finite-memory paths for Hurst = 0.2, 0.5, and 0.8, shown in muted teal, blue, and plum. Each path is vertically normalized for comparing texture: low H reverses direction often, while high H sustains trends.::
+
+classmethods::
+
+method:: kr
+argument:: hurst
+Persistence exponent, clipped to 0.01 through 0.99.
+argument:: timeScale
+Nonnegative model-time scale applied to each control duration.
+argument:: initial
+Initial unbounded state.
+argument:: memorySize
+Init-rate innovation memory, clipped to 8 through 4096.
+argument:: seed
+Init-rate local seed.
+argument:: reset
+Clear memory and restore initial state and seed on a rising edge.
+returns:: One control-rate nonstationary process state.
+
+instancemethods::
+
+examples::
+
+code::
+(
+{ FBrownianMotion.kr.poll }.play
+)
+::
+
+code::
+(
+{ SinOsc.ar(FBrownianMotion.kr(0.8, 0.2).fold(0, 1).linexp(0, 1, 80, 3000), 0, 0.08) }.play
+)
+::
+
+subsection:: See also
+
+link::Guides/StochasticDynamicsUGens::
+link::Classes/FractionalNoise::
+link::Classes/BrownNoise::

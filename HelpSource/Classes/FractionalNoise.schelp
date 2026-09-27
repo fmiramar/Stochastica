@@ -1,0 +1,62 @@
+class:: FractionalNoise
+summary:: Stationary finite-band approximation to 1/f power-law noise
+categories:: UGens>Generators>Stochastic>Processes
+related:: Guides/StochasticDynamicsUGens, Classes/FBrownianMotion, Classes/PinkNoise
+
+description::
+
+Approximates power spectral density proportional to code::1/f.pow(alpha):: over a finite frequency band. It sums normalized, logarithmically spaced first-order Ornstein–Uhlenbeck components with independent unit-variance uniform innovations.
+
+This is a stationary finite-band approximation, not an ideal infinite-memory fractional process. Like link::Classes/PinkNoise::, alpha 1 is pink-like; unlike PinkNoise, the slope, approximation band, quality, seed, and reset are explicit.
+
+subsection:: Spectral view
+
+image::fractional-noise-spectra.png#Idealized log-frequency/log-power references for alpha = 0, 1, and 2, shown respectively in muted teal, blue, and plum. FractionalNoise approximates these slopes only inside its finite minFreq-to-maxFreq band.::
+
+classmethods::
+
+method:: ar
+argument:: alpha
+Target power exponent, clipped to 0 through 2.
+argument:: minFreq
+Positive lower approximation frequency in hertz.
+argument:: maxFreq
+Upper frequency in hertz, clipped below the UGen Nyquist frequency.
+argument:: quality
+Init-rate OU component count, clipped to 4 through 32.
+argument:: seed
+Init-rate local seed.
+argument:: reset
+Clear component state and restore the seed on a rising edge.
+returns:: Approximately unit-variance audio-rate noise.
+
+method:: kr
+Control-rate version with defaults suited to the control-rate Nyquist range.
+
+instancemethods::
+
+examples::
+
+code::
+(
+{ FractionalNoise.ar(1) * 0.1 }.play
+)
+::
+
+code::
+(
+{ FractionalNoise.ar(MouseX.kr(0, 2)) * 0.1 }.play
+)
+::
+
+code::
+(
+{ BPF.ar(FractionalNoise.ar(1.4), 1200, 0.2) * 0.2 }.play
+)
+::
+
+subsection:: See also
+
+link::Guides/StochasticDynamicsUGens::
+link::Classes/FBrownianMotion::
+link::Classes/PinkNoise::

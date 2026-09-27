@@ -1,0 +1,60 @@
+class:: MackeyGlass
+summary:: Mackey–Glass delay differential system
+categories:: UGens>Generators>Chaotic>Flows
+related:: Guides/StochasticDynamicsUGens, Classes/Chua
+
+description::
+
+Integrates the delay equation code::dx/dt = beta*delayedX/(1+delayedX.pow(n)) - gamma*x:: from Mackey and Glass's 1977 physiological-control model. It uses a circular history, cubic fractional-delay reads, and a Heun step.
+
+The output is raw, unnormalized model state. code::tau/timeScale:: is the audio delay in seconds. Like link::Classes/DelayC::, MackeyGlass uses cubic delay access; unlike DelayC, the history is internal recurrence state rather than an input signal.
+
+subsection:: Dynamics view
+
+image::mackey-glass-dynamics.png#Left: a settled time trace at the documented defaults. Right: the delay portrait x(t) against x(t - 17), which exposes recurrence structure that a time trace alone hides.::
+
+classmethods::
+
+method:: ar
+argument:: beta
+Delayed feedback coefficient.
+argument:: gamma
+Current-state decay coefficient.
+argument:: tau
+Delay in model-time units; negative values become zero.
+argument:: n
+Feedback exponent. Combinations invalid for the current delayed state restore code::x0::.
+argument:: x0
+Initial state and complete reset-history value.
+argument:: timeScale
+Model-time units per audio second. Nonpositive values hold state.
+argument:: maxDelaySeconds
+Init-rate audio-history allocation, clipped to 0.001 through 60 seconds.
+argument:: reset
+Fill the history with code::x0:: on a rising edge.
+returns:: One audio-rate raw state.
+
+method:: kr
+Control-rate version; one control duration is one integration interval.
+
+instancemethods::
+
+examples::
+
+code::
+(
+{ MackeyGlass.ar * 0.08 }.play
+)
+::
+
+code::
+(
+{ SinOsc.ar(MackeyGlass.kr(timeScale: 4).linexp(0.4, 1.5, 80, 2000), 0, 0.08) }.play
+)
+::
+
+subsection:: See also
+
+link::Guides/StochasticDynamicsUGens::
+link::Classes/Chua::
+link::Classes/DelayC::

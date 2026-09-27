@@ -1,0 +1,56 @@
+class:: CircleMap
+summary:: Trigger-driven normalized standard circle map
+categories:: UGens>Generators>Chaotic>Maps
+related:: Guides/StochasticDynamicsUGens, Classes/CoupledLogisticMap
+
+description::
+
+Implements the standard normalized sine circle map code::x' = wrap(x + omega - (k/twoPi)*sin(twoPi*x), 0, 1)::. Wrapping is intrinsic to phase on a circle and is not hidden output conditioning.
+
+Output is a raw normalized phase coordinate in code::[0, 1)::. Some parameter sets are regular and others show mode locking or chaotic behavior.
+
+Like link::Classes/Phasor::, CircleMap wraps normalized phase; unlike Phasor, it updates a nonlinear recurrence only on trigger edges.
+
+subsection:: Cobweb view
+
+image::circle-map-cobweb.png#The map curve and a cobweb orbit for omega = 0.2 and k = 0.9. x(n) is horizontal and x(n+1) is vertical; the pale diagonal is the identity line.::
+
+classmethods::
+
+method:: ar
+argument:: trig
+Advance on a rising edge.
+argument:: omega
+Rotation number added per iteration.
+argument:: k
+Nonlinear sine coupling; not clipped.
+argument:: x0
+Initial phase, wrapped to code::[0, 1)::.
+argument:: reset
+Restore and wrap the initial phase on a rising edge.
+returns:: One audio-rate normalized phase output.
+
+method:: kr
+Control-rate version with the same arguments.
+
+instancemethods::
+
+examples::
+
+code::
+(
+{ CircleMap.ar(Impulse.ar(200)) * 0.1 }.play
+)
+::
+
+code::
+(
+{ SinOsc.ar(CircleMap.kr(Impulse.kr(10)).linexp(0, 1, 80, 4000), 0, 0.1) }.play
+)
+::
+
+subsection:: See also
+
+link::Guides/StochasticDynamicsUGens::
+link::Classes/Phasor::
+link::Classes/CoupledLogisticMap::

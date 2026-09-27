@@ -1,0 +1,59 @@
+class:: TLevyRand
+summary:: Triggered one-sided Lévy-distribution sampler
+categories:: UGens>Generators>Stochastic>Distributions
+related:: Guides/StochasticDynamicsUGens, Classes/TStableRand, Classes/TCauchyRand
+
+description::
+
+Computes code::location + scale/(Z*Z):: for a standard normal code::Z::. Values too near zero are retried at most 64 times before returning the largest finite float.
+
+The distribution has one-sided support beginning at location and a very heavy tail. Extreme finite values are expected and may require explicit user-side limiting before direct audio use.
+
+Like link::Classes/TStableRand::, it represents a stable-family heavy tail; unlike the general sampler, its support and alpha-one-half construction are fixed and explicit.
+
+subsection:: Distribution shape
+
+image::levy-density.png#One-sided Lévy densities with location = 0 and scale = 0.5, 1, and 2, shown in muted teal, blue, and plum over a finite display interval. The density begins above the location and retains a very long right tail.::
+
+classmethods::
+
+method:: ar
+argument:: location
+Lower support location.
+argument:: scale
+Nonnegative Lévy scale. Invalid scale returns location.
+argument:: trig
+Resample on a rising edge.
+argument:: seed
+Init-rate local seed.
+argument:: reset
+Restore the seed and sample a new initial value.
+argument:: mul
+Output multiplier.
+argument:: add
+Output offset.
+
+method:: kr
+Control-rate version with the same arguments.
+
+instancemethods::
+
+examples::
+
+code::
+(
+{ TLevyRand.kr(0, 1, Impulse.kr(4)).poll }.play
+)
+::
+
+code::
+(
+{ SinOsc.ar(TLevyRand.kr(100, 80, Impulse.kr(6)).clip(80, 4000), 0, 0.08) }.play
+)
+::
+
+subsection:: See also
+
+link::Guides/StochasticDynamicsUGens::
+link::Classes/TStableRand::
+link::Classes/TCauchyRand::

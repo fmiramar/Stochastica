@@ -1,0 +1,79 @@
+class:: CoupledLogisticMap
+summary:: Two symmetrically coupled trigger-driven logistic maps
+categories:: UGens>Generators>Chaotic>Maps
+related:: Guides/StochasticDynamicsUGens, Classes/CoupledMapLattice, Classes/CircleMap
+
+description::
+
+Computes each logistic image code::f(x) = r*x*(1-x)::, then mixes the two images symmetrically by code::coupling::. It follows the coupled-map literature and does not force coordinates back into the conventional logistic interval.
+
+The outputs are raw state coordinates. They are not normalized audio signals and may diverge for some parameters.
+
+Like link::Classes/Stepper::, the pair updates on trigger edges and holds; unlike Stepper, each output depends on both nonlinear map images.
+
+subsection:: State-space portrait
+
+image::coupled-logistic-map-phase.png#The two coupled logistic states at the documented defaults. x is horizontal and y is vertical; diagonal structure shows synchronization between the maps.::
+
+classmethods::
+
+method:: ar
+argument:: trig
+Advance both maps on a rising edge.
+argument:: rX
+Logistic coefficient for x.
+argument:: rY
+Logistic coefficient for y.
+argument:: coupling
+Symmetric image-mixing amount; not clipped.
+argument:: x0
+Initial x coordinate.
+argument:: y0
+Initial y coordinate.
+argument:: reset
+Restore initial coordinates on a rising edge.
+returns:: Two audio-rate outputs: x and y.
+
+method:: kr
+Control-rate version with the same arguments and outputs.
+
+instancemethods::
+
+examples::
+
+code::
+(
+{ CoupledLogisticMap.ar(Impulse.ar(400))[0] * 0.1 }.play
+)
+::
+
+code::
+(
+{ SinOsc.ar(CoupledLogisticMap.kr(Impulse.kr(16))[1].linexp(0.05, 0.95, 80, 3000), 0, 0.08) }.play
+)
+::
+
+subsection:: Real-time phase portrait
+
+code::
+(
+SDPhaseView.open(
+    "Coupled logistic map: x-y phase portrait",
+    [0, 1], [0, 1],
+    { CoupledLogisticMap.kr(Impulse.kr(90)) },
+    { |state|
+        Pan2.ar(
+            SinOsc.ar(state[0].clip(0, 1).linexp(0, 1, 100, 1800), 0, 0.06),
+            state[1].clip(0, 1).linlin(0, 1, -1, 1)
+        )
+    }
+);
+)
+::
+
+subsection:: See also
+
+link::Guides/StochasticDynamicsUGens::
+link::Classes/SDPhaseView::
+link::Classes/CoupledMapLattice::
+link::Classes/CircleMap::

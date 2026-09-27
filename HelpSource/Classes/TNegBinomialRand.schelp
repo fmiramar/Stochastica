@@ -1,0 +1,57 @@
+class:: TNegBinomialRand
+summary:: Triggered negative-binomial failures sampler
+categories:: UGens>Generators>Stochastic>Distributions
+related:: Guides/StochasticDynamicsUGens, Classes/TGammaRand, Classes/TPoissonRand
+
+description::
+
+Returns failures before code::successes:: successes. It draws a gamma intensity and then a Poisson count, so positive real success counts are supported.
+
+Like link::Classes/TPoissonRand::, it returns nonnegative counts; unlike Poisson, the gamma–Poisson mixture permits overdispersion controlled by success probability and count.
+
+subsection:: Probability mass
+
+image::negative-binomial-mass.png#Failures before two successes for probability = 0.25, 0.5, and 0.75, shown in muted teal, blue, and plum. Lower success probability shifts mass toward larger counts and increases dispersion.::
+
+classmethods::
+
+method:: ar
+argument:: successes
+Strictly positive real success count.
+argument:: probability
+Success probability. At or above one returns zero; at or below zero returns the largest exact integer float.
+argument:: trig
+Resample on a rising edge.
+argument:: seed
+Init-rate local seed.
+argument:: reset
+Restore the seed and sample a new initial value.
+argument:: mul
+Output multiplier.
+argument:: add
+Output offset.
+
+method:: kr
+Control-rate version with the same arguments.
+
+instancemethods::
+
+examples::
+
+code::
+(
+{ TNegBinomialRand.kr(3, 0.4, Impulse.kr(5)).poll }.play
+)
+::
+
+code::
+(
+{ SinOsc.ar((TNegBinomialRand.kr(2, 0.6, Impulse.kr(8)) + 1) * 100, 0, 0.08) }.play
+)
+::
+
+subsection:: See also
+
+link::Guides/StochasticDynamicsUGens::
+link::Classes/TGammaRand::
+link::Classes/TPoissonRand::

@@ -1,0 +1,68 @@
+class:: BoundedWalk
+summary:: Triggered random walk with explicit boundary and increment rules
+categories:: UGens>Generators>Stochastic>Processes
+related:: Guides/StochasticDynamicsUGens, Classes/OUProcess, Classes/TBrownRand
+
+description::
+
+Adds a uniform, normal, or Cauchy increment on each rising trigger and applies an explicit reflect, wrap, clip, resample, or absorb boundary rule. Resampling stops after 64 attempts and then clips.
+
+Unlike link::Classes/TBrownRand::, BoundedWalk has deterministic local seeding, rising-edge reset, several increment distributions, and named boundary semantics.
+
+subsection:: Boundary comparison
+
+image::bounded-walk-boundaries.png#The same seeded uniform increments under three rules: reflect at left, wrap at center, and absorb at right. Reflection reverses overshoot, wrapping jumps to the opposite edge, and absorption remains at the first boundary reached.::
+
+classmethods::
+
+method:: ar
+argument:: trig
+Take one random-walk step on a rising edge.
+argument:: step
+Absolute uniform half-width, normal deviation, or Cauchy scale.
+argument:: lo
+Lower boundary.
+argument:: hi
+Upper boundary. When not above code::lo::, output holds at code::lo::.
+argument:: boundary
+0 reflect, 1 wrap, 2 clip, 3 bounded resample, 4 absorb.
+argument:: distribution
+0 uniform, 1 normal, 2 Cauchy.
+argument:: initial
+Initial value processed by the selected boundary rule.
+argument:: seed
+Init-rate local seed.
+argument:: reset
+Restore initial state, absorption status, and seed on a rising edge.
+returns:: One audio-rate bounded state.
+
+method:: kr
+Control-rate version with the same arguments.
+
+instancemethods::
+
+examples::
+
+code::
+(
+{ BoundedWalk.kr(Impulse.kr(12)).poll }.play
+)
+::
+
+code::
+(
+{ SinOsc.ar(BoundedWalk.kr(Impulse.kr(20), 0.08, 0, 1).linexp(0, 1, 100, 3000), 0, 0.08) }.play
+)
+::
+
+code::
+(
+{ Pan2.ar(Decay2.ar(Impulse.ar(8), 0.001, 0.1), BoundedWalk.kr(Impulse.kr(8), 0.3)) * 0.1 }.play
+)
+::
+
+subsection:: See also
+
+link::Guides/StochasticDynamicsUGens::
+link::Classes/TBrownRand::
+link::Classes/OUProcess::

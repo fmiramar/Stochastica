@@ -1,0 +1,82 @@
+class:: SemiMarkov
+summary:: Finite-state process with state-specific dwell distributions
+categories:: UGens>Control>Markov
+related:: Guides/StochasticDynamicsUGens, Classes/MarkovChain, Classes/RenewalTrig
+
+description::
+
+Combines a Markov transition matrix with a dwell-time distribution for each state. The duration Buffer has three channels: mean seconds, shape, and code (0 fixed, 1 exponential, 2 gamma, 3 Weibull, 4 lognormal).
+
+At most one transition occurs per calculation and negative timing remainder is carried. Like link::Classes/MarkovChain::, it selects state from row-major weights; unlike MarkovChain, time rather than an external trigger schedules transitions.
+
+subsection:: State and dwell view
+
+image::semi-markov-dynamics.png#Left: a three-state semi-Markov realization using fixed, gamma, and Weibull dwell laws. Right: remaining dwell time counting down and resampling at transitions; the varying ramp heights make timing part of the model state.::
+
+classmethods::
+
+method:: ar
+argument:: numStates
+Init-rate state count, clipped to 1 through 256.
+argument:: transitionBuf
+One-channel row-major code::numStates*numStates:: weights.
+argument:: durationBuf
+Three-channel Buffer with code::numStates:: frames: mean, shape, distribution code.
+argument:: valueBuf
+Optional one-channel values; negative uses state index.
+argument:: initialState
+Rounded and clipped initial state.
+argument:: timeScale
+Nonnegative countdown speed. Zero pauses.
+argument:: seed
+Init-rate local seed.
+argument:: reset
+Restore state and seed and schedule its first duration.
+returns:: State, mapped value, one-calculation changed trigger, remaining seconds.
+
+method:: kr
+Control-rate version with the same arguments and outputs.
+
+instancemethods::
+
+examples::
+
+code::
+(
+Routine {
+    b = Buffer.loadCollection(s, [0.8, 0.2, 0.3, 0.7]);
+    c = Buffer.loadCollection(s, [1, 1, 0, 0.2, 1, 1], 3);
+    s.sync;
+    x = { SemiMarkov.kr(2, b, c)[0].poll }.play;
+}.play;
+)
+::
+
+code::
+(
+Routine {
+    b = Buffer.loadCollection(s, [
+        0.7, 0.2, 0.1,
+        0.2, 0.6, 0.2,
+        0.1, 0.3, 0.6
+    ]);
+    c = Buffer.loadCollection(s, [
+        0.6, 1, 0,
+        0.2, 2, 2,
+        1.4, 0.5, 3
+    ], 3);
+    d = Buffer.loadCollection(s, [180, 420, 900]);
+    s.sync;
+    x = {
+        var process = SemiMarkov.kr(3, b, c, d);
+        SinOsc.ar(process[1], 0, Decay2.kr(process[2], 0.01, 0.2) * 0.1)
+    }.play;
+}.play;
+)
+::
+
+subsection:: See also
+
+link::Guides/StochasticDynamicsUGens::
+link::Classes/MarkovChain::
+link::Classes/RenewalTrig::

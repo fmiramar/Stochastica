@@ -1,0 +1,57 @@
+class:: TWeibullRand
+summary:: Triggered Weibull-distribution sampler
+categories:: UGens>Generators>Stochastic>Distributions
+related:: Guides/StochasticDynamicsUGens, Classes/TGammaRand, Classes/TExpRand
+
+description::
+
+Uses the open-uniform inverse transform code::scale*(-log(U)).pow(1/shape)::. Parameters retain the standard Weibull meaning and invalid values return zero.
+
+Like link::Classes/TExpRand::, it produces positive triggered values; unlike TExpRand, its Weibull shape independently controls tail and hazard behavior.
+
+subsection:: Distribution shape
+
+image::weibull-density.png#Weibull densities with scale = 1 and shape = 0.6, 1, and 2, shown in muted teal, blue, and plum. Shape 1 is exponential; values below and above one produce decreasing and increasing hazards respectively.::
+
+classmethods::
+
+method:: ar
+argument:: shape
+Strictly positive Weibull shape.
+argument:: scale
+Nonnegative Weibull scale.
+argument:: trig
+Resample on a rising edge.
+argument:: seed
+Init-rate local seed.
+argument:: reset
+Restore the seed and sample a new initial value.
+argument:: mul
+Output multiplier.
+argument:: add
+Output offset.
+
+method:: kr
+Control-rate version with the same arguments.
+
+instancemethods::
+
+examples::
+
+code::
+(
+{ TWeibullRand.kr(0.7, 1, Impulse.kr(5)).poll }.play
+)
+::
+
+code::
+(
+{ SinOsc.ar(TWeibullRand.kr(1.5, 500, Impulse.kr(8)) + 100, 0, 0.08) }.play
+)
+::
+
+subsection:: See also
+
+link::Guides/StochasticDynamicsUGens::
+link::Classes/TGammaRand::
+link::Classes/TExpRand::

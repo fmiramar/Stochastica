@@ -1,0 +1,79 @@
+class:: RulkovMap
+summary:: Raw two-state Rulkov discrete neuron map
+categories:: UGens>Generators>Chaotic>Maps
+related:: Guides/StochasticDynamicsUGens, Classes/Izhikevich
+
+description::
+
+Implements Nikolai Rulkov's discrete neuron recurrence code::x' = alpha/(1+x*x) + y:: and code::y' = y - mu*(x-sigma)::. Suitable parameters produce quiescence, spikes, or bursts without an added threshold output.
+
+The outputs are raw state coordinates. They are not normalized audio signals and may diverge for some parameters.
+
+Like link::Classes/Stepper::, it advances only on trigger edges; unlike Stepper, its fast and slow coordinates form a neuron model.
+
+subsection:: Fast-slow portrait
+
+image::rulkov-map-phase.png#The default Rulkov orbit after its transient. Fast state x is horizontal and slow state y is vertical; the long excursion corresponds to a burst cycle.::
+
+classmethods::
+
+method:: ar
+argument:: trig
+Advance one model iteration on a rising edge.
+argument:: alpha
+Fast-state nonlinearity parameter.
+argument:: mu
+Slow-state update coefficient.
+argument:: sigma
+Slow-state reference parameter.
+argument:: x0
+Initial fast coordinate.
+argument:: y0
+Initial slow coordinate.
+argument:: reset
+Restore initial coordinates on a rising edge.
+returns:: Two audio-rate outputs: fast x and slow y.
+
+method:: kr
+Control-rate version with the same arguments and outputs.
+
+instancemethods::
+
+examples::
+
+code::
+(
+{ RulkovMap.ar(Impulse.ar(1000))[0] * 0.03 }.play
+)
+::
+
+code::
+(
+{ Decay2.ar(RulkovMap.ar(Impulse.ar(800))[0] > 0, 0.001, 0.03) * 0.1 }.play
+)
+::
+
+subsection:: Real-time fast-slow portrait
+
+code::
+(
+SDPhaseView.open(
+    "Rulkov map: fast-slow portrait",
+    [-2.5, 1.5], [-3.05, -2.65],
+    { RulkovMap.kr(Impulse.kr(600)) },
+    { |state|
+        var spike = HPZ1.kr(state[0] > 0).max(0);
+        Pan2.ar(
+            Decay2.ar(K2A.ar(spike), 0.001, 0.035) * SinOsc.ar(700, 0, 0.09),
+            state[1].clip(-3.05, -2.65).linlin(-3.05, -2.65, -1, 1)
+        )
+    }
+);
+)
+::
+
+subsection:: See also
+
+link::Guides/StochasticDynamicsUGens::
+link::Classes/SDPhaseView::
+link::Classes/Izhikevich::

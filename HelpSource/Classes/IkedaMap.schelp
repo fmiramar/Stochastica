@@ -1,0 +1,74 @@
+class:: IkedaMap
+summary:: Trigger-driven raw Ikeda map coordinates
+categories:: UGens>Generators>Chaotic>Maps
+related:: Guides/StochasticDynamicsUGens, Classes/HenonMap
+
+description::
+
+Implements Kensuke Ikeda's optical ring-cavity map. It computes code::t = 0.4 - 6/(1+x*x+y*y)::, then rotates and contracts the old coordinate by code::u:: before adding one to x.
+
+The outputs are raw state coordinates. They are not normalized audio signals and may diverge for some parameters.
+
+Like link::Classes/Stepper::, IkedaMap is trigger driven and holds; unlike Stepper, it evolves a coupled rotational recurrence.
+
+subsection:: State-space portrait
+
+image::ikeda-map-phase.png#The default Ikeda orbit after its transient. x is horizontal and y is vertical; the folded bands result from contraction and state-dependent rotation.::
+
+classmethods::
+
+method:: ar
+argument:: trig
+Advance on a rising edge.
+argument:: u
+Map contraction/control parameter; not clipped.
+argument:: x0
+Initial x coordinate.
+argument:: y0
+Initial y coordinate.
+argument:: reset
+Restore initial coordinates on a rising edge.
+Returns:: Two audio-rate outputs: x and y.
+
+method:: kr
+Control-rate version with the same arguments and outputs.
+
+instancemethods::
+
+examples::
+
+code::
+(
+{ IkedaMap.ar(Impulse.ar(300))[0] * 0.05 }.play
+)
+::
+
+code::
+(
+{ SinOsc.ar(IkedaMap.kr(Impulse.kr(16))[1].linexp(-1, 1, 100, 4000), 0, 0.08) }.play
+)
+::
+
+subsection:: Real-time phase portrait
+
+code::
+(
+SDPhaseView.open(
+    "Ikeda map: x-y phase portrait",
+    [-0.5, 1.9], [-2.4, 1],
+    { IkedaMap.kr(Impulse.kr(80)) },
+    { |state|
+        Pan2.ar(
+            SinOsc.ar(state[0].clip(-0.5, 1.9).linexp(-0.5, 1.9, 100, 1800), 0, 0.06),
+            state[1].clip(-2.4, 1).linlin(-2.4, 1, -1, 1)
+        )
+    }
+);
+)
+::
+
+subsection:: See also
+
+link::Guides/StochasticDynamicsUGens::
+link::Classes/SDPhaseView::
+link::Classes/HenonMap::

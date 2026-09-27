@@ -1,0 +1,217 @@
+class:: Chua
+summary:: Three-state RK4 integration of Chua's circuit
+categories:: UGens>Generators>Chaotic>Flows
+related:: Guides/StochasticDynamicsUGens, Classes/MackeyGlass
+
+description::
+
+Integrates Leon Chua's canonical dimensionless circuit equations with the piecewise-linear diode curve code::h(x) = m1*x + 0.5*(m0-m1)*(abs(x+1)-abs(x-1))::. Fixed init-rate substeps use RK4 and all three raw states are exposed.
+
+Outputs are unnormalized model coordinates and may become large for unstable parameters. Like link::Classes/Integrator::, Chua accumulates state over time; unlike Integrator, it advances a coupled nonlinear three-equation flow with RK4.
+
+subsection:: State-space view
+
+The orbit is intrinsically three-dimensional. The first figure is an oblique projection of code::(x, y, z)::; the second places the orthogonal code::xy::, code::xz::, and code::yz:: phase planes side by side. Together they prevent an appealing camera angle from hiding structure or falsely implying crossings in the full state space.
+
+All figures use the default coefficients, initial state code::(0.7, 0, 0)::, fixed-step RK4, and a discarded initial transient. Each coordinate is fitted independently to make the orbit fill the available plot area.
+
+image::chua-state-space-3d.png#Figure 1. Oblique state-space projection after normalizing the visible ranges. The red, green, and blue arrows show the positive x, y, and z directions.::
+
+image::chua-state-space-projections.png#Figure 2. Orthogonal phase planes from left to right: x-y, x-z, and y-z. The first named coordinate is horizontal.::
+
+classmethods::
+
+method:: ar
+argument:: alpha
+x-equation scale.
+argument:: beta
+z-equation scale.
+argument:: m0
+Inner diode slope.
+argument:: m1
+Outer diode slope.
+argument:: x0
+Initial x state.
+argument:: y0
+Initial y state.
+argument:: z0
+Initial z state.
+argument:: timeScale
+Dimensionless model time per audio second.
+argument:: substeps
+Init-rate RK4 substeps, clipped to 1 through 16.
+argument:: reset
+Restore initial state on a rising edge.
+returns:: Three audio-rate outputs: x, y, z.
+
+method:: kr
+Control-rate version with one control duration per outer integration step.
+
+instancemethods::
+
+examples::
+
+code::
+(
+{ Chua.ar[0] * 0.05 }.play
+)
+::
+
+code::
+(
+{
+    var state = Chua.ar(timeScale: 6);
+    Pan2.ar(state[0] * 0.04, state[1].tanh)
+}.play
+)
+::
+
+subsection:: Real-time state-space sonification
+
+This view receives 30 state samples per second from the same code::Chua:: instance that controls the sound. The server performs only the flow integration, sonification, and bounded-rate code::SendReply:: messages; trajectory storage and drawing remain in the language process. Close the window or press Cmd-period to release the Synth and OSC responder.
+
+code::
+(
+s.waitForBoot {
+    var window, view, synth, trail, project3D, project2D;
+    var drawTrace3D, drawTrace2D, replyPath = '/sd/chuaState';
+    var maxPoints = 1200;
+
+    ~sdChuaPhaseWindow.tryPerform(\close);
+    trail = RingBuffer(maxPoints + 1);
+
+    // Normalize each model coordinate before applying a fixed oblique projection.
+    project3D = { |state, rect|
+        var nx, ny, nz, px, py;
+        nx = state[0] / 2.4;
+        ny = state[1] / 0.45;
+        nz = state[2] / 4.0;
+        px = (nx * 0.72) - (nz * 0.62);
+        py = (nx * 0.24) + (nz * 0.29) - (ny * 0.90);
+        Point(
+            rect.center.x + (px * rect.width * 0.34),
+            rect.center.y + (py * rect.height * 0.36)
+        )
+    };
+
+    project2D = { |state, rect, first, second, firstRange, secondRange|
+        Point(
+            rect.center.x + ((state[first] / firstRange) * rect.width * 0.43),
+            rect.center.y - ((state[second] / secondRange) * rect.height * 0.40)
+        )
+    };
+
+    drawTrace3D = { |rect|
+        var latest;
+        Pen.fillColor = Color(0.035, 0.045, 0.075);
+        Pen.fillRect(rect);
+        Pen.strokeColor = Color(0.18, 0.28, 0.42, 0.7);
+        Pen.width = 1;
+        trail.do { |state, index|
+            var point = project3D.(state, rect);
+            if(index == 0) { Pen.moveTo(point) } { Pen.lineTo(point) };
+            latest = point;
+        };
+        Pen.stroke;
+
+        // Redraw the newest part more brightly so motion remains legible.
+        Pen.strokeColor = Color(0.25, 0.92, 0.88, 0.95);
+        Pen.width = 1.6;
+        trail.do { |state, index|
+            var point = project3D.(state, rect);
+            if(index == (trail.size - 100).max(0)) { Pen.moveTo(point) };
+            if(index > (trail.size - 100).max(0)) { Pen.lineTo(point) };
+        };
+        Pen.stroke;
+
+        if(latest.notNil) {
+            Pen.fillColor = Color(1.0, 0.45, 0.25);
+            Pen.fillOval(Rect.aboutPoint(latest, 4, 4));
+        };
+        Pen.color = Color(0.82, 0.88, 0.96);
+        Pen.font = Font.sansSerif(14);
+        Pen.stringAtPoint("oblique x-y-z projection", rect.leftTop + (12 @ 10));
+    };
+
+    drawTrace2D = { |rect, first, second, firstRange, secondRange, label|
+        var latest;
+        Pen.fillColor = Color(0.05, 0.06, 0.095);
+        Pen.fillRect(rect);
+        Pen.strokeColor = Color(0.16, 0.20, 0.30);
+        Pen.width = 1;
+        Pen.line(Point(rect.left, rect.center.y), Point(rect.right, rect.center.y));
+        Pen.line(Point(rect.center.x, rect.top), Point(rect.center.x, rect.bottom));
+        Pen.stroke;
+        Pen.strokeColor = Color(0.74, 0.36, 0.96, 0.82);
+        Pen.width = 1.2;
+        trail.do { |state, index|
+            var point = project2D.(state, rect, first, second, firstRange, secondRange);
+            if(index == 0) { Pen.moveTo(point) } { Pen.lineTo(point) };
+            latest = point;
+        };
+        Pen.stroke;
+        if(latest.notNil) {
+            Pen.fillColor = Color(1.0, 0.45, 0.25);
+            Pen.fillOval(Rect.aboutPoint(latest, 3, 3));
+        };
+        Pen.color = Color(0.82, 0.88, 0.96);
+        Pen.font = Font.sansSerif(12);
+        Pen.stringAtPoint(label, rect.leftTop + (8 @ 6));
+    };
+
+    window = Window("Chua: live state space", Rect(80, 80, 1040, 680));
+    view = UserView(window, window.view.bounds)
+        .resize_(5)
+        .background_(Color(0.018, 0.022, 0.04))
+        .frameRate_(30)
+        .animate_(true);
+    view.drawFunc = { |canvas|
+        var bounds = canvas.bounds;
+        var main = Rect(20, 48, bounds.width * 0.64, bounds.height - 68);
+        var sideX = main.right + 18;
+        var sideW = bounds.width - sideX - 20;
+        var sideH = (main.height - 24) / 3;
+
+        Pen.color = Color(0.9, 0.94, 1.0);
+        Pen.font = Font.sansSerif(18, true);
+        Pen.stringAtPoint("Chua trajectory — sound and image share one state", 20 @ 14);
+        drawTrace3D.(main);
+        drawTrace2D.(Rect(sideX, 48, sideW, sideH), 0, 1, 2.4, 0.45, "x-y phase plane");
+        drawTrace2D.(Rect(sideX, 60 + sideH, sideW, sideH), 0, 2, 2.4, 4.0, "x-z phase plane");
+        drawTrace2D.(Rect(sideX, 72 + (sideH * 2), sideW, sideH), 1, 2, 0.45, 4.0, "y-z phase plane");
+    };
+
+    OSCdef(\sdChuaPhaseView, { |message|
+        var sample = message[3..5];
+        {
+            trail.overwrite(sample);
+        }.defer;
+    }, replyPath, s.addr);
+
+    synth = {
+        var state = Chua.ar(timeScale: 6);
+        var frequency = state[0].clip(-2.4, 2.4).linexp(-2.4, 2.4, 90, 1800);
+        SendReply.ar(Impulse.ar(30), replyPath, state);
+        Pan2.ar(
+            SinOsc.ar(frequency, 0, 0.07),
+            state[1].clip(-0.4, 0.4) * 2.5
+        )
+    }.play;
+
+    window.onClose = {
+        view.animate = false;
+        OSCdef(\sdChuaPhaseView).tryPerform(\free);
+        synth.tryPerform(\free);
+        ~sdChuaPhaseWindow = nil;
+    };
+    ~sdChuaPhaseWindow = window.front;
+    CmdPeriod.doOnce({ { ~sdChuaPhaseWindow.tryPerform(\close) }.defer });
+};
+)
+::
+
+subsection:: See also
+
+link::Guides/StochasticDynamicsUGens::
+link::Classes/MackeyGlass::
+link::Classes/Integrator::

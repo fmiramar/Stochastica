@@ -1,0 +1,81 @@
+class:: CliffordMap
+summary:: Trigger-driven raw Clifford attractor coordinates
+categories:: UGens>Generators>Chaotic>Maps
+related:: Guides/StochasticDynamicsUGens, Classes/DeJongMap, Classes/LatoocarfianMap
+
+description::
+
+Implements code::x' = sin(a*y) + c*cos(a*x):: and code::y' = sin(b*x) + d*cos(b*y)::, a commonly used Clifford-attractor recurrence. Parameters remain mathematical coefficients.
+
+The outputs are raw state coordinates. They are not normalized audio signals and may diverge for some parameters.
+
+Like link::Classes/Stepper::, CliffordMap updates on edges and holds; unlike Stepper, it computes coupled trigonometric state.
+
+subsection:: State-space portrait
+
+image::clifford-map-phase.png#The Clifford attractor at the documented defaults. x is horizontal and y is vertical; overlapping points make the more frequently visited regions darker.::
+
+classmethods::
+
+method:: ar
+argument:: trig
+Advance on a rising edge.
+argument:: a
+Trigonometric coefficient in the x equation.
+argument:: b
+Trigonometric coefficient in the y equation.
+argument:: c
+Cosine weight in the x equation.
+argument:: d
+Cosine weight in the y equation.
+argument:: x0
+Initial x coordinate.
+argument:: y0
+Initial y coordinate.
+argument:: reset
+Restore initial coordinates on a rising edge.
+returns:: Two audio-rate outputs: x and y.
+
+method:: kr
+Control-rate version with the same arguments and outputs.
+
+instancemethods::
+
+examples::
+
+code::
+(
+{ CliffordMap.ar(Impulse.ar(700))[0] * 0.08 }.play
+)
+::
+
+code::
+(
+{ SinOsc.ar(CliffordMap.kr(Impulse.kr(14))[1].linexp(-2, 2, 100, 3000), 0, 0.08) }.play
+)
+::
+
+subsection:: Real-time phase portrait
+
+code::
+(
+SDPhaseView.open(
+    "Clifford map: x-y phase portrait",
+    [-1.6, 2.1], [-1.5, 1.7],
+    { CliffordMap.kr(Impulse.kr(120)) },
+    { |state|
+        Pan2.ar(
+            SinOsc.ar(state[0].clip(-1.6, 2.1).linexp(-1.6, 2.1, 100, 1800), 0, 0.06),
+            state[1].clip(-1.5, 1.7).linlin(-1.5, 1.7, -1, 1)
+        )
+    }
+);
+)
+::
+
+subsection:: See also
+
+link::Guides/StochasticDynamicsUGens::
+link::Classes/SDPhaseView::
+link::Classes/DeJongMap::
+link::Classes/LatoocarfianMap::

@@ -1,0 +1,76 @@
+class:: LoziMap
+summary:: Trigger-driven raw Lozi map coordinates
+categories:: UGens>Generators>Chaotic>Maps
+related:: Guides/StochasticDynamicsUGens, Classes/HenonMap
+
+description::
+
+Implements René Lozi's piecewise-linear Hénon-like recurrence code::x' = 1 - a*abs(x) + b*y:: and code::y' = x::. Parameters are sampled at each trigger and are not clipped.
+
+The outputs are raw state coordinates. They are not normalized audio signals and may diverge for some parameters.
+
+Like link::Classes/Stepper::, LoziMap holds between events; unlike Stepper, it exposes a two-state piecewise nonlinear system.
+
+subsection:: State-space portrait
+
+image::lozi-map-phase.png#The default Lozi attractor after its transient. x is horizontal and y is vertical; its angular folds reflect the map's absolute-value nonlinearity.::
+
+classmethods::
+
+method:: ar
+argument:: trig
+Advance on a rising edge.
+argument:: a
+Absolute-value coefficient.
+argument:: b
+Old-y coupling coefficient.
+argument:: x0
+Initial x coordinate.
+argument:: y0
+Initial y coordinate.
+argument:: reset
+Restore initial coordinates on a rising edge.
+Returns:: Two audio-rate outputs: x and y.
+
+method:: kr
+Control-rate version with the same arguments and outputs.
+
+instancemethods::
+
+examples::
+
+code::
+(
+{ LoziMap.ar(Impulse.ar(500))[0] * 0.08 }.play
+)
+::
+
+code::
+(
+{ SinOsc.ar(LoziMap.kr(Impulse.kr(20))[0].linexp(-2, 2, 80, 2400), 0, 0.08) }.play
+)
+::
+
+subsection:: Real-time phase portrait
+
+code::
+(
+SDPhaseView.open(
+    "Lozi map: x-y phase portrait",
+    [-1.5, 1.5], [-1.5, 1.5],
+    { LoziMap.kr(Impulse.kr(100)) },
+    { |state|
+        Pan2.ar(
+            SinOsc.ar(state[0].clip(-1.5, 1.5).linexp(-1.5, 1.5, 100, 1800), 0, 0.06),
+            state[1].clip(-1.5, 1.5).linlin(-1.5, 1.5, -1, 1)
+        )
+    }
+);
+)
+::
+
+subsection:: See also
+
+link::Guides/StochasticDynamicsUGens::
+link::Classes/SDPhaseView::
+link::Classes/HenonMap::

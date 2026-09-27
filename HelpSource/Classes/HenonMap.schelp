@@ -1,0 +1,79 @@
+class:: HenonMap
+summary:: Trigger-driven raw Hénon map coordinates
+categories:: UGens>Generators>Chaotic>Maps
+related:: Guides/StochasticDynamicsUGens, Classes/HenonSonify, Classes/GbmanMap
+
+description::
+
+Iterates Michel Hénon's 1976 two-dimensional map: code::x' = 1 - a*x*x + y:: and code::y' = b*x::. Both next coordinates use the old state. A rising trigger advances once; reset restores the supplied initial coordinates, and non-finite recurrence state also restores them.
+
+The outputs are raw state coordinates. They are not normalized audio signals and may diverge for some parameters.
+
+Like link::Classes/Stepper::, HenonMap holds between trigger edges; unlike Stepper, its next value comes from a coupled nonlinear recurrence and both coordinates are exposed.
+
+subsection:: State-space portrait
+
+image::henon-map-phase.png#The default Hénon attractor after a 2,000-iteration transient. x is horizontal and y is vertical; each coordinate is fitted independently to use the frame clearly.::
+
+classmethods::
+
+method:: ar
+argument:: trig
+Advance on each nonpositive-to-positive edge. Audio or control rate.
+argument:: a
+Quadratic coefficient, sampled at the event; not clipped.
+argument:: b
+Old-x coupling coefficient, sampled at the event; not clipped.
+argument:: x0
+Initial x coordinate, sampled at construction and reset.
+argument:: y0
+Initial y coordinate, sampled at construction and reset.
+argument:: reset
+Restore initial state on a rising edge.
+Returns:: Two audio-rate outputs: x and y.
+
+method:: kr
+Control-rate version with the same arguments and two outputs.
+
+instancemethods::
+
+examples::
+
+code::
+(
+{ HenonMap.ar(Impulse.ar(100))[0] * 0.1 }.play
+)
+::
+
+code::
+(
+{ SinOsc.ar(HenonMap.kr(Impulse.kr(12))[0].linexp(-1.5, 1.5, 80, 2000), 0, 0.1) }.play
+)
+::
+
+subsection:: Real-time phase portrait
+
+The same coordinates drive the sound and the bounded on-screen trail. Close the window to free the synth.
+
+code::
+(
+SDPhaseView.open(
+    "Hénon map: x-y phase portrait",
+    [-1.5, 1.5], [-0.5, 0.5],
+    { HenonMap.kr(Impulse.kr(90)) },
+    { |state|
+        Pan2.ar(
+            SinOsc.ar(state[0].clip(-1.5, 1.5).linexp(-1.5, 1.5, 100, 1800), 0, 0.06),
+            state[1].clip(-0.5, 0.5).linlin(-0.5, 0.5, -1, 1)
+        )
+    }
+);
+)
+::
+
+subsection:: See also
+
+link::Guides/StochasticDynamicsUGens::
+link::Classes/SDPhaseView::
+link::Classes/HenonSonify::
+link::Classes/GbmanMap::

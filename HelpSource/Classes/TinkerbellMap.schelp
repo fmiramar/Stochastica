@@ -1,0 +1,83 @@
+class:: TinkerbellMap
+summary:: Trigger-driven raw Tinkerbell map coordinates
+categories:: UGens>Generators>Chaotic>Maps
+related:: Guides/StochasticDynamicsUGens, Classes/DeJongMap
+
+description::
+
+Implements the polynomial Tinkerbell recurrence code::x' = x*x - y*y + a*x + b*y:: and code::y' = 2*x*y + c*x + d*y::. Both equations use the old state.
+
+The outputs are raw state coordinates. They are not normalized audio signals and may diverge for some parameters.
+
+Like link::Classes/Stepper::, it advances and holds on trigger edges; unlike Stepper, it evolves two polynomially coupled coordinates.
+
+subsection:: State-space portrait
+
+image::tinkerbell-map-phase.png#The default Tinkerbell orbit after its transient. x is horizontal and y is vertical; points retain the map's discrete-time character.::
+
+classmethods::
+
+method:: ar
+argument:: trig
+Advance on a rising edge.
+argument:: a
+Old-x linear coefficient in x.
+argument:: b
+Old-y linear coefficient in x.
+argument:: c
+Old-x linear coefficient in y.
+argument:: d
+Old-y linear coefficient in y.
+argument:: x0
+Initial x coordinate.
+argument:: y0
+Initial y coordinate.
+argument:: reset
+Restore initial coordinates on a rising edge.
+Returns:: Two audio-rate outputs: x and y.
+
+method:: kr
+Control-rate version with the same arguments and outputs.
+
+instancemethods::
+
+examples::
+
+code::
+(
+{ TinkerbellMap.ar(Impulse.ar(1000))[1] * 0.03 }.play
+)
+::
+
+code::
+(
+{
+    var state = TinkerbellMap.ar(Impulse.ar(300));
+    Pan2.ar(state[0] * 0.03, state[1].tanh)
+}.play
+)
+::
+
+subsection:: Real-time phase portrait
+
+code::
+(
+SDPhaseView.open(
+    "Tinkerbell map: x-y phase portrait",
+    [-1.4, 0.7], [-1.8, 0.8],
+    { TinkerbellMap.kr(Impulse.kr(120)) },
+    { |state|
+        Pan2.ar(
+            SinOsc.ar(state[0].clip(-1.4, 0.7).linexp(-1.4, 0.7, 100, 1800), 0, 0.06),
+            state[1].clip(-1.8, 0.8).linlin(-1.8, 0.8, -1, 1)
+        )
+    }
+);
+)
+::
+
+subsection:: See also
+
+link::Guides/StochasticDynamicsUGens::
+link::Classes/SDPhaseView::
+link::Classes/DeJongMap::

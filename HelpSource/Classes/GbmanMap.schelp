@@ -1,0 +1,73 @@
+class:: GbmanMap
+summary:: Trigger-driven raw Gingerbreadman map coordinates
+categories:: UGens>Generators>Chaotic>Maps
+related:: Guides/StochasticDynamicsUGens, Classes/GbmanSonify, Classes/HenonMap
+
+description::
+
+Iterates the Gingerbreadman recurrence code::x' = 1 - y + abs(x):: and code::y' = x::. This explicit equation avoids ambiguity among map variants and is shared with link::Classes/GbmanSonify::.
+
+The outputs are raw state coordinates. They are not normalized audio signals and may diverge for some parameters.
+
+Like link::Classes/Stepper::, GbmanMap advances on trigger edges and holds; unlike Stepper, its state is a two-coordinate nonlinear recurrence.
+
+subsection:: State-space portrait
+
+image::gbman-map-phase.png#The default Gingerbreadman orbit after its transient. x is horizontal and y is vertical; points are iterations, not a continuous trajectory.::
+
+classmethods::
+
+method:: ar
+argument:: trig
+Advance on a rising edge.
+argument:: x0
+Initial x coordinate, sampled at construction and reset.
+argument:: y0
+Initial y coordinate, sampled at construction and reset.
+argument:: reset
+Restore initial state on a rising edge.
+Returns:: Two audio-rate outputs: x and y.
+
+method:: kr
+Control-rate version with the same arguments and outputs.
+
+instancemethods::
+
+examples::
+
+code::
+(
+{ GbmanMap.ar(Impulse.ar(40))[1] * 0.02 }.play
+)
+::
+
+code::
+(
+{ Pan2.ar(Decay2.ar(Impulse.ar(8), 0.001, 0.08), GbmanMap.kr(Impulse.kr(8))[0].fold2) * 0.1 }.play
+)
+::
+
+subsection:: Real-time phase portrait
+
+code::
+(
+SDPhaseView.open(
+    "Gingerbreadman map: x-y phase portrait",
+    [-4, 8], [-4, 8],
+    { GbmanMap.kr(Impulse.kr(45)) },
+    { |state|
+        Pan2.ar(
+            SinOsc.ar(state[0].clip(-4, 8).linexp(-4, 8, 100, 1800), 0, 0.06),
+            state[1].clip(-4, 8).linlin(-4, 8, -1, 1)
+        )
+    }
+);
+)
+::
+
+subsection:: See also
+
+link::Guides/StochasticDynamicsUGens::
+link::Classes/SDPhaseView::
+link::Classes/GbmanSonify::
+link::Classes/HenonMap::

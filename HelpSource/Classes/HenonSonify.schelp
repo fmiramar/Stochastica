@@ -1,0 +1,72 @@
+class:: HenonSonify
+summary:: Explicit Hénon-map clock and level sonifier
+categories:: UGens>Generators>Chaotic
+related:: Guides/StochasticDynamicsUGens, Classes/HenonMap, Classes/GbmanSonify
+
+description::
+
+Uses the same recurrence as link::Classes/HenonMap::, but explicitly folds one selected coordinate into an iteration-frequency range and another into -1 through 1. Frequency is limited to the audio sample rate and at most one iteration occurs per sample.
+
+Interpolation 0 holds, 1 is linear, and 2 uses a zero-slope cubic Hermite segment. Unlike link::Classes/HenonMap::, this class is an audio sonifier rather than a raw mathematical-state generator.
+
+subsection:: Visualizing the internal dynamics
+
+See link::Classes/HenonMap:: for the recurrence's static portrait and exact-state live view. The sonifier does not expose its internal coordinates, so running a second map beside it would not be a synchronized visualization of the sound.
+
+classmethods::
+
+method:: ar
+argument:: minFreq
+Mapped minimum iteration frequency in hertz.
+argument:: maxFreq
+Mapped maximum iteration frequency in hertz.
+argument:: clockLo
+Lower folding bound for the clock coordinate.
+argument:: clockHi
+Upper folding bound for the clock coordinate.
+argument:: outputLo
+Lower folding bound for the level coordinate.
+argument:: outputHi
+Upper folding bound for the level coordinate.
+argument:: clockIndex
+Init-rate coordinate: 0 x, 1 y.
+argument:: outputIndex
+Init-rate coordinate: 0 x, 1 y.
+argument:: interp
+Init-rate code: 0 hold, 1 linear, 2 cubic Hermite.
+argument:: a
+Hénon quadratic coefficient.
+argument:: b
+Hénon old-x coupling coefficient.
+argument:: x0
+Initial x state.
+argument:: y0
+Initial y state.
+argument:: reset
+Restore map, phase, and interpolation state.
+argument:: mul
+Output multiplier.
+argument:: add
+Output offset.
+
+instancemethods::
+
+examples::
+
+code::
+(
+{ HenonSonify.ar * 0.08 }.play
+)
+::
+
+code::
+(
+{ HenonSonify.ar(40, 8000, interp: 1) * 0.08 }.play
+)
+::
+
+subsection:: See also
+
+link::Guides/StochasticDynamicsUGens::
+link::Classes/HenonMap::
+link::Classes/GbmanSonify::

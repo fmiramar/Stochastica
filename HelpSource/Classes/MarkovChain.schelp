@@ -1,0 +1,74 @@
+class:: MarkovChain
+summary:: Triggered finite-state Markov chain from a live transition Buffer
+categories:: UGens>Control>Markov
+related:: Guides/StochasticDynamicsUGens, Classes/SemiMarkov, Classes/MultiGaussNoise
+
+description::
+
+Samples the current row of a row-major transition-weight matrix on each rising trigger. Negative or non-finite weights become zero for sampling, rows need not sum to one, and a zero row holds state. The user's Buffer is never rewritten.
+
+This implements a standard finite-state Markov chain. Like link::Classes/Stepper::, it exposes and holds a discrete state index; unlike Stepper, the next state is sampled from live matrix weights.
+
+subsection:: Transition and state view
+
+image::markov-chain-dynamics.png#Left: a three-state row-major transition matrix, where darker cells have greater weight. Right: one sampled state sequence; horizontal runs occur because the diagonal self-transition weights are strongest.::
+
+classmethods::
+
+method:: ar
+argument:: numStates
+Init-rate state count, clipped to 1 through 256.
+argument:: trig
+Sample one transition on a rising edge.
+argument:: transitionBuf
+One-channel Buffer containing code::numStates*numStates:: row-major weights.
+argument:: valueBuf
+Optional one-channel Buffer with one value per state; negative uses the state index.
+argument:: initialState
+Rounded and clipped initial zero-based state.
+argument:: seed
+Init-rate local seed.
+argument:: reset
+Restore initial state and seed on a rising edge.
+returns:: State index and mapped value.
+
+method:: kr
+Control-rate version with the same arguments and outputs.
+
+instancemethods::
+
+examples::
+
+code::
+(
+Routine {
+    b = Buffer.loadCollection(s, [0.9, 0.1, 0.2, 0.8]);
+    s.sync;
+    x = { MarkovChain.kr(2, Impulse.kr(4), b)[0].poll }.play;
+}.play;
+)
+::
+
+code::
+(
+Routine {
+    b = Buffer.loadCollection(s, [
+        0.6, 0.3, 0.1,
+        0.2, 0.5, 0.3,
+        0.1, 0.3, 0.6
+    ]);
+    c = Buffer.loadCollection(s, [220, 330, 550]);
+    s.sync;
+    x = {
+        var freq = MarkovChain.kr(3, Impulse.kr(6), b, c)[1];
+        SinOsc.ar(freq, 0, 0.08)
+    }.play;
+}.play;
+)
+::
+
+subsection:: See also
+
+link::Guides/StochasticDynamicsUGens::
+link::Classes/SemiMarkov::
+link::Classes/MultiGaussNoise::

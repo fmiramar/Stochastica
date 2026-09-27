@@ -1,0 +1,88 @@
+name: Release
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            platform: linux
+            arch: x64
+            supernova: "ON"
+          - os: macos-13
+            platform: macos
+            arch: x64
+            supernova: "ON"
+          - os: macos-14
+            platform: macos
+            arch: arm64
+            supernova: "ON"
+          - os: windows-2022
+            platform: windows
+            arch: x64
+            supernova: "OFF"
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch SuperCollider SDK source
+        shell: bash
+        run: |
+          git clone --branch Version-3.14.1 --depth 1 \
+            --recurse-submodules --shallow-submodules \
+            https://github.com/supercollider/supercollider.git supercollider
+
+      - name: Configure
+        shell: bash
+        run: |
+          cmake -S . -B build \
+            -DSC_PATH="$GITHUB_WORKSPACE/supercollider" \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX="$GITHUB_WORKSPACE/stage/Stochastica" \
+            -DBUILD_TESTING=ON \
+            -DSTRICT=ON \
+            -DSCSYNTH=ON \
+            -DSUPERNOVA=${{ matrix.supernova }}
+
+      - name: Build
+        run: cmake --build build --config Release --parallel
+
+      - name: Stage extension
+        run: cmake --install build --config Release
+
+      - name: Zip Release
+        shell: bash
+        run: |
+          cd stage
+          zip -r Stochastica-${{ github.ref_name }}-${{ matrix.platform }}-${{ matrix.arch }}.zip Stochastica
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: package-${{ matrix.platform }}-${{ matrix.arch }}
+          path: stage/*.zip
+          if-no-files-found: error
+
+  publish:
+    needs: build
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          pattern: package-*
+          merge-multiple: true
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/*
+          fail_on_unmatched_files: true

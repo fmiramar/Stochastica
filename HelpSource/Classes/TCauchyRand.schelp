@@ -1,0 +1,57 @@
+class:: TCauchyRand
+summary:: Triggered Cauchy-distribution sampler
+categories:: UGens>Generators>Stochastic>Distributions
+related:: Guides/StochasticDynamicsUGens, Classes/TStableRand, Classes/TGaussRand
+
+description::
+
+Uses the inverse transform code::location + abs(scale)*tan(pi*(U-0.5)):: with an open uniform variate. The Cauchy distribution has no finite mean or variance.
+
+Extreme finite values are expected and may require explicit user-side limiting before direct audio use. Like link::Classes/TGaussRand::, it samples and holds on triggers; unlike it, TCauchyRand has a much heavier tail and local resettable seed.
+
+subsection:: Distribution shape
+
+image::cauchy-density.png#Centered Cauchy densities with scale = 0.5, 1, and 2, shown in muted teal, blue, and plum over a deliberately finite display interval. Larger scale lowers the center and puts more probability in the heavy tails.::
+
+classmethods::
+
+method:: ar
+argument:: location
+Center of the distribution.
+argument:: scale
+Cauchy scale; magnitude is used.
+argument:: trig
+Resample on a rising edge.
+argument:: seed
+Init-rate local seed.
+argument:: reset
+Restore the seed and sample a new initial value.
+argument:: mul
+Output multiplier.
+argument:: add
+Output offset.
+
+method:: kr
+Control-rate version with the same arguments.
+
+instancemethods::
+
+examples::
+
+code::
+(
+{ TCauchyRand.kr(0, 1, Impulse.kr(4)).poll }.play
+)
+::
+
+code::
+(
+{ SinOsc.ar(TCauchyRand.kr(500, 100, Impulse.kr(8)).clip(80, 4000), 0, 0.08) }.play
+)
+::
+
+subsection:: See also
+
+link::Guides/StochasticDynamicsUGens::
+link::Classes/TStableRand::
+link::Classes/TGaussRand::

@@ -1,0 +1,60 @@
+class:: HawkesTrig
+summary:: Self-exciting stochastic event process
+categories:: UGens>Triggers>Stochastic
+related:: Guides/StochasticDynamicsUGens, Classes/RenewalTrig, Classes/Dust
+
+description::
+
+Implements Alan Hawkes's self-exciting point-process idea in bounded discrete time. Excitation decays exponentially; each event adds more excitation, temporarily increasing subsequent event probability.
+
+code::excitation/decay:: approximates the linear-process branching ratio; values below one are normally stable. Like link::Classes/Dust::, HawkesTrig emits stochastic impulses; unlike Dust, past events influence current intensity.
+
+subsection:: Intensity and event view
+
+image::hawkes-events-intensity.png#A Hawkes realization with baseRate = 0.6, excitation = 8, and decay = 10. The teal curve is intensity and the blue ticks are events; each event raises intensity, making short clusters visibly more likely.::
+
+classmethods::
+
+method:: ar
+argument:: baseRate
+Nonnegative background events per second.
+argument:: excitation
+Nonnegative intensity added by each event.
+argument:: decay
+Nonnegative excitation decay rate per second.
+argument:: maxRate
+Nonnegative hard intensity ceiling in events per second.
+argument:: seed
+Init-rate local seed.
+argument:: reset
+Clear excitation and restore the original seed on a rising edge.
+returns:: Event trigger and pre-event intensity.
+
+method:: kr
+Control-rate version with at most one event per control block.
+
+instancemethods::
+
+examples::
+
+code::
+(
+{ Decay2.ar(HawkesTrig.ar(1, 8, 12)[0], 0.001, 0.05) * 0.1 }.play
+)
+::
+
+code::
+(
+{
+    var event = HawkesTrig.ar(0.5, 20, 25)[0];
+    BPF.ar(WhiteNoise.ar(0.2), TExpRand.ar(200, 5000, event), 0.05)
+        * Decay2.ar(event, 0.001, 0.08)
+}.play
+)
+::
+
+subsection:: See also
+
+link::Guides/StochasticDynamicsUGens::
+link::Classes/RenewalTrig::
+link::Classes/Dust::

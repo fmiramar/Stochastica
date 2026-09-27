@@ -1,0 +1,56 @@
+class:: TLogNormalRand
+summary:: Triggered lognormal-distribution sampler
+categories:: UGens>Generators>Stochastic>Distributions
+related:: Guides/StochasticDynamicsUGens, Classes/TGaussRand
+
+description::
+
+Computes code::exp(mu + abs(sigma)*normal):: using cached Box–Muller normal draws. Exponential overflow returns the largest finite float.
+
+Like link::Classes/TGaussRand::, it is driven by a normal variate; unlike TGaussRand, exponentiation produces positive skewed values and the random sequence is local and resettable.
+
+subsection:: Distribution shape
+
+image::lognormal-density.png#Lognormal densities with mu = 0 and sigma = 0.3, 0.7, and 1, shown in muted teal, blue, and plum. Increasing sigma broadens the positive distribution and lengthens its right tail.::
+
+classmethods::
+
+method:: ar
+argument:: mu
+Mean of the underlying normal distribution.
+argument:: sigma
+Underlying normal deviation; magnitude is used.
+argument:: trig
+Resample on a rising edge.
+argument:: seed
+Init-rate local seed.
+argument:: reset
+Restore the seed and sample a new initial value.
+argument:: mul
+Output multiplier.
+argument:: add
+Output offset.
+
+method:: kr
+Control-rate version with the same arguments.
+
+instancemethods::
+
+examples::
+
+code::
+(
+{ TLogNormalRand.kr(5.5, 0.5, Impulse.kr(6)).poll }.play
+)
+::
+
+code::
+(
+{ SinOsc.ar(TLogNormalRand.kr(6, 0.4, Impulse.kr(8)).clip(80, 4000), 0, 0.08) }.play
+)
+::
+
+subsection:: See also
+
+link::Guides/StochasticDynamicsUGens::
+link::Classes/TGaussRand::

@@ -1,0 +1,7 @@
+/build*/
+/stage*/
+/dist*/
+*.wav
+*.osc
+__pycache__/
+*.py[cod]

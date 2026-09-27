@@ -1,0 +1,55 @@
+class:: TPoissonRand
+summary:: Triggered Poisson count sampler
+categories:: UGens>Generators>Stochastic>Distributions
+related:: Guides/StochasticDynamicsUGens, Classes/TGeometricRand, Classes/TIRand
+
+description::
+
+Returns a nonnegative integer count represented as float. It uses Knuth's bounded product method below lambda 30 and Hörmann-style PTRS transformed rejection above it, with a rounded finite fallback after 64 attempts.
+
+Like link::Classes/TIRand::, it produces discrete triggered values; unlike TIRand's uniform interval, TPoissonRand follows a Poisson count law with equal mean and variance.
+
+subsection:: Probability mass
+
+image::poisson-mass.png#Poisson mass functions for lambda = 1, 4, and 10, shown in muted teal, blue, and plum. The support is discrete; increasing lambda moves the center rightward and widens it by the square root of lambda.::
+
+classmethods::
+
+method:: ar
+argument:: lambda
+Nonnegative Poisson mean. Negative or non-finite values become zero.
+argument:: trig
+Resample on a rising edge.
+argument:: seed
+Init-rate local seed.
+argument:: reset
+Restore the seed and sample a new initial count.
+argument:: mul
+Output multiplier.
+argument:: add
+Output offset.
+
+method:: kr
+Control-rate version with the same arguments.
+
+instancemethods::
+
+examples::
+
+code::
+(
+{ TPoissonRand.kr(4, Impulse.kr(5)).poll }.play
+)
+::
+
+code::
+(
+{ SinOsc.ar((TPoissonRand.kr(5, Impulse.kr(8)) + 1) * 120, 0, 0.08) }.play
+)
+::
+
+subsection:: See also
+
+link::Guides/StochasticDynamicsUGens::
+link::Classes/TGeometricRand::
+link::Classes/TIRand::

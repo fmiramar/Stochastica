@@ -1,0 +1,81 @@
+class:: LatoocarfianMap
+summary:: Trigger-driven raw Latoocarfian map coordinates
+categories:: UGens>Generators>Chaotic>Maps
+related:: Guides/StochasticDynamicsUGens, Classes/LatoocarfianSonify, Classes/CliffordMap
+
+description::
+
+Uses the documented recurrence code::x' = sin(b*y) + c*sin(b*x):: and code::y' = sin(a*x) + d*sin(a*y)::. Latoocarfian variants circulate; this project uses this equation consistently in server code, tests, and the sonifier.
+
+The outputs are raw state coordinates. They are not normalized audio signals and may diverge for some parameters.
+
+Like link::Classes/Stepper::, it advances once per trigger edge; unlike Stepper, it maintains two coupled trigonometric state coordinates.
+
+subsection:: State-space portrait
+
+image::latoocarfian-map-phase.png#A Latoocarfian attractor at the documented defaults. x is horizontal and y is vertical; point density reveals how often the orbit visits each region.::
+
+classmethods::
+
+method:: ar
+argument:: trig
+Advance on a rising edge.
+argument:: a
+Frequency coefficient used in the y equation.
+argument:: b
+Frequency coefficient used in the x equation.
+argument:: c
+Second sine weight in the x equation.
+argument:: d
+Second sine weight in the y equation.
+argument:: x0
+Initial x coordinate.
+argument:: y0
+Initial y coordinate.
+argument:: reset
+Restore supplied initial coordinates on a rising edge.
+Returns:: Two audio-rate outputs: x and y.
+
+method:: kr
+Control-rate version with the same arguments and outputs.
+
+instancemethods::
+
+examples::
+
+code::
+(
+{ LatoocarfianMap.ar(Impulse.ar(600))[1] * 0.1 }.play
+)
+::
+
+code::
+(
+{ VarSaw.ar(LatoocarfianMap.kr(Impulse.kr(20))[0].linexp(-1.5, 1.5, 60, 3000), 0, 0.2, 0.08) }.play
+)
+::
+
+subsection:: Real-time phase portrait
+
+code::
+(
+SDPhaseView.open(
+    "Latoocarfian map: x-y phase portrait",
+    [-1.6, 1.6], [-1.6, 1.6],
+    { LatoocarfianMap.kr(Impulse.kr(120)) },
+    { |state|
+        Pan2.ar(
+            SinOsc.ar(state[0].clip(-1.6, 1.6).linexp(-1.6, 1.6, 100, 1800), 0, 0.06),
+            state[1].clip(-1.6, 1.6).linlin(-1.6, 1.6, -1, 1)
+        )
+    }
+);
+)
+::
+
+subsection:: See also
+
+link::Guides/StochasticDynamicsUGens::
+link::Classes/SDPhaseView::
+link::Classes/LatoocarfianSonify::
+link::Classes/CliffordMap::
