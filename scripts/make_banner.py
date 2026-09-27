@@ -13,24 +13,25 @@ def rulkov_map(alpha=4.1, mu=0.001, sigma=-1.2, x0=0.0, y0=-2.9, steps=80000):
 
 x, y = rulkov_map(steps=150000)
 
-# Create a figure with a banner aspect ratio (e.g. 16:6)
 fig, ax = plt.subplots(figsize=(16, 6), facecolor='#ffffff')
 ax.set_facecolor('#f8f9fa')
 
-# Make the dots more visible
 ax.scatter(x, y, s=1.5, c='#0366d6', alpha=0.6, edgecolors='none')
 
-# Grid more visible
 ax.grid(True, color='#d1d5da', linestyle='-', linewidth=1.0)
 ax.set_axisbelow(True)
 
-# Remove spines but keep grid and ticks slightly visible or remove ticks
 ax.spines['top'].set_visible(False)
 ax.spines['right'].set_visible(False)
 ax.spines['left'].set_color('#d1d5da')
 ax.spines['bottom'].set_color('#d1d5da')
 ax.tick_params(colors='#586069')
 
+# Add "Stochastica" text in the center
+ax.text(0.5, 0.5, 'Stochastica', transform=ax.transAxes,
+        fontsize=90, fontfamily='monospace', fontweight='bold',
+        ha='center', va='center', color='#24292e',
+        bbox=dict(facecolor='#ffffff', alpha=0.75, edgecolor='none', pad=15, boxstyle='round,pad=0.2'))
+
 plt.tight_layout()
 plt.savefig('../docs/assets/rulkov_banner.png', dpi=150, bbox_inches='tight')
-print("Banner saved to docs/assets/rulkov_banner.png")
