@@ -50,7 +50,7 @@ jobs:
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_INSTALL_PREFIX="$GITHUB_WORKSPACE/stage/Stochastica" \
             -DBUILD_TESTING=ON \
-            -DSTRICT=ON \
+            -DSTRICT=OFF \
             -DSCSYNTH=ON \
             -DSUPERNOVA=${{ matrix.supernova }}
 

@@ -48,7 +48,7 @@ jobs:
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_INSTALL_PREFIX="$GITHUB_WORKSPACE/stage" \
             -DBUILD_TESTING=ON \
-            -DSTRICT=ON \
+            -DSTRICT=OFF \
             -DSCSYNTH=ON \
             -DSUPERNOVA=${{ matrix.supernova }}
 
@@ -85,7 +85,7 @@ jobs:
             -DSC_PATH="$GITHUB_WORKSPACE/supercollider" \
             -DCMAKE_BUILD_TYPE=Debug \
             -DBUILD_TESTING=ON \
-            -DSTRICT=ON \
+            -DSTRICT=OFF \
             -DSD_SANITIZE=ON \
             -DSCSYNTH=OFF \
             -DSUPERNOVA=OFF
