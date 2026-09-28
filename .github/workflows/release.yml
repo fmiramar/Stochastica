@@ -38,9 +38,9 @@ jobs:
       - name: Fetch SuperCollider SDK source
         shell: bash
         run: |
-          git clone --branch Version-3.14.1 --depth 1 \
-            --recurse-submodules --shallow-submodules \
-            https://github.com/supercollider/supercollider.git supercollider
+          git clone --branch Version-3.14.1 --depth 1 https://github.com/supercollider/supercollider.git supercollider
+          cd supercollider
+          git submodule update --init --recursive
 
       - name: Configure
         shell: bash
