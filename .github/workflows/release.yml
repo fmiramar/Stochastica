@@ -64,7 +64,11 @@ jobs:
         shell: bash
         run: |
           cd stage
-          zip -r Stochastica-${{ github.ref_name }}-${{ matrix.platform }}-${{ matrix.arch }}.zip Stochastica
+          if command -v zip &> /dev/null; then
+            zip -r Stochastica-${{ github.ref_name }}-${{ matrix.platform }}-${{ matrix.arch }}.zip Stochastica
+          else
+            7z a -r Stochastica-${{ github.ref_name }}-${{ matrix.platform }}-${{ matrix.arch }}.zip Stochastica
+          fi
 
       - uses: actions/upload-artifact@v4
         with:
