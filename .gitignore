@@ -1,6 +1,6 @@
 /build*/
 /stage*/
-/dist*/
+/dist/
 *.wav
 *.osc
 __pycache__/
