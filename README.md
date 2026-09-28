@@ -2,9 +2,17 @@
 
 # Stochastica
 
-Stochastica is a SuperCollider suite of chaotic and dynamic UGens for raw discrete maps, continuous dynamical systems, stochastic and event processes, triggered probability distributions, state processes, correlated noise, and explicit map sonification.
+Stochastica is a suite of chaotic and unpredictable SuperCollider plugins (UGens) designed for generative music, glitch, and organic sound design. Built as a companion to SuperCollider's classic noise generators, it provides advanced mathematical tools for sequencing rhythms, modulating parameters, and generating raw audio.
 
-It is an experimental adaptation rather than a legacy-class replacement: no existing BhobChaos, BhobNoise, ChaosUGens, MCLDChaos, NoiseRing, Gendy, Brownian, Gaussian, or demand-rate source is modified.
+Rather than offering "black box" synthesizers, Stochastica breaks complex mathematics down into modular categories that you can patch together however you like:
+
+* **Discrete Maps (Chaotic Sequencers):** Plugins like *HenonMap* and *RulkovMap* calculate the next step in a complex mathematical formula. They act like erratic, non-repeating step sequencers—perfect for generating wild melodies or harsh, irregular rhythms.
+* **Continuous Flows (Physical Modulators):** Plugins like *Chua* and *Izhikevich* simulate physical systems, such as chaotic analog circuits or biological neurons. Because they flow continuously over time, they act like deeply organic, unpredictable LFOs.
+* **Probability Distributions (Shaped Randomness):** Triggered random number generators (like *TCauchyRand* or *TWeibullRand*) that follow specific statistical curves. Instead of pure white noise, these let you dial in exact random behaviors—from tightly clustered values to massive, violent outliers and glitches.
+* **Stochastic & Event Processes (Organic Triggers):** Systems with internal memory. This includes *OUProcess* (which wanders randomly but safely drifts back to a center point) and *HawkesTrig* (which generates triggers that arrive in biological swarms and bursts rather than on a rigid grid).
+* **State Processes (Generative Routing):** UGens like *SemiMarkov* let you build complex probabilistic state machines, randomly jumping between different musical textures or chord degrees based on rules you define.
+
+By keeping the math pure and leaving the creative routing up to you, Stochastica allows you to use a simulated biological neuron to sweep a filter, a statistical swarm to trigger a drum kit, or a chaotic map as raw audio distortion.
 
 ## Design
 
