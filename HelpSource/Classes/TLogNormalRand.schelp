@@ -1,9 +1,11 @@
 class:: TLogNormalRand
 summary:: Triggered lognormal-distribution sampler
 categories:: UGens>Generators>Stochastic>Distributions
-related:: Guides/StochasticDynamicsUGens, Classes/TGaussRand
+related:: Guides/Stochastica, Classes/TGaussRand
 
 description::
+
+The Lognormal distribution describes a variable whose logarithm is normally distributed. Mathematically, this produces a strictly positive, right-skewed probability curve. Because human perception of pitch and loudness is inherently logarithmic, this distribution is conceptually ideal for generating random frequencies, random grain sizes in granular synthesis, or amplitude variations, ensuring that the randomized values map cleanly and naturally to human psychoacoustics.
 
 Computes code::exp(mu + abs(sigma)*normal):: using cached Box–Muller normal draws. Exponential overflow returns the largest finite float.
 
@@ -50,7 +52,17 @@ code::
 )
 ::
 
-subsection:: See also
-
-link::Guides/StochasticDynamicsUGens::
-link::Classes/TGaussRand::
+code::
+// Psychoacoustic Frequency Generation
+(
+{
+    var trig, freq, sig;
+    trig = Impulse.kr(8);
+    // Since human pitch perception is logarithmic, a lognormal distribution 
+    // creates frequency jumps that sound naturally distributed to our ears.
+    freq = TLogNormalRand.kr(mu: 6.0, sigma: 0.5, trig: trig);
+    sig = Pulse.ar(freq) * EnvGen.kr(Env.perc(0.01, 0.1), trig);
+    Pan2.ar(sig * 0.1)
+}.play;
+)
+::

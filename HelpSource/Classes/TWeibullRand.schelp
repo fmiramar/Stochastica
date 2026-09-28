@@ -1,9 +1,11 @@
 class:: TWeibullRand
 summary:: Triggered Weibull-distribution sampler
 categories:: UGens>Generators>Stochastic>Distributions
-related:: Guides/StochasticDynamicsUGens, Classes/TGammaRand, Classes/TExpRand
+related:: Guides/Stochastica, Classes/TGammaRand, Classes/TExpRand
 
 description::
+
+Originally developed in reliability engineering, the Weibull distribution models the lifespan of objects (such as the time until a machine part fails). Mathematically, its shape parameter can interpolate between distributions where events cluster tightly or spread out with a heavy tail. Conceptually, this makes it highly useful for simulating natural failure rates, particle lifetimes in granular synthesis, or organic, evolving durations that need to skew heavily toward specific lengths.
 
 Uses the open-uniform inverse transform code::scale*(-log(U)).pow(1/shape)::. Parameters retain the standard Weibull meaning and invalid values return zero.
 
@@ -50,8 +52,16 @@ code::
 )
 ::
 
-subsection:: See also
-
-link::Guides/StochasticDynamicsUGens::
-link::Classes/TGammaRand::
-link::Classes/TExpRand::
+code::
+// Granular Particle Lifetimes
+(
+{
+    var trig, dur, sig;
+    trig = Dust.kr(20);
+    // Models failure rates—perfect for simulating organic, heavy-tailed grain durations
+    dur = TWeibullRand.kr(shape: 1.5, scale: 0.05, trig: trig);
+    sig = SinOsc.ar(TExpRand.kr(400, 1200, trig)) * EnvGen.kr(Env.perc(0.01, dur), trig);
+    Pan2.ar(sig * 0.1)
+}.play;
+)
+::

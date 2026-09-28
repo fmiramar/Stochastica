@@ -1,9 +1,11 @@
 class:: LatoocarfianSonify
 summary:: Explicit Latoocarfian-map clock and level sonifier
 categories:: UGens>Generators>Chaotic
-related:: Guides/StochasticDynamicsUGens, Classes/LatoocarfianMap, Classes/HenonSonify
+related:: Guides/Stochastica, Classes/LatoocarfianMap, Classes/HenonSonify
 
 description::
+
+Wrapping the trigonometric Latoocarfian map, this explicit sonifier evaluates the chaotic sine-based recurrence at the audio sample rate. The natural oscillation of the underlying equations behaves somewhat like chaotic, self-modulating FM synthesis when pushed into the audio domain. This provides an instantly usable, rich chaotic oscillator bursting with complex, shifting harmonics and inharmonic metallic overtones.
 
 Uses link::Classes/LatoocarfianMap::'s documented recurrence, explicitly folding selected coordinates into iteration frequency and bipolar level. Frequency is bounded and at most one iteration occurs per sample.
 
@@ -69,8 +71,15 @@ code::
 )
 ::
 
-subsection:: See also
-
-link::Guides/StochasticDynamicsUGens::
-link::Classes/LatoocarfianMap::
-link::Classes/HenonSonify::
+code::
+// Chaotic Trigonometric Bell
+(
+{
+    var env, sig;
+    // Interlocking sines fold into complex inharmonic overtones
+    env = EnvGen.kr(Env.perc(0.01, 1.0), doneAction: 2);
+    sig = LatoocarfianSonify.ar(300 * env + 100);
+    Pan2.ar(LeakDC.ar(sig) * env * 0.2)
+}.play;
+)
+::

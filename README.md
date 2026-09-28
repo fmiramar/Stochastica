@@ -1,4 +1,4 @@
-![Stochastica Banner](docs/assets/rulkov_banner.png)
+![Stochastica Banner](docs/assets/stochastica_banner.png)
 
 # Stochastica
 

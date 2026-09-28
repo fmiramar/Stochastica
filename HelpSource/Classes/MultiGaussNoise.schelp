@@ -1,9 +1,11 @@
 class:: MultiGaussNoise
 summary:: Triggered vector of correlated Gaussian values
 categories:: UGens>Generators>Stochastic>Processes
-related:: Guides/StochasticDynamicsUGens, Classes/MarkovChain, Classes/TGaussRand
+related:: Guides/Stochastica, Classes/MarkovChain, Classes/TGaussRand
 
 description::
+
+Multivariate Gaussian Noise generates multiple, simultaneous channels of random variables that are mathematically correlated according to a covariance matrix. Conceptually, this means you can generate an array of independent random control signals that still follow a shared underlying trend or relationship. This is exceptionally powerful for cohesive ensemble modulation—such as detuning multiple voices in a synth pad—where the voices wander individually but still respond dynamically to each other's overall movement.
 
 Reads a row-major covariance matrix, symmetrizes it, and computes a Cholesky factor at construction, reset, or reload. A trigger multiplies independent normal draws by the factor and adds the optional mean vector.
 
@@ -66,8 +68,16 @@ Routine {
 )
 ::
 
-subsection:: See also
-
-link::Guides/StochasticDynamicsUGens::
-link::Classes/MarkovChain::
-link::Classes/TGaussRand::
+code::
+// Cohesive Ensemble Detuning
+(
+{
+    var noise, freqs, sig;
+    // 4 simultaneous noise channels that wander randomly but share a correlated trend
+    noise = MultiGaussNoise.kr(4);
+    freqs = 200 + (noise * 5);
+    sig = Splay.ar(Saw.ar(freqs));
+    RLPF.ar(sig, 1500, 0.2) * 0.2
+}.play;
+)
+::

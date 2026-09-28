@@ -1,9 +1,11 @@
 class:: FBrownianMotion
 summary:: Finite-memory control-rate fractional Brownian approximation
 categories:: UGens>Generators>Stochastic>Processes
-related:: Guides/StochasticDynamicsUGens, Classes/FractionalNoise, Classes/OUProcess
+related:: Guides/Stochastica, Classes/FractionalNoise, Classes/OUProcess
 
 description::
+
+Fractional Brownian Motion (fBm) generalizes standard Brownian motion by introducing a Hurst exponent, which mathematically defines the autocorrelation of the random steps. Conceptually, this determines the roughness or smoothness of the path. A high Hurst exponent produces persistent, smooth, rolling macro-modulations, while a low exponent produces anti-persistent, jagged, jittery noise. This makes it an incredibly versatile stochastic generator for everything from slow tectonic parameter shifts to erratic, textured noise.
 
 Builds fractional Gaussian-like increments with a finite ARFIMA-style coefficient sequence and integrates them at control rate. Hurst values below 0.5 are anti-persistent, 0.5 is Brownian-like, and values above 0.5 are persistent.
 
@@ -46,8 +48,16 @@ code::
 )
 ::
 
-subsection:: See also
-
-link::Guides/StochasticDynamicsUGens::
-link::Classes/FractionalNoise::
-link::Classes/BrownNoise::
+code::
+// Tectonic Macro-Modulation
+(
+{
+    var hurst, walk, freq;
+    // Adjust the Hurst exponent to move from jittery noise to smooth, rolling landscapes
+    hurst = MouseX.kr(0.1, 0.9);
+    walk = FBrownianMotion.kr(hurst: hurst);
+    freq = walk.linexp(-2, 2, 100, 1000);
+    Pan2.ar(SinOsc.ar(freq) * 0.2)
+}.play;
+)
+::

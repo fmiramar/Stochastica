@@ -1,9 +1,11 @@
 class:: TPoissonRand
 summary:: Triggered Poisson count sampler
 categories:: UGens>Generators>Stochastic>Distributions
-related:: Guides/StochasticDynamicsUGens, Classes/TGeometricRand, Classes/TIRand
+related:: Guides/Stochastica, Classes/TGeometricRand, Classes/TIRand
 
 description::
+
+The Poisson distribution is a fundamental discrete probability distribution that models the number of independent events occurring within a fixed interval of time or space. Mathematically, it outputs integer values (0, 1, 2, 3...) and is inherently tied to phenomena like radioactive decay. Conceptually, this makes it perfect for algorithmic counting models, discrete step sequencing, or determining how many micro-events or grains should be fired in a given generative cycle.
 
 Returns a nonnegative integer count represented as float. It uses Knuth's bounded product method below lambda 30 and Hörmann-style PTRS transformed rejection above it, with a rounded finite fallback after 64 attempts.
 
@@ -48,8 +50,17 @@ code::
 )
 ::
 
-subsection:: See also
-
-link::Guides/StochasticDynamicsUGens::
-link::Classes/TGeometricRand::
-link::Classes/TIRand::
+code::
+// Radioactive Event Counting
+(
+{
+    var trig, count, freq, sig;
+    trig = Impulse.kr(2);
+    // Outputs integer counts of independent events over a time interval
+    count = TPoissonRand.kr(lambda: 4.0, trig: trig);
+    freq = (count * 100) + 200;
+    sig = SinOsc.ar(freq) * EnvGen.kr(Env.perc(0.01, 0.2), trig);
+    Pan2.ar(sig * 0.2)
+}.play;
+)
+::

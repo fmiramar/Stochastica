@@ -1,9 +1,11 @@
 class:: TGeometricRand
 summary:: Triggered geometric failures-before-success sampler
 categories:: UGens>Generators>Stochastic>Distributions
-related:: Guides/StochasticDynamicsUGens, Classes/TPoissonRand, Classes/TIRand
+related:: Guides/Stochastica, Classes/TPoissonRand, Classes/TIRand
 
 description::
+
+The Geometric distribution models the number of consecutive failures before achieving a first success in a sequence of independent trials (like counting how many times you flip a coin before landing heads). Mathematically, it strictly outputs integers and heavily skews toward zero. Conceptually, it is highly useful for generative rhythmic systems where you want to wait a random, integer number of steps or clock ticks before firing an event or changing a chord.
 
 Returns the number of failures before the first success using an inverse logarithmic transform. Probability at or above one returns zero; probability at or below zero returns the largest exactly representable integer float.
 
@@ -48,8 +50,17 @@ code::
 )
 ::
 
-subsection:: See also
-
-link::Guides/StochasticDynamicsUGens::
-link::Classes/TPoissonRand::
-link::Classes/TIRand::
+code::
+// Generative Waiting Rhythms
+(
+{
+    var trig, stepsToWait, mask;
+    trig = Impulse.kr(8);
+    // Generates the integer number of failures before a success (coin flips)
+    stepsToWait = TGeometricRand.kr(probability: 0.2, trig: trig);
+    // Boolean UGen masks the output
+    mask = stepsToWait < 1;
+    Pan2.ar(WhiteNoise.ar * EnvGen.kr(Env.perc(0.01, 0.1), trig) * mask)
+}.play;
+)
+::

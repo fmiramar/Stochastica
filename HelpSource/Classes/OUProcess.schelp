@@ -1,9 +1,11 @@
 class:: OUProcess
 summary:: Exact finite-step Ornstein–Uhlenbeck process
 categories:: UGens>Generators>Stochastic>Processes
-related:: Guides/StochasticDynamicsUGens, Classes/BrownNoise, Classes/FBrownianMotion
+related:: Guides/Stochastica, Classes/BrownNoise, Classes/FBrownianMotion
 
 description::
+
+The Ornstein-Uhlenbeck process is a continuous-time stochastic process that modifies a standard random walk (Brownian motion) by adding a mean-reverting drift. Mathematically, the further the value drifts from the center, the stronger the rubber band pulls it back. Conceptually, this creates a perfectly smoothed, bounded, and continuous random signal. It acts as an ideal natural drift modulator for pitch (analogous to tape wow and flutter) or filter cutoffs, ensuring the value wanders organically without ever drifting infinitely out of range.
 
 Generates the mean-reverting diffusion described by Ornstein and Uhlenbeck. Positive reversion uses the exact finite-time Gaussian transition; zero or negative reversion uses the Brownian limit.
 
@@ -57,8 +59,30 @@ code::
 )
 ::
 
-subsection:: See also
+code::
+// Analog Tape Wow and Flutter
+(
+{
+    var drift, freq, sig;
+    // The mean-reverting drift of OU Process acts as a perfectly bounded random LFO
+    drift = OUProcess.kr(reversion: 1.0, diffusion: 0.5);
+    freq = 440 + (drift * 10);
+    sig = Saw.ar(freq);
+    Pan2.ar(RLPF.ar(sig, 2000, 0.3) * 0.2)
+}.play;
+)
+::
 
-link::Guides/StochasticDynamicsUGens::
-link::Classes/BrownNoise::
-link::Classes/FBrownianMotion::
+code::
+// Generative Drone Pitch Drifting
+(
+{
+    var drift, freqs, sig;
+    // Array of 4 OU processes, each wandering independently but always returning home
+    drift = OUProcess.kr(reversion: 0.8, diffusion: 0.5 ! 4);
+    freqs = [60, 64, 67, 71].midicps + (drift * 5); // Microtonal pitch bend
+    sig = Splay.ar(Pulse.ar(freqs, LFNoise2.kr(0.2 ! 4).range(0.1, 0.5)));
+    RLPF.ar(sig, 1200, 0.2) * 0.2
+}.play;
+)
+::

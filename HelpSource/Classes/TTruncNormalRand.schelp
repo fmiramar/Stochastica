@@ -1,9 +1,11 @@
 class:: TTruncNormalRand
 summary:: Triggered true truncated-normal sampler
 categories:: UGens>Generators>Stochastic>Distributions
-related:: Guides/StochasticDynamicsUGens, Classes/TGaussRand
+related:: Guides/Stochastica, Classes/TGaussRand
 
 description::
+
+The Truncated Normal distribution generates values according to a standard Gaussian bell curve, but strictly rejects any values that fall outside specified minimum and maximum bounds. Conceptually, this provides the natural, clustered randomness of standard white or Gaussian noise while guaranteeing the output is absolutely safe for bounded parameter modulation. It allows for natural randomization of sensitive DSP parameters (like filter resonance or delay feedback) without risking mathematical blowups.
 
 Samples a normal distribution conditioned on code::lo <= x <= hi:: by mapping an open uniform variate through the truncated CDF interval and Acklam's inverse-normal approximation. It does not fold or clip an ordinary normal draw.
 
@@ -54,7 +56,16 @@ code::
 )
 ::
 
-subsection:: See also
-
-link::Guides/StochasticDynamicsUGens::
-link::Classes/TGaussRand::
+code::
+// Safe Bounded Parameter Modulation
+(
+{
+    var trig, cutoff, sig;
+    trig = Impulse.kr(12);
+    // A true bell curve, but strictly clamped to avoid blowing up the resonant filter
+    cutoff = TTruncNormalRand.kr(mean: 1000, deviation: 500, lo: 200, hi: 3000, trig: trig);
+    sig = RLPF.ar(WhiteNoise.ar, cutoff, 0.05);
+    Pan2.ar(LeakDC.ar(sig * EnvGen.kr(Env.perc(0.01, 0.1), trig) * 0.5))
+}.play;
+)
+::

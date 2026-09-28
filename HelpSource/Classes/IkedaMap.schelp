@@ -1,9 +1,11 @@
 class:: IkedaMap
 summary:: Trigger-driven raw Ikeda map coordinates
 categories:: UGens>Generators>Chaotic>Maps
-related:: Guides/StochasticDynamicsUGens, Classes/HenonMap
+related:: Guides/Stochastica, Classes/HenonMap
 
 description::
+
+Originally formulated to describe the transmission of light across a non-linear optical resonator, the Ikeda map applies a complex spiral transformation. Mathematically, it introduces a phase shift proportional to the current magnitude, meaning larger values rotate more aggressively, creating spiraling, hurricane-like orbits. In a musical context, this system naturally produces swirling, cyclical behaviors that drift in and out of phase, making it perfect for driving spatialization (like panning or ambisonics), phasers, or any parameter benefiting from complex, orbit-like modulation.
 
 Implements Kensuke Ikeda's optical ring-cavity map. It computes code::t = 0.4 - 6/(1+x*x+y*y)::, then rotates and contracts the old coordinate by code::u:: before adding one to x.
 
@@ -49,6 +51,26 @@ code::
 )
 ::
 
+code::
+// Swirling Optical Orbits
+(
+{
+    var trig, coords, freq, sig, env;
+    trig = Impulse.kr(10);
+    coords = IkedaMap.kr(trig, u: 0.9);
+    // Map the spiraling attractor to stereo spatialization and phase modulation
+    freq = 400 + (coords[0] * 200);
+    sig = SinOsc.ar(freq, coords[1] * pi);
+    env = EnvGen.kr(Env.perc(0.05, 0.2), trig);
+    // Swirling panning
+    Pan2.ar(sig * env * 0.3, coords[0].clip(-1, 1))
+}.play;
+)
+::
+
+
+
+
 subsection:: Real-time phase portrait
 
 code::
@@ -66,9 +88,3 @@ SDPhaseView.open(
 );
 )
 ::
-
-subsection:: See also
-
-link::Guides/StochasticDynamicsUGens::
-link::Classes/SDPhaseView::
-link::Classes/HenonMap::

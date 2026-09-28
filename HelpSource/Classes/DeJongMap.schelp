@@ -1,9 +1,11 @@
 class:: DeJongMap
 summary:: Trigger-driven raw Peter de Jong map coordinates
 categories:: UGens>Generators>Chaotic>Maps
-related:: Guides/StochasticDynamicsUGens, Classes/CliffordMap
+related:: Guides/Stochastica, Classes/CliffordMap
 
 description::
+
+Peter de Jong maps operate similarly to Clifford attractors, using a system of sine and cosine functions. However, their specific coupling creates tightly folded, continuous curves that rapidly swoop and wrap around themselves. Conceptually, this generates LFO-like signals that are extremely sensitive to initial parameters. A slight change in parameters entirely morphs the shape of the modulation, allowing for highly interactive, fluid, and chaotic performance control signals.
 
 Implements Peter de Jong's recurrence code::x' = sin(a*y) - cos(b*x):: and code::y' = sin(c*x) - cos(d*y)::. The exact equation is stated because related attractor formulas have several naming conventions.
 
@@ -55,6 +57,24 @@ code::
 )
 ::
 
+code::
+// Chaotic Flanger Modulation
+(
+{
+    var trig, coords, source, delay;
+    trig = Impulse.kr(30);
+    coords = DeJongMap.kr(trig);
+    source = Saw.ar([150, 151]) * 0.1;
+    // Folded trigonometric swoops mapped to extremely sensitive delay times
+    delay = coords[0].linlin(-2, 2, 0.001, 0.02);
+    CombL.ar(source, 0.1, delay, 0.5)
+}.play;
+)
+::
+
+
+
+
 subsection:: Real-time phase portrait
 
 code::
@@ -72,9 +92,3 @@ SDPhaseView.open(
 );
 )
 ::
-
-subsection:: See also
-
-link::Guides/StochasticDynamicsUGens::
-link::Classes/SDPhaseView::
-link::Classes/CliffordMap::

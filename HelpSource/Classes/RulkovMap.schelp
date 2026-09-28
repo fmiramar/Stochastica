@@ -1,9 +1,11 @@
 class:: RulkovMap
 summary:: Raw two-state Rulkov discrete neuron map
 categories:: UGens>Generators>Chaotic>Maps
-related:: Guides/StochasticDynamicsUGens, Classes/Izhikevich
+related:: Guides/Stochastica, Classes/Izhikevich
 
 description::
+
+The Rulkov map is a two-dimensional discrete-time model specifically designed to replicate the spiking and bursting behavior of biological neurons. Mathematically, it operates on a fast-slow timescale: a fast variable simulates the actual action potential (the spike), while a slow variable guides the neuron between resting and active states. Conceptually, this naturally outputs periods of absolute silence followed by rapid bursts of oscillation. It is exceptional for generating organic, bursty rhythms, chirping effects, or algorithmic, neural-like event cascades.
 
 Implements Nikolai Rulkov's discrete neuron recurrence code::x' = alpha/(1+x*x) + y:: and code::y' = y - mu*(x-sigma)::. Suitable parameters produce quiescence, spikes, or bursts without an added threshold output.
 
@@ -53,6 +55,26 @@ code::
 )
 ::
 
+code::
+// Algorithmic Neural Bursting
+(
+{
+    var trig, coords, spike, freq, sig;
+    trig = Impulse.kr(60);
+    // Simulates the fast-slow spiking timeline of a biological neuron
+    coords = RulkovMap.kr(trig, alpha: 7.1);
+    spike = (coords[0] > -1.0); // Detect the spike threshold
+    freq = coords[1].linexp(-3, -1, 400, 4000);
+    // K2A converts the control-rate boolean into an audio-rate step exciter
+    sig = Ringz.ar(K2A.ar(spike), freq, 0.05);
+    Pan2.ar(sig * 0.1, coords[0].clip(-1, 1))
+}.play;
+)
+::
+
+
+
+
 subsection:: Real-time fast-slow portrait
 
 code::
@@ -71,9 +93,3 @@ SDPhaseView.open(
 );
 )
 ::
-
-subsection:: See also
-
-link::Guides/StochasticDynamicsUGens::
-link::Classes/SDPhaseView::
-link::Classes/Izhikevich::

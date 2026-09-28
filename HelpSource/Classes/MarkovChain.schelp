@@ -1,9 +1,11 @@
 class:: MarkovChain
 summary:: Triggered finite-state Markov chain from a live transition Buffer
 categories:: UGens>Control>Markov
-related:: Guides/StochasticDynamicsUGens, Classes/SemiMarkov, Classes/MultiGaussNoise
+related:: Guides/Stochastica, Classes/SemiMarkov, Classes/MultiGaussNoise
 
 description::
+
+A Markov Chain is a fundamental stochastic model for state transitions. Mathematically, it moves through a finite set of discrete states where the probability of moving to any next state depends solely on the current state, dictated by a transition matrix. It has no memory of the distant past. Conceptually, this is the ultimate structural tool for generative sequencing and algorithmic composition, allowing you to explicitly design the harmonic or rhythmic tendencies of a sequence (e.g., specifying that a C major chord has a 70% chance to resolve to G).
 
 Samples the current row of a row-major transition-weight matrix on each rising trigger. Negative or non-finite weights become zero for sampling, rows need not sum to one, and a zero row holds state. The user's Buffer is never rewritten.
 
@@ -67,8 +69,32 @@ Routine {
 )
 ::
 
-subsection:: See also
-
-link::Guides/StochasticDynamicsUGens::
-link::Classes/SemiMarkov::
-link::Classes/MultiGaussNoise::
+code::
+// Generative Algorithmic Chord Changes
+(
+Routine {
+    var matrix;
+    matrix = Buffer.loadCollection(s, [
+        0.1, 0.7, 0.1, 0.1,
+        0.1, 0.1, 0.7, 0.1,
+        0.1, 0.1, 0.1, 0.7,
+        0.7, 0.1, 0.1, 0.1
+    ]);
+    s.sync;
+    {
+        var trig, state, freqs, sig;
+        trig = Impulse.kr(2);
+        // Correct signature: numStates, trig, transitionBuf
+        state = MarkovChain.kr(4, trig, matrix)[0];
+        freqs = Select.kr(state, [
+            [60, 64, 67], // C Major
+            [65, 69, 72], // F Major
+            [67, 71, 74], // G Major
+            [57, 60, 64]  // A Minor
+        ]).midicps;
+        sig = Splay.ar(Saw.ar(freqs)) * EnvGen.kr(Env.perc(0.1, 0.4), trig);
+        sig * 0.2
+    }.play;
+}.play;
+)
+::

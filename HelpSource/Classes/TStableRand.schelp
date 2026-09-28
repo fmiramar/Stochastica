@@ -1,9 +1,11 @@
 class:: TStableRand
 summary:: Triggered alpha-stable sampler in Nolan S0 parameterization
 categories:: UGens>Generators>Stochastic>Distributions
-related:: Guides/StochasticDynamicsUGens, Classes/TCauchyRand, Classes/TGaussRand
+related:: Guides/Stochastica, Classes/TCauchyRand, Classes/TGaussRand
 
 description::
+
+The Stable distribution family represents a generalized mathematical framework that encapsulates Gaussian, Cauchy, and Lévy distributions. Mathematically, manipulating its stability and skewness parameters allows you to control the thickness of the distribution's tails, up to the point of infinite variance. Conceptually, it is the ultimate heavy-tailed stochastic generator, offering a continuum from smooth clustering to violent, unpredictable macroscopic jumps, ideal for erratic sound design and glitch synthesis.
 
 Samples Nolan's S0 alpha-stable parameterization with the Chambers–Mallows–Stuck construction and a separate alpha-one form. Parameterizations are not interchangeable: this class is specifically S0.
 
@@ -56,8 +58,16 @@ code::
 )
 ::
 
-subsection:: See also
-
-link::Guides/StochasticDynamicsUGens::
-link::Classes/TCauchyRand::
-link::Classes/TGaussRand::
+code::
+// Extreme Heavy-Tailed Glitches
+(
+{
+    var trig, freq, sig;
+    trig = Impulse.kr(8);
+    // Tuning alpha handles the continuum from smooth Gaussian clustering to wild Cauchy jumps
+    freq = TStableRand.kr(alpha: 1.2, beta: 0, scale: 20, location: 400, trig: trig).clip(50, 4000);
+    sig = Formant.ar(freq, freq*2, freq*3) * EnvGen.kr(Env.perc(0.01, 0.1), trig);
+    Pan2.ar(sig * 0.1)
+}.play;
+)
+::

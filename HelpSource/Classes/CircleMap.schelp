@@ -1,9 +1,11 @@
 class:: CircleMap
 summary:: Trigger-driven normalized standard circle map
 categories:: UGens>Generators>Chaotic>Maps
-related:: Guides/StochasticDynamicsUGens, Classes/CoupledLogisticMap
+related:: Guides/Stochastica, Classes/CoupledLogisticMap
 
 description::
+
+The standard Circle Map models the nonlinear dynamics of a driven oscillator, such as a pendulum struck at regular intervals or a phase-locked loop. Mathematically, it evaluates the phase on a circle modulo 1, demonstrating phenomena like mode-locking (devil's staircases) and a direct route to chaos as coupling strength increases. Conceptually, this makes it an incredibly powerful tool for exploring rhythmic phase interactions, chaotic syncopation, and sequence driving, where rhythms lock into predictable patterns and then suddenly dissolve into chaos.
 
 Implements the standard normalized sine circle map code::x' = wrap(x + omega - (k/twoPi)*sin(twoPi*x), 0, 1)::. Wrapping is intrinsic to phase on a circle and is not hidden output conditioning.
 
@@ -49,8 +51,18 @@ code::
 )
 ::
 
-subsection:: See also
-
-link::Guides/StochasticDynamicsUGens::
-link::Classes/Phasor::
-link::Classes/CoupledLogisticMap::
+code::
+// Chaotic Phase-Locked Rhythms
+(
+{
+    var trig, phase, freq, sig, env;
+    trig = Impulse.kr(10);
+    // Mode-locking pendulum mapped to syncopated FM bursts
+    phase = CircleMap.kr(trig, omega: LFDNoise3.kr(1/2).range(0.05,0.4), k: 1.5);
+    freq = phase.linexp(0, 1, 100, 800);
+    sig = PMOsc.ar(freq, freq * 2, phase * 5);
+    env = EnvGen.kr(Env.perc(0.01, 0.1), trig);
+    Pan2.ar(sig * env * 0.3, phase * 2 - 1)
+}.play;
+)
+::

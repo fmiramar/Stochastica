@@ -1,9 +1,11 @@
 class:: TinkerbellMap
 summary:: Trigger-driven raw Tinkerbell map coordinates
 categories:: UGens>Generators>Chaotic>Maps
-related:: Guides/StochasticDynamicsUGens, Classes/DeJongMap
+related:: Guides/Stochastica, Classes/DeJongMap
 
 description::
+
+The Tinkerbell map relies on a set of quadratic polynomial equations that produce a beautiful, swooping fractal trajectory. The state coordinates tend to sweep smoothly across an axis and then suddenly break into chaotic flutter, visually resembling the flight path of a fairy. Conceptually, this maps beautifully to generative music by providing organic, sweeping envelopes that occasionally glitch or flutter, making it ideal for expressive, semi-predictable parameter sweeps.
 
 Implements the polynomial Tinkerbell recurrence code::x' = x*x - y*y + a*x + b*y:: and code::y' = 2*x*y + c*x + d*y::. Both equations use the old state.
 
@@ -58,6 +60,26 @@ code::
 )
 ::
 
+code::
+// Fairy Flight Sweeps
+(
+{
+    var trig, coords, freq, rq, sig, env;
+    trig = Impulse.kr(LFNoise1.kr(2).exprange(2, 12));
+    coords = TinkerbellMap.kr(trig, a: 0.9, b: -0.6, c: 2.0, d: 0.5);
+    // Swooping, fractal trajectories mapped to resonant vocal formats
+    freq = coords[0].linexp(-1.5, 0.5, 200, 2000);
+    rq = coords[1].linlin(-1.5, 0.5, 0.05, 0.5);
+    sig = BPF.ar(PinkNoise.ar(1), freq, rq);
+    env = EnvGen.kr(Env.perc(0.1, 0.3), trig);
+    Pan2.ar(sig * env * 2.0, coords[0])
+}.play;
+)
+::
+
+
+
+
 subsection:: Real-time phase portrait
 
 code::
@@ -75,9 +97,3 @@ SDPhaseView.open(
 );
 )
 ::
-
-subsection:: See also
-
-link::Guides/StochasticDynamicsUGens::
-link::Classes/SDPhaseView::
-link::Classes/DeJongMap::

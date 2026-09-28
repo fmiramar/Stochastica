@@ -1,9 +1,11 @@
 class:: TLevyRand
 summary:: Triggered one-sided Lévy-distribution sampler
 categories:: UGens>Generators>Stochastic>Distributions
-related:: Guides/StochasticDynamicsUGens, Classes/TStableRand, Classes/TCauchyRand
+related:: Guides/Stochastica, Classes/TStableRand, Classes/TCauchyRand
 
 description::
+
+The Lévy distribution is an extremely heavy-tailed, strictly positive probability distribution. Mathematically, it is characterized by an infinite variance, producing occasional values that are exponentially larger than the typical cluster. Conceptually, it was originally used to model the Lévy flight paths of foraging animals—small, localized random walks interspersed with massive, sudden jumps to entirely new areas. This makes it ideal for governing macro-structural shifts in algorithmic composition.
 
 Computes code::location + scale/(Z*Z):: for a standard normal code::Z::. Values too near zero are retried at most 64 times before returning the largest finite float.
 
@@ -52,8 +54,17 @@ code::
 )
 ::
 
-subsection:: See also
-
-link::Guides/StochasticDynamicsUGens::
-link::Classes/TStableRand::
-link::Classes/TCauchyRand::
+code::
+// Foraging Flight Macro-Shifts
+(
+{
+    var trig, shift, freq, sig;
+    trig = Impulse.kr(6);
+    // Creates small local walks violently interrupted by massive structural shifts
+    shift = TLevyRand.kr(location: 0, scale: 1, trig: trig).clip(0, 100);
+    freq = 200 + (shift * 20);
+    sig = SinOsc.ar(freq) * EnvGen.kr(Env.perc(0.01, 0.15), trig);
+    Pan2.ar(sig * 0.1)
+}.play;
+)
+::

@@ -1,9 +1,11 @@
 class:: CliffordMap
 summary:: Trigger-driven raw Clifford attractor coordinates
 categories:: UGens>Generators>Chaotic>Maps
-related:: Guides/StochasticDynamicsUGens, Classes/DeJongMap, Classes/LatoocarfianMap
+related:: Guides/Stochastica, Classes/DeJongMap, Classes/LatoocarfianMap
 
 description::
+
+Clifford attractors apply four independent parameters to coupled trigonometric functions, scattering points in complex, beautifully smeared clouds without a single central origin. Mathematically, this lack of strong central gravity means the state wanders continuously across the phase space in overlapping sine-like waves. Conceptually, it behaves like a set of constantly detuning, free-running LFOs, providing lush, continuously evolving control signals perfectly suited for ambient modulation, drone pitch drift, or granular synthesis parameters.
 
 Implements code::x' = sin(a*y) + c*cos(a*x):: and code::y' = sin(b*x) + d*cos(b*y)::, a commonly used Clifford-attractor recurrence. Parameters remain mathematical coefficients.
 
@@ -55,6 +57,25 @@ code::
 )
 ::
 
+code::
+// Evolving Ambient Drone
+(
+{
+    var trig, coords, freq, sig, filt;
+    trig = Impulse.kr(20); // Fast triggers for continuous-feeling modulation
+    coords = CliffordMap.kr(trig);
+    // Smeared sine-like oscillations detuning a lush pad
+    freq = 100 + (coords[0] * 2);
+    sig = Splay.ar(SinOsc.ar([freq, freq*1.01, freq*0.99, freq*2]));
+    filt = LPF.ar(sig, coords[1].linexp(-2, 2, 200, 4000));
+    filt * 0.1
+}.play;
+)
+::
+
+
+
+
 subsection:: Real-time phase portrait
 
 code::
@@ -72,10 +93,3 @@ SDPhaseView.open(
 );
 )
 ::
-
-subsection:: See also
-
-link::Guides/StochasticDynamicsUGens::
-link::Classes/SDPhaseView::
-link::Classes/DeJongMap::
-link::Classes/LatoocarfianMap::

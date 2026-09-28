@@ -1,9 +1,11 @@
 class:: MackeyGlass
 summary:: Mackey–Glass delay differential system
 categories:: UGens>Generators>Chaotic>Flows
-related:: Guides/StochasticDynamicsUGens, Classes/Chua
+related:: Guides/Stochastica, Classes/Chua
 
 description::
+
+The Mackey-Glass equation models physiological delayed feedback systems (such as the body's regulation of blood cells). Mathematically, it is a delayed differential equation (DDE), meaning the derivative of the current state depends on the state of the system at a specific time in the past. Conceptually, this creates a high-dimensional, smooth, and undulating chaotic flow that never truly repeats. It provides exceptionally deep, slowly wandering ambient modulation, behaving like a complex, natural terrain rather than a synthesized sequence.
 
 Integrates the delay equation code::dx/dt = beta*delayedX/(1+delayedX.pow(n)) - gamma*x:: from Mackey and Glass's 1977 physiological-control model. It uses a circular history, cubic fractional-delay reads, and a Heun step.
 
@@ -53,8 +55,17 @@ code::
 )
 ::
 
-subsection:: See also
-
-link::Guides/StochasticDynamicsUGens::
-link::Classes/Chua::
-link::Classes/DelayC::
+code::
+// High-Dimensional Ambient Ocean
+(
+{
+    var mod, freq, sig, verb;
+    // Delayed differential equations create deep, non-repeating swells
+    mod = MackeyGlass.ar(SampleRate.ir/200);
+    freq = mod.linexp(-1.5, 1.5, 50, 400);
+    sig = Splay.ar(SinOsc.ar([freq, freq * 1.5, freq * 2.01]));
+    verb = FreeVerb2.ar(sig[0], sig[1], 0.8, 0.9);
+    verb * 0.2
+}.play;
+)
+::

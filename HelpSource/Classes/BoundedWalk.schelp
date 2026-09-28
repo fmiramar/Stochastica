@@ -1,9 +1,11 @@
 class:: BoundedWalk
 summary:: Triggered random walk with explicit boundary and increment rules
 categories:: UGens>Generators>Stochastic>Processes
-related:: Guides/StochasticDynamicsUGens, Classes/OUProcess, Classes/TBrownRand
+related:: Guides/Stochastica, Classes/OUProcess, Classes/TBrownRand
 
 description::
+
+A Bounded Walk is a discrete-time random walk where the accumulating state is strictly confined between minimum and maximum limits, typically bouncing (folding) or wrapping upon collision. Mathematically, it prevents the variance of the random walk from growing to infinity. Conceptually, it is highly useful for generative sequencing, allowing a melody or parameter to wander endlessly, taking relative steps up or down, while guaranteeing it will never exceed the designated musical register or parameter range.
 
 Adds a uniform, normal, or Cauchy increment on each rising trigger and applies an explicit reflect, wrap, clip, resample, or absorb boundary rule. Resampling stops after 64 attempts and then clips.
 
@@ -61,8 +63,19 @@ code::
 )
 ::
 
-subsection:: See also
-
-link::Guides/StochasticDynamicsUGens::
-link::Classes/TBrownRand::
-link::Classes/OUProcess::
+code::
+// Wandering Pentatonic Melodies
+(
+{
+    var trig, walk, scale, degree, freq, sig;
+    trig = Impulse.kr([6,12]);
+    // A random walk that safely bounces off its register boundaries
+    walk = BoundedWalk.kr(trig, 1.0, lo: 0, hi: 14);
+    scale = [0, 2, 4, 7, 9];
+    degree = walk.round(1);
+    freq = (DegreeToKey.kr(LocalBuf.newFrom(scale), degree, 12) + 60).midicps;
+    sig = SinOsc.ar(freq) * EnvGen.kr(Env.perc(0.01, 0.2), trig);
+    Pan2.ar(sig * 0.2)
+}.play;
+)
+::

@@ -1,7 +1,7 @@
 class:: SDPhaseView
 summary:: Language-side live phase portrait for two-output state UGens
 categories:: GUI>Views
-related:: Guides/StochasticDynamicsUGens, Classes/HenonMap, Classes/Chua
+related:: Guides/Stochastica, Classes/HenonMap, Classes/Chua
 
 description::
 
@@ -51,10 +51,3 @@ SDPhaseView.open(
 )
 )
 ::
-
-subsection:: See also
-
-link::Guides/StochasticDynamicsUGens::
-link::Classes/HenonMap::
-link::Classes/Chua::
-link::Classes/ScopeView::

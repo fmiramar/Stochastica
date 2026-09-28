@@ -1,11 +1,14 @@
 title:: Stochastica
 summary:: Raw maps, flows, stochastic processes, distributions, state processes, and explicit sonifiers
 categories:: UGens>Generators>Stochastic, UGens>Generators>Chaotic
-related:: Classes/HenonMap, Classes/OUProcess, Classes/TGammaRand, Classes/MarkovChain
+related:: Classes/WhiteNoise, Classes/BrownNoise, Classes/LFNoise0, Classes/TIRand, Classes/Stepper
 
 description::
+image::scdoc_banner.jpg::
 
-Stochastica is a SuperCollider suite of chaotic and dynamic UGens. It implements established map equations, dynamical systems, probability algorithms, and stochastic-process models. Whether you are creating complex generative music, simulating unpredictable physical systems, or adding organic variations to sound, this collection provides the mathematical tools to do so natively on the audio server.
+Vanilla SuperCollider provides standard stochastic generators (e.g., WhiteNoise, LFNoise, Dust) and basic chaotic attractors (e.g., HenonC, ChaosGen). However, advanced generative modeling often requires mathematically pure implementations of dynamical systems, non-uniform probability distributions, and state-aware stochastic processes that operate independently of audio-rate interpolation or internal scaling. 
+
+Stochastica introduces a formal mathematical suite for these exact models on the audio server. The collection separates the mathematical simulation of a system from its sonic application. Discrete maps and continuous flows produce raw coordinate trajectories; probability distributions sample from precise statistical models; and stochastic processes maintain memory over time. This structure allows for rigorous algorithmic composition, physical modeling, and complex modulation networks.
 
 A distribution sampler produces independent values when triggered. A stochastic process has memory over time. A discrete map updates a state through a recurrence. A continuous system integrates differential equations. A sonifier maps an internal state to an audible signal and is therefore not the same object as the mathematical system it uses.
 
@@ -21,6 +24,17 @@ table::
 ## Distributions || link::Classes/TGammaRand::, link::Classes/TWeibullRand::, link::Classes/TLogNormalRand::, link::Classes/TCauchyRand::, link::Classes/TPoissonRand::, link::Classes/TGeometricRand::, link::Classes/TNegBinomialRand::, link::Classes/TTruncNormalRand::, link::Classes/TStableRand::, link::Classes/TLevyRand::
 ## State and vector processes || link::Classes/MarkovChain::, link::Classes/SemiMarkov::, link::Classes/MultiGaussNoise::
 ## Explicit sonifiers || link::Classes/HenonSonify::, link::Classes/GbmanSonify::, link::Classes/LatoocarfianSonify::
+::
+
+The categories represent distinct mathematical paradigms:
+
+list::
+## strong::Raw maps::: Discrete-time dynamical systems defined by recurrence relations. The state is updated iteratively on each trigger, producing chaotic or periodic coordinate sequences.
+## strong::Continuous systems::: Ordinary differential equations (ODEs) integrated over time. They describe physical or abstract systems that evolve continuously, outputting their multi-dimensional state.
+## strong::Processes::: Stochastic models with memory (e.g., Brownian motion, Ornstein-Uhlenbeck). Their current output depends on previous states combined with random innovations, creating evolving trajectories.
+## strong::Distributions::: Memoryless probability models. When triggered, they generate independent random variables shaped by specific probability density functions (e.g., Gamma, Cauchy, Weibull).
+## strong::State and vector processes::: Multivariate systems and state-transition models, including Markov chains and covariance matrices, where multiple probabilities interact to determine the next discrete state or continuous vector.
+## strong::Explicit sonifiers::: Specialized wrappers that fold, scale, and interpolate the raw mathematical coordinates of discrete maps directly into usable audio signals.
 ::
 
 subsection:: Raw state and sound
@@ -68,7 +82,3 @@ code::
 }.play
 )
 ::
-
-subsection:: See also
-
-link::Classes/WhiteNoise::, link::Classes/BrownNoise::, link::Classes/TIRand::, link::Classes/Stepper::

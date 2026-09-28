@@ -1,9 +1,11 @@
 class:: TNegBinomialRand
 summary:: Triggered negative-binomial failures sampler
 categories:: UGens>Generators>Stochastic>Distributions
-related:: Guides/StochasticDynamicsUGens, Classes/TGammaRand, Classes/TPoissonRand
+related:: Guides/Stochastica, Classes/TGammaRand, Classes/TPoissonRand
 
 description::
+
+The Negative Binomial distribution generalizes the Geometric distribution, modeling the number of failures before achieving a specific N number of successes. Mathematically, this provides an integer-based distribution that can be tuned to cluster and disperse values more flexibly than the geometric model. Conceptually, it is excellent for complex generative timekeeping, algorithmic burst counting, or scheduling complex, integer-based rhythmic delays.
 
 Returns failures before code::successes:: successes. It draws a gamma intensity and then a Poisson count, so positive real success counts are supported.
 
@@ -50,8 +52,16 @@ code::
 )
 ::
 
-subsection:: See also
-
-link::Guides/StochasticDynamicsUGens::
-link::Classes/TGammaRand::
-link::Classes/TPoissonRand::
+code::
+// Algorithmic Burst Counting
+(
+{
+    var trig, bursts, sig;
+    trig = Impulse.kr(4);
+    // Generalizes geometric waits, providing clustered, integer-based rhythmic scatter
+    bursts = TNegBinomialRand.kr(successes: 3, probability: 0.5, trig: trig);
+    sig = Blip.ar((bursts * 50) + 100, bursts + 1) * EnvGen.kr(Env.perc(0.01, 0.2), trig);
+    Pan2.ar(sig * 0.1)
+}.play;
+)
+::

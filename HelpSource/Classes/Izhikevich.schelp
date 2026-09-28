@@ -1,9 +1,11 @@
 class:: Izhikevich
 summary:: Membrane, recovery, and spike outputs from an Izhikevich neuron
 categories:: UGens>Generators>Chaotic>Flows
-related:: Guides/StochasticDynamicsUGens, Classes/RulkovMap
+related:: Guides/Stochastica, Classes/RulkovMap
 
 description::
+
+The Izhikevich model is a continuous-time system of ordinary differential equations (ODEs) that accurately and efficiently simulates the spiking and bursting dynamics of biological cortical neurons. By adjusting its parameters, it can reliably mimic regular spiking, intrinsic bursting, or chattering neuron types. Conceptually, this brings biological neural behavior directly to the audio server, proving incredibly useful for synthesizing organic clicks, neural crackle, or driving generative rhythmic events through biologically grounded physics.
 
 Implements Eugene Izhikevich's 2003 two-state spiking-neuron model. Voltage uses two half Euler steps, recovery uses one full update, and reaching 30 mV applies code::v = c:: and code::u = u+d:: while emitting a one-calculation spike.
 
@@ -60,6 +62,29 @@ code::
 )
 ::
 
+code::
+// Biological Cortical Chattering
+(
+{
+    var current, sig, spike, freq, out;
+    // Input current modulates the neuron's firing rate
+    current = MouseX.kr(2, 15);
+    // Continuous-time simulation of neuron bursting dynamics
+    sig = Izhikevich.ar(input: current, a: 0.02, b: 0.2, c: -50, d: 2, timeScale: 1000);
+    // The raw membrane potential rests at -50mV and spikes to +30mV
+    // Detect the spikes to trigger a physical model
+    spike = sig > 0; 
+    freq = sig.linexp(-70, 30, 200, 1500); // Sub-threshold voltage wiggles pitch
+    out = Ringz.ar(spike, freq, 0.05);
+    Pan2.ar(out * 0.05)
+}.play;
+)
+::
+
+
+
+
+
 subsection:: Real-time v-u portrait
 
 The helper receives all three UGen outputs: v and u draw the trail, while the spike output drives the sound.
@@ -79,10 +104,3 @@ SDPhaseView.open(
 );
 )
 ::
-
-subsection:: See also
-
-link::Guides/StochasticDynamicsUGens::
-link::Classes/SDPhaseView::
-link::Classes/RulkovMap::
-link::Classes/Trig1::

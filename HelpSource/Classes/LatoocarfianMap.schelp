@@ -1,9 +1,11 @@
 class:: LatoocarfianMap
 summary:: Trigger-driven raw Latoocarfian map coordinates
 categories:: UGens>Generators>Chaotic>Maps
-related:: Guides/StochasticDynamicsUGens, Classes/LatoocarfianSonify, Classes/CliffordMap
+related:: Guides/Stochastica, Classes/LatoocarfianSonify, Classes/CliffordMap
 
 description::
+
+The Latoocarfian map relies on coupled trigonometric functions (sines) to generate its next state, creating complex, spiraling bounds of chaos. Because it uses sine functions, the mathematical mapping naturally oscillates and bounds itself, meaning the output tends to swing wildly but fluidly within a fixed range. Conceptually, this behaves somewhat like chaotic frequency modulation (FM) operating at control rate, making it an excellent source for erratic, trill-like pitch sequences or swirling spatial modulations.
 
 Uses the documented recurrence code::x' = sin(b*y) + c*sin(b*x):: and code::y' = sin(a*x) + d*sin(a*y)::. Latoocarfian variants circulate; this project uses this equation consistently in server code, tests, and the sonifier.
 
@@ -55,6 +57,25 @@ code::
 )
 ::
 
+code::
+// Chaotic Flocking Chimes
+(
+{
+    var trig, coords, freq, decay, sig;
+    trig = Impulse.kr(LFNoise0.kr(1).exprange(4, 20));
+    coords = LatoocarfianMap.kr(trig, a: 3, b: 0.5, c: 0.5, d: 0.5);
+    // Trigonometric chaos mapped to glass-like resonances
+    freq = coords[0].linlin(-1.5, 1.5, 72, 108).midicps;
+    decay = coords[1].linlin(-1.5, 1.5, 0.05, 0.4);
+    sig = SinOsc.ar(freq) * EnvGen.kr(Env.perc(0.01, decay), trig);
+    Pan2.ar(sig * 0.2, coords[0])
+}.play;
+)
+::
+
+
+
+
 subsection:: Real-time phase portrait
 
 code::
@@ -72,10 +93,3 @@ SDPhaseView.open(
 );
 )
 ::
-
-subsection:: See also
-
-link::Guides/StochasticDynamicsUGens::
-link::Classes/SDPhaseView::
-link::Classes/LatoocarfianSonify::
-link::Classes/CliffordMap::

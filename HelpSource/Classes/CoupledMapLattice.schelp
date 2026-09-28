@@ -1,9 +1,11 @@
 class:: CoupledMapLattice
 summary:: Periodic lattice of diffusively coupled logistic maps
 categories:: UGens>Generators>Chaotic>Maps
-related:: Guides/StochasticDynamicsUGens, Classes/CoupledLogisticMap
+related:: Guides/Stochastica, Classes/CoupledLogisticMap
 
 description::
+
+A Coupled Map Lattice extends the concept of coupled chaos to a discrete spatial grid. It mathematically simulates a one-dimensional array of logistic maps, where each cell's next state is a weighted average of its own chaos and its immediate neighbors. Conceptually, this models phenomena like heat diffusion, chemical reactions, or moving waves of turbulence. In audio, it generates massive, spatialized modulation data, allowing you to map a propagating wave of chaos across multiple filters, spatial speakers, or granular parameters.
 
 Implements a one-dimensional periodic coupled-map lattice. Each cell mixes its logistic image with the images of its left and right neighbors. Two preallocated arrays make each trigger update atomic.
 
@@ -44,7 +46,7 @@ code::
 Routine {
     b = Buffer.loadCollection(s, Array.fill(8, { 0.2.rand + 0.1 }));
     s.sync;
-    x = { Splay.ar(CoupledMapLattice.ar(8, Impulse.ar(200), initialBuf: b) * 0.03) }.play;
+    x = { LeakDC.ar(Splay.ar(CoupledMapLattice.ar(8, Impulse.ar(200), initialBuf: b) * 0.03) )}.play;
 }.play;
 )
 ::
@@ -63,7 +65,18 @@ Routine {
 )
 ::
 
-subsection:: See also
-
-link::Guides/StochasticDynamicsUGens::
-link::Classes/CoupledLogisticMap::
+code::
+// Spatially Diffusing Turbulence
+(
+{
+    var trig, lattice, freqs, sig;
+    trig = Impulse.kr(12);
+    // A 1D grid of chaotic cells diffusing into their neighbors
+    lattice = CoupledMapLattice.kr(8, trig, coupling: 0.2);
+    freqs = lattice.linexp(0, 1, 100, 3000);
+    // Map the wave of chaos to an array of resonant filters
+    sig = Resonz.ar(WhiteNoise.ar(0.5), freqs, 0.1);
+    Splay.ar(sig) * EnvGen.kr(Env.perc(0.01, 0.1), trig)
+}.play;
+)
+::

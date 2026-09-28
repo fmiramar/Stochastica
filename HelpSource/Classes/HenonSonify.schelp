@@ -1,9 +1,11 @@
 class:: HenonSonify
 summary:: Explicit Hénon-map clock and level sonifier
 categories:: UGens>Generators>Chaotic
-related:: Guides/StochasticDynamicsUGens, Classes/HenonMap, Classes/GbmanSonify
+related:: Guides/Stochastica, Classes/HenonMap, Classes/GbmanSonify
 
 description::
+
+This UGen wraps the discrete-time Hénon map into an explicit audio-rate sonifier. While raw maps output values only upon a trigger edge (often at control rates), a sonifier continuously calculates the recurrence at the audio sample rate, folding and interpolating the chaotic coordinates into a normalized [-1, 1] audio signal. This directly translates the fractal stretching and folding of the strange attractor into a harsh, complex digital oscillator or a source of mathematically structured noise.
 
 Uses the same recurrence as link::Classes/HenonMap::, but explicitly folds one selected coordinate into an iteration-frequency range and another into -1 through 1. Frequency is limited to the audio sample rate and at most one iteration occurs per sample.
 
@@ -65,8 +67,15 @@ code::
 )
 ::
 
-subsection:: See also
-
-link::Guides/StochasticDynamicsUGens::
-link::Classes/HenonMap::
-link::Classes/GbmanSonify::
+code::
+// Audio-rate Fractal Oscillator
+(
+{
+    var sig;
+    // Directly maps the diverging strange attractor to an audio signal
+    sig = HenonSonify.ar(MouseX.kr(10, 1000, 'exponential'));
+    // High alias grit, perfectly suited for aggressive filtering
+    RLPF.ar(LeakDC.ar(sig), MouseY.kr(100, 8000, 'exponential'), 0.2) * 0.2
+}.play;
+)
+::

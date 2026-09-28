@@ -1,9 +1,11 @@
 class:: HawkesTrig
 summary:: Self-exciting stochastic event process
 categories:: UGens>Triggers>Stochastic
-related:: Guides/StochasticDynamicsUGens, Classes/RenewalTrig, Classes/Dust
+related:: Guides/Stochastica, Classes/RenewalTrig, Classes/Dust
 
 description::
+
+A Hawkes process is a non-Markovian stochastic process known as a self-exciting point process. Mathematically, every time an event occurs, it temporarily spikes the underlying intensity rate of the process, making subsequent events more likely. Conceptually, this simulates contagion or cascading effects, naturally generating avalanches, bursts, and dense clusters of triggers. It is perfect for algorithmic drum fills, modeling swarms of insects, cracking ice, or any scenario requiring spontaneous flurries of rhythmic activity.
 
 Implements Alan Hawkes's self-exciting point-process idea in bounded discrete time. Excitation decays exponentially; each event adds more excitation, temporarily increasing subsequent event probability.
 
@@ -53,8 +55,15 @@ code::
 )
 ::
 
-subsection:: See also
-
-link::Guides/StochasticDynamicsUGens::
-link::Classes/RenewalTrig::
-link::Classes/Dust::
+code::
+// Self-Exciting Swarm Avalanches
+(
+{
+    var trig, sig;
+    // Each event increases the probability of more events, naturally generating clusters
+    trig = HawkesTrig.kr(baseRate: 2.0, excitation: 0.8, decay: 1.0);
+    sig = PMOsc.ar(TRand.kr(300, 600, trig), 800, 2) * EnvGen.kr(Env.perc(0.01, 0.1), trig);
+    Pan2.ar(sig * 0.2)
+}.play;
+)
+::

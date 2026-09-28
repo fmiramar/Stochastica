@@ -1,9 +1,11 @@
 class:: LoziMap
 summary:: Trigger-driven raw Lozi map coordinates
 categories:: UGens>Generators>Chaotic>Maps
-related:: Guides/StochasticDynamicsUGens, Classes/HenonMap
+related:: Guides/Stochastica, Classes/HenonMap
 
 description::
+
+The Lozi map acts as a piecewise-linear simplification of the Hénon map. By replacing the smooth quadratic fold with an absolute value function, the underlying strange attractor loses its curves and becomes sharp and angular. Conceptually, this preserves the bounded chaotic sequences of the Hénon map but replaces smooth transitions with sudden linear zig-zags. This provides sharp, sudden jumps and angular control signals, highly effective for aggressive IDM-style sequencing or percussive parameter automation.
 
 Implements René Lozi's piecewise-linear Hénon-like recurrence code::x' = 1 - a*abs(x) + b*y:: and code::y' = x::. Parameters are sampled at each trigger and are not clipped.
 
@@ -51,6 +53,25 @@ code::
 )
 ::
 
+code::
+// Angular IDM Bass Sequences
+(
+{
+    var trig, coords, freq, sig, env;
+    trig = Impulse.kr(6);
+    coords = LoziMap.kr(trig);
+    // The sharp, piecewise-linear chaos provides jagged, aggressive jumps
+    freq = coords[0].linexp(-1.5, 1.5, 40, 200);
+    sig = LPF.ar(Saw.ar(freq), coords[1].linexp(-1.5, 1.5, 100, 3000));
+    env = EnvGen.kr(Env.perc(0.01, 0.15), trig);
+    Pan2.ar(sig * env * 0.5, coords[0])
+}.play;
+)
+::
+
+
+
+
 subsection:: Real-time phase portrait
 
 code::
@@ -68,9 +89,3 @@ SDPhaseView.open(
 );
 )
 ::
-
-subsection:: See also
-
-link::Guides/StochasticDynamicsUGens::
-link::Classes/SDPhaseView::
-link::Classes/HenonMap::

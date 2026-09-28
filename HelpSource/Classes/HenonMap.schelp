@@ -1,9 +1,11 @@
 class:: HenonMap
 summary:: Trigger-driven raw Hénon map coordinates
 categories:: UGens>Generators>Chaotic>Maps
-related:: Guides/StochasticDynamicsUGens, Classes/HenonSonify, Classes/GbmanMap
+related:: Guides/Stochastica, Classes/HenonSonify, Classes/GbmanMap
 
 description::
+
+The Hénon map is a foundational two-dimensional discrete-time dynamical system that exhibits a strange attractor. Mathematically, it applies a simple quadratic curve (a folded parabola) and a linear scaling operation on each iteration, causing trajectories to stretch and fold recursively. Conceptually, this creates a fractal structure where sequences never perfectly repeat but remain tightly bounded. In sound design, this provides structured but unpredictable modulation—like a chaotic sequencer—ideal for generating arpeggios, rhythms, or LFO movements that possess inherent macro-structural logic rather than pure random noise.
 
 Iterates Michel Hénon's 1976 two-dimensional map: code::x' = 1 - a*x*x + y:: and code::y' = b*x::. Both next coordinates use the old state. A rising trigger advances once; reset restores the supplied initial coordinates, and non-finite recurrence state also restores them.
 
@@ -51,6 +53,26 @@ code::
 )
 ::
 
+code::
+// Chaotic FM Arpeggiator
+(
+{
+    var trig, coords, freq, index, sig, env;
+    trig = Impulse.kr(8);
+    // Hénon map coordinates control FM index and frequency offset
+    coords = HenonMap.kr(trig, a: 1.4, b: 0.3);
+    freq = (coords[0] * 12 + 60).midicps;
+    index = coords[1].linexp(-0.5, 0.5, 0.1, 10);
+    sig = PMOsc.ar(freq, freq * 1.5, index);
+    env = EnvGen.kr(Env.perc(0.01, 0.1), trig);
+    Pan2.ar(sig * env * 0.3, coords[0])
+}.play;
+)
+::
+
+
+
+
 subsection:: Real-time phase portrait
 
 The same coordinates drive the sound and the bounded on-screen trail. Close the window to free the synth.
@@ -70,10 +92,3 @@ SDPhaseView.open(
 );
 )
 ::
-
-subsection:: See also
-
-link::Guides/StochasticDynamicsUGens::
-link::Classes/SDPhaseView::
-link::Classes/HenonSonify::
-link::Classes/GbmanMap::

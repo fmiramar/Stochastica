@@ -1,9 +1,11 @@
 class:: GbmanSonify
 summary:: Explicit Gingerbreadman-map clock and level sonifier
 categories:: UGens>Generators>Chaotic
-related:: Guides/StochasticDynamicsUGens, Classes/GbmanMap, Classes/HenonSonify
+related:: Guides/Stochastica, Classes/GbmanMap, Classes/HenonSonify
 
 description::
+
+This explicit sonifier drives the piecewise-linear Gingerbreadman map at audio rates. Because the underlying map jumps abruptly through absolute-value transformations, the resulting audio signal is highly discontinuous and jagged. By safely wrapping and scaling these exploding coordinates, this UGen produces harsh, digital, erratic textures and screaming alias-heavy tones, useful for industrial sound design and glitch synthesis.
 
 Uses link::Classes/GbmanMap::'s recurrence, explicitly folding selected coordinates into iteration frequency and bipolar level. Frequency is bounded to the audio sample rate and the scheduler retains phase remainder.
 
@@ -61,8 +63,15 @@ code::
 )
 ::
 
-subsection:: See also
-
-link::Guides/StochasticDynamicsUGens::
-link::Classes/GbmanMap::
-link::Classes/HenonSonify::
+code::
+// Piecewise Industrial Screamer
+(
+{
+    var freq, sig;
+    // Absolute value boundaries create discontinuous jumps at audio rates
+    freq = MouseX.kr(50, 500, 'exponential');
+    sig = GbmanSonify.ar(freq);
+    Pan2.ar(LeakDC.ar(sig) * 0.1)
+}.play;
+)
+::

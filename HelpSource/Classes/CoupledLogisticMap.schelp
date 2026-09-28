@@ -1,9 +1,11 @@
 class:: CoupledLogisticMap
 summary:: Two symmetrically coupled trigger-driven logistic maps
 categories:: UGens>Generators>Chaotic>Maps
-related:: Guides/StochasticDynamicsUGens, Classes/CoupledMapLattice, Classes/CircleMap
+related:: Guides/Stochastica, Classes/CoupledMapLattice, Classes/CircleMap
 
 description::
+
+The Logistic map models simple population dynamics; this UGen couples two such maps together, mathematically linking their feedback loops. The parameter tuning determines whether the two sequences sync up, completely diverge, or follow each other chaotically. Conceptually, this provides two streams of chaotic modulation that are fundamentally aware of each other, making it an ideal source for true stereo modulation where the left and right channels exhibit coordinated, organic variance rather than disjointed noise.
 
 Computes each logistic image code::f(x) = r*x*(1-x)::, then mixes the two images symmetrically by code::coupling::. It follows the coupled-map literature and does not force coordinates back into the conventional logistic interval.
 
@@ -53,6 +55,24 @@ code::
 )
 ::
 
+code::
+// Stereo Coordinated Tics
+(
+{
+    var trig, coords, freqs, sig;
+    trig = Impulse.kr(8);
+    coords = CoupledLogisticMap.kr(trig, coupling: 0.1);
+    // Two streams of chaos that influence each other organically
+    freqs = coords.linexp(0, 1, 200, 2000);
+    sig = SinOsc.ar(freqs) * EnvGen.kr(Env.perc(0.01, 0.1), trig);
+    sig * 0.3
+}.play;
+)
+::
+
+
+
+
 subsection:: Real-time phase portrait
 
 code::
@@ -70,10 +90,3 @@ SDPhaseView.open(
 );
 )
 ::
-
-subsection:: See also
-
-link::Guides/StochasticDynamicsUGens::
-link::Classes/SDPhaseView::
-link::Classes/CoupledMapLattice::
-link::Classes/CircleMap::

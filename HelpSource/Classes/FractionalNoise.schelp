@@ -1,9 +1,11 @@
 class:: FractionalNoise
 summary:: Stationary finite-band approximation to 1/f power-law noise
 categories:: UGens>Generators>Stochastic>Processes
-related:: Guides/StochasticDynamicsUGens, Classes/FBrownianMotion, Classes/PinkNoise
+related:: Guides/Stochastica, Classes/FBrownianMotion, Classes/PinkNoise
 
 description::
+
+Fractional Noise produces a stochastic signal with a specific power spectral density, directly corresponding to colors of noise (like pink or brown) but allowing for continuous interpolation of the spectral slope. Mathematically, it serves as the audio-rate, time-derivative counterpart to fractional Brownian motion. Conceptually, it grants precise control over the texture and frequency bias of generated noise, making it perfect for synthesizing environmental sounds (wind, rain, rushing water) or specifically colored noise profiles.
 
 Approximates power spectral density proportional to code::1/f.pow(alpha):: over a finite frequency band. It sums normalized, logarithmically spaced first-order Ornstein–Uhlenbeck components with independent unit-variance uniform innovations.
 
@@ -55,8 +57,20 @@ code::
 )
 ::
 
-subsection:: See also
-
-link::Guides/StochasticDynamicsUGens::
-link::Classes/FBrownianMotion::
-link::Classes/PinkNoise::
+code::
+// Cinematic Howling Wind
+(
+{
+    var gust, slope, sig, verb;
+    // Intermittent gusts of wind
+    gust = LFNoise2.kr(0.5).unipolar.pow(2); 
+    // Slope modulates between deep rumbling (Brown, -2) and hissing (Pink, -1)
+    slope = gust.linlin(0, 1, -2, -0.5);
+    sig = FractionalNoise.ar(slope);
+    // Resonant sweeping filters for the howling effect
+    sig = BPF.ar(sig, gust.linexp(0, 1, 150, 1200), 0.2) * gust;
+    verb = FreeVerb2.ar(sig, sig, 0.5, 0.9, 0.1);
+    LeakDC.ar(verb * 4.0)
+}.play;
+)
+::

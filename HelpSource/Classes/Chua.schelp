@@ -1,9 +1,11 @@
 class:: Chua
 summary:: Three-state RK4 integration of Chua's circuit
 categories:: UGens>Generators>Chaotic>Flows
-related:: Guides/StochasticDynamicsUGens, Classes/MackeyGlass
+related:: Guides/Stochastica, Classes/MackeyGlass
 
 description::
+
+Chua's circuit is a milestone in chaos theory—a physical electronic circuit intentionally designed to produce chaotic oscillations, forming the famous double scroll attractor. This UGen accurately integrates the ordinary differential equations (ODEs) of the circuit using a piecewise-linear diode model. Conceptually, this behaves exactly like a continuous, chaotic analog oscillator. It provides a raw, continuously evolving voltage that can be mapped as a deeply organic, winding LFO, or pushed into audio rates for a gritty, physically modeled noise source.
 
 Integrates Leon Chua's canonical dimensionless circuit equations with the piecewise-linear diode curve code::h(x) = m1*x + 0.5*(m0-m1)*(abs(x+1)-abs(x-1))::. Fixed init-rate substeps use RK4 and all three raw states are exposed.
 
@@ -65,6 +67,27 @@ code::
 }.play
 )
 ::
+
+code::
+// Physically Modeled Double Scroll
+(
+{
+    var sig, freq, mod, out;
+    // Continuous, chaotic ODE solver simulating a real electronic circuit
+    sig = Chua.ar(timeScale: 200); 
+    // The three raw voltages (x, y, z) map directly to different synth parameters
+    freq = sig[0].linexp(-3, 3, 100, 800);
+    mod = PMOsc.ar(freq, freq * 1.5, sig[1].linexp(-1, 1, 0.5, 4));
+    // Use z to modulate a lowpass filter
+    out = MoogFF.ar(mod, sig[2].linexp(-4, 4, 200, 4000), 1.5);
+    Pan2.ar(out * 0.2)
+}.play;
+)
+::
+
+
+
+
 
 subsection:: Real-time state-space sonification
 
@@ -209,9 +232,3 @@ s.waitForBoot {
 };
 )
 ::
-
-subsection:: See also
-
-link::Guides/StochasticDynamicsUGens::
-link::Classes/MackeyGlass::
-link::Classes/Integrator::

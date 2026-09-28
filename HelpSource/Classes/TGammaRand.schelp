@@ -1,9 +1,11 @@
 class:: TGammaRand
 summary:: Triggered gamma-distribution sampler
 categories:: UGens>Generators>Stochastic>Distributions
-related:: Guides/StochasticDynamicsUGens, Classes/TWeibullRand, Classes/TGaussRand
+related:: Guides/Stochastica, Classes/TWeibullRand, Classes/TGaussRand
 
 description::
+
+The Gamma distribution is a continuous probability distribution defined by a shape and scale parameter. Mathematically, it is strictly positive and typically skewed, meaning it frequently produces smaller values but features a heavy tail that occasionally produces very large values. Conceptually, this makes it an excellent choice for generative timing and durations, such as determining the waiting times between unpredictable events, or generating random envelope release times that are usually short and percussive but occasionally ring out for a long time.
 
 Samples the gamma distribution with Marsaglia–Tsang rejection and the standard shape-below-one transform. Rejection is capped at 64 attempts, then the mean code::shape*scale:: is returned.
 
@@ -50,8 +52,16 @@ code::
 )
 ::
 
-subsection:: See also
-
-link::Guides/StochasticDynamicsUGens::
-link::Classes/TWeibullRand::
-link::Classes/TGaussRand::
+code::
+// Random Skewed Decay Times
+(
+{
+    var trig, decay, sig;
+    trig = Impulse.kr(6);
+    // Gamma naturally produces mostly short percussive hits, with rare ringing tails
+    decay = TGammaRand.kr(shape: 2.0, scale: 0.1, trig: trig);
+    sig = WhiteNoise.ar * EnvGen.kr(Env.perc(0.01, decay), trig);
+    Pan2.ar(sig * 0.2)
+}.play;
+)
+::

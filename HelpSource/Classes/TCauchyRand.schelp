@@ -1,9 +1,11 @@
 class:: TCauchyRand
 summary:: Triggered Cauchy-distribution sampler
 categories:: UGens>Generators>Stochastic>Distributions
-related:: Guides/StochasticDynamicsUGens, Classes/TStableRand, Classes/TGaussRand
+related:: Guides/Stochastica, Classes/TStableRand, Classes/TGaussRand
 
 description::
+
+The Cauchy distribution is a notorious pathological probability distribution. Mathematically, it has an undefined mean and an infinite variance, meaning it possesses extremely heavy tails. Conceptually, it will mostly generate values clustered safely around its center, but it will inevitably throw out massively extreme outliers without warning. It is perfect for generating sequences or parameter movements that appear stable but suddenly and violently glitch or jump to extremes.
 
 Uses the inverse transform code::location + abs(scale)*tan(pi*(U-0.5)):: with an open uniform variate. The Cauchy distribution has no finite mean or variance.
 
@@ -50,8 +52,16 @@ code::
 )
 ::
 
-subsection:: See also
-
-link::Guides/StochasticDynamicsUGens::
-link::Classes/TStableRand::
-link::Classes/TGaussRand::
+code::
+// Pathological Outlier Glitches
+(
+{
+    var trig, freq, sig;
+    trig = Impulse.kr(10);
+    // Mostly clusters near the center, but occasionally throws massive, violent jumps
+    freq = TCauchyRand.kr(location: 400, scale: 10, trig: trig).clip(100, 8000);
+    sig = Saw.ar(freq) * EnvGen.kr(Env.perc(0.01, 0.1), trig);
+    Pan2.ar(sig * 0.1)
+}.play;
+)
+::

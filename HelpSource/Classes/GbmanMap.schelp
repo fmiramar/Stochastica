@@ -1,9 +1,11 @@
 class:: GbmanMap
 summary:: Trigger-driven raw Gingerbreadman map coordinates
 categories:: UGens>Generators>Chaotic>Maps
-related:: Guides/StochasticDynamicsUGens, Classes/GbmanSonify, Classes/HenonMap
+related:: Guides/Stochastica, Classes/GbmanSonify, Classes/HenonMap
 
 description::
+
+The Gingerbreadman map is a two-dimensional, piecewise-linear chaotic map. Its recurrence relation uses absolute values, causing state coordinates to jump discontinuously across a bounded region, forming a fractal shape resembling a gingerbread man. Conceptually, this piecewise nature means the trajectory does not flow smoothly; it snaps and zig-zags erratically. This makes it highly useful for generating glitchy, aggressive, stepped modulation or abrupt rhythmic triggers where continuous movement is undesirable.
 
 Iterates the Gingerbreadman recurrence code::x' = 1 - y + abs(x):: and code::y' = x::. This explicit equation avoids ambiguity among map variants and is shared with link::Classes/GbmanSonify::.
 
@@ -47,6 +49,26 @@ code::
 )
 ::
 
+code::
+// Industrial Glitch Sequencer
+(
+{
+    var trig, coords, freq, sig, filt, env;
+    trig = Dust.kr(15);
+    coords = GbmanMap.kr(trig);
+    // Jagged piecewise jumps mapped to intense filter cutoff and noise bursts
+    freq = coords[0].linexp(-2, 2, 100, 8000);
+    sig = WhiteNoise.ar(0.5) + LPF.ar(Impulse.ar(coords[1].linlin(-2, 2, 1, 50)), 1000);
+    filt = RLPF.ar(sig, freq, 0.1);
+    env = EnvGen.kr(Env.perc(0.01, 0.05), trig);
+    Pan2.ar(filt * env * 0.5, coords[1])
+}.play;
+)
+::
+
+
+
+
 subsection:: Real-time phase portrait
 
 code::
@@ -64,10 +86,3 @@ SDPhaseView.open(
 );
 )
 ::
-
-subsection:: See also
-
-link::Guides/StochasticDynamicsUGens::
-link::Classes/SDPhaseView::
-link::Classes/GbmanSonify::
-link::Classes/HenonMap::

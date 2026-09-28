@@ -5,3 +5,4 @@
 *.osc
 __pycache__/
 *.py[cod]
+composition/

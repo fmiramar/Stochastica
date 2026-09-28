@@ -1,9 +1,11 @@
 class:: RenewalTrig
 summary:: Renewal-process events with selectable interval distributions
 categories:: UGens>Triggers>Stochastic
-related:: Guides/StochasticDynamicsUGens, Classes/HawkesTrig, Classes/Dust
+related:: Guides/Stochastica, Classes/HawkesTrig, Classes/Dust
 
 description::
+
+A renewal process is a fundamental stochastic model for events occurring over time. Mathematically, it generates triggers where the wait time between each successive trigger is drawn independently from a specific probability distribution. Conceptually, this is the core engine of stochastic rhythm. By shaping the distribution of the waiting times, you can create highly organic, non-grid beats, simulating everything from the steady, memoryless ticking of a Geiger counter to the clustered dropping of raindrops.
 
 Schedules independent inter-event intervals from exponential, gamma, Weibull, lognormal, or Erlang distributions. The random component has mean code::1/rate:: and code::minInterval:: is added as a refractory duration.
 
@@ -58,8 +60,16 @@ code::
 )
 ::
 
-subsection:: See also
-
-link::Guides/StochasticDynamicsUGens::
-link::Classes/HawkesTrig::
-link::Classes/Dust::
+code::
+// Stochastic Raindrops
+(
+{
+    var trig, freq, sig;
+    // Uses a Gamma distribution for inter-onset times, avoiding rigid grid structures
+    trig = RenewalTrig.kr(rate: 10, shape: 0.5);
+    freq = TRand.kr(400, 2000, trig);
+    sig = Klank.ar(`[[freq, freq*1.5, freq*2.3], nil, [1, 1, 1]], Decay.kr(trig, 0.05) * PinkNoise.ar(0.1));
+    Pan2.ar(sig * 0.1)
+}.play;
+)
+::

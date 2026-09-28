@@ -1,9 +1,11 @@
 class:: SemiMarkov
 summary:: Finite-state process with state-specific dwell distributions
 categories:: UGens>Control>Markov
-related:: Guides/StochasticDynamicsUGens, Classes/MarkovChain, Classes/RenewalTrig
+related:: Guides/Stochastica, Classes/MarkovChain, Classes/RenewalTrig
 
 description::
+
+A Semi-Markov model drastically expands the capability of a standard Markov chain. While it still uses a probability matrix to determine the next state, it also draws from continuous probability distributions to determine how long it remains in the current state before transitioning. Conceptually, this decouples structural sequencing from a rigid clock. It is incredibly powerful for full generative composition, allowing both harmonic shifts and rhythmic durations to be statistically guided and completely autonomous.
 
 Combines a Markov transition matrix with a dwell-time distribution for each state. The duration Buffer has three channels: mean seconds, shape, and code (0 fixed, 1 exponential, 2 gamma, 3 Weibull, 4 lognormal).
 
@@ -75,8 +77,54 @@ Routine {
 )
 ::
 
-subsection:: See also
-
-link::Guides/StochasticDynamicsUGens::
-link::Classes/MarkovChain::
-link::Classes/RenewalTrig::
+code::
+// Decoupled Structural Sequencing
+(
+Routine {
+    var trans, durs, vals;
+    
+    // 3 states: 
+    // 0: Rapid, percussive plucks (short durations)
+    // 1: Mid-length bouncy FM chords
+    // 2: Long, sweeping atmospheric pads
+    trans = Buffer.loadCollection(s, [
+        0.1, 0.6, 0.3, // State 0 mostly goes to 1
+        0.4, 0.2, 0.4, // State 1 goes to 0 or 2
+        0.8, 0.1, 0.1  // State 2 almost always goes back to 0
+    ]);
+    
+    // Duration buffer: 3 frames, 3 channels (mean, shape, dist_code)
+    // Codes: 0=fixed, 2=gamma, 4=lognormal
+    durs = Buffer.loadCollection(s, [
+        0.1, 1.0, 0, // State 0: exactly 0.1s
+        0.4, 2.0, 2, // State 1: ~0.4s, gamma distributed
+        2.5, 0.5, 4  // State 2: ~2.5s, lognormal distributed
+    ], 3);
+    
+    vals = Buffer.loadCollection(s, [60, 67, 55]); 
+    s.sync;
+    
+    {
+        var process, state, freq, trig, sig0, sig1, sig2;
+        
+        // numStates, transitionBuf, durationBuf, valueBuf
+        process = SemiMarkov.kr(3, trans, durs, vals);
+        state = process[0];
+        freq = process[1].midicps;
+        trig = process[2]; // triggers exactly when state changes
+        
+        // Sound design changes drastically based on the current state
+        sig0 = Pluck.ar(WhiteNoise.ar, trig, 0.2, freq.reciprocal, 0.5, 0.1);
+        sig1 = PMOsc.ar(freq, freq * 1.5, EnvGen.kr(Env.perc(0.01, 0.3), trig) * 3);
+        sig2 = LPF.ar(Saw.ar([freq, freq * 1.01]), 800) * EnvGen.kr(Env.perc(0.1, 2.0), trig);
+        
+        // Select avoids control-rate boolean multiplication errors and is highly idiomatic
+        Select.ar(state, [
+            Pan2.ar(sig0, 0),
+            Pan2.ar(sig1, 0),
+            sig2 * 0.2
+        ])
+    }.play;
+}.play;
+)
+::
