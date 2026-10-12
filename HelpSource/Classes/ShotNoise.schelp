@@ -1,0 +1,86 @@
+class:: ShotNoise
+summary:: Marked stochastic impulses with exponential memory
+categories:: UGens>Generators>Stochastic
+related:: Guides/Stochastica, Classes/RenewalTrig, Classes/Dust, Classes/Decay
+
+description::
+
+ShotNoise accumulates physical-like impulses. Each Poisson arrival adds a Gaussian amplitude mark to a decaying state. Sparse arrivals give isolated impacts; overlapping arrivals become crackle, rain, and dense agitation. Rate controls particle density, decay controls memory, and the amplitude distribution controls the shots. link::Classes/RenewalTrig:: exposes event timing, whereas ShotNoise also carries the summed response.
+
+The model is code::x(t) = sum A_k * exp(-(t-t_k)/decay):: with independent Poisson arrivals and code::A_k ~ Normal(ampMean, ampStd^2)::. This is classical marked Poisson shot noise; the stationary identities follow from Campbell's theorem (Campbell, The study of discontinuous phenomena, 1909, link::https://doi.org/10.1017/S0305004100010151::). For positive decay, mean is code::rate * ampMean * decay:: and variance is code::rate * (ampMean^2 + ampStd^2) * decay / 2::.
+
+Integrated exponential hazards locate arrivals inside a calculation. The signal decays analytically to each arrival and through the remaining time. At most eight arrivals are processed per calculation. Unprocessed time is carried forward and uses the next calculation's parameters; overload delays model time and is approximate under modulation. Keep individual-shot rates far below the calculation rate. eventTrigger only indicates whether at least one arrival occurred.
+
+Nonpositive decay sums instantaneous marks for the current calculation only. Rate zero permits an existing positive-decay tail to finish. Negative/non-finite rate becomes zero, non-finite decay becomes instantaneous, and non-finite amplitude inputs become zero. Non-finite or float-unrepresentable accumulated state clears the signal and schedule without reseeding. Ordinary output is unbounded. Reset starts empty; stationary statistics require several decay constants of warmup.
+
+Like link::Classes/Dust:: into link::Classes/Decay:: it makes decaying random impacts, but it accounts for within-interval arrival times, Gaussian marks, and multiple accumulated shots.
+
+subsection:: Process view
+
+image::shot-noise-dynamics.png#Arrival ticks, individual exponential responses, and their accumulated signal.::
+
+classmethods::
+
+method:: ar
+argument:: rate
+Nonnegative Poisson arrivals/second; default 10.
+argument:: decay
+Exponential time constant in seconds; default 0.05. Nonpositive means instantaneous marks held for one calculation.
+argument:: ampMean
+Gaussian mark mean; default 0.
+argument:: ampStd
+Gaussian mark standard deviation by magnitude; default 1. Zero gives fixed-size marks.
+argument:: seed
+Init-rate local PCG32 seed. Zero derives a seed from the parent Synth; nonzero is reproducible. Reset restores the original seed.
+argument:: reset
+Rising edge clears signal, timing debt, and hazard schedule, and restores the seed. No event on reset.
+returns:: Exactly two outputs: [signal, eventTrigger]. Signal is not normalized; trigger is binary.
+
+method:: kr
+Control-rate version: one calculation spans the full control block. Event outputs last one block.
+
+instancemethods::
+
+examples::
+
+subsection:: Sparse shots
+
+The short decay exposes individual impacts within seconds.
+
+code::
+(
+{ ShotNoise.ar(12, 0.03, 0, 0.5)[0] * 0.1 * Line.kr(0, 1, 0.03) }.play
+)
+::
+
+subsection:: Fixed marks
+
+Separate the arrival flag from the accumulated signal.
+
+code::
+(
+{ ShotNoise.kr(5, 0.2, 1, 0, seed: 31).poll(10) }.play
+)
+::
+
+subsection:: Particles into material
+
+Increasing rate moves from separate particles to overlapping resonant texture.
+
+code::
+(
+{
+    var rate = SinOsc.kr(0.05).exprange(2, 180);
+    var particles = ShotNoise.ar(rate, 0.006, 0, 0.4)[0];
+    Splay.ar(Ringz.ar(particles, [430, 710, 1130], [0.12, 0.2, 0.28]))
+        * 0.015 * Line.kr(0, 1, 0.05)
+}.play
+)
+::
+
+subsection:: See also
+
+link::Guides/Stochastica::
+link::Classes/RenewalTrig::
+link::Classes/Dust::
+link::Classes/Decay::

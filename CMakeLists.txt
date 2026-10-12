@@ -35,6 +35,8 @@ set(sd_cpp_files
     distributions/TriggeredDistributions.cpp
     state/StateProcesses.cpp
     sonifiers/MapSonifiers.cpp
+    processes/AdvancedEventProcesses.cpp
+    processes/ShotNoise.cpp
 )
 
 set(sd_sc_files
@@ -45,6 +47,7 @@ set(sd_sc_files
     Classes/SDStateProcesses.sc
     Classes/SDMapSonifiers.sc
     Classes/SDVisualization.sc
+    Classes/SDAdvancedProcesses.sc
 )
 
 file(GLOB sd_schelp_files CONFIGURE_DEPENDS HelpSource/Classes/*.schelp)
@@ -124,4 +127,26 @@ if(BUILD_TESTING AND NOT CMAKE_CROSSCOMPILING)
     endif()
     add_test(NAME sd_reference_tests COMMAND sd_reference_tests)
     add_test(NAME sd_statistical_tests COMMAND sd_statistical_tests)
+    foreach(kind reference statistical)
+        if(kind STREQUAL "reference")
+            set(round2_source tests/reference/test_round2_reference.cpp)
+        else()
+            set(round2_source tests/statistical/test_round2_statistics.cpp)
+        endif()
+        set(round2_target sd_round2_${kind}_tests)
+        add_executable(${round2_target} ${round2_source})
+        target_include_directories(${round2_target} PRIVATE include)
+        if(STRICT)
+            if(MSVC)
+                target_compile_options(${round2_target} PRIVATE /W4)
+            else()
+                target_compile_options(${round2_target} PRIVATE -Wall -Wextra -Wpedantic)
+            endif()
+        endif()
+        if(SD_SANITIZE AND CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
+            target_compile_options(${round2_target} PRIVATE -fsanitize=address,undefined -fno-omit-frame-pointer)
+            set_property(TARGET ${round2_target} APPEND_STRING PROPERTY LINK_FLAGS " -fsanitize=address,undefined")
+        endif()
+        add_test(NAME ${round2_target} COMMAND ${round2_target})
+    endforeach()
 endif()

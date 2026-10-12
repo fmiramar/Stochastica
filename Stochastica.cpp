@@ -8,6 +8,8 @@ void registerSDProcesses();
 void registerSDDistributions();
 void registerSDStateProcesses();
 void registerSDMapSonifiers();
+void registerSDAdvancedEvents();
+void registerSDShotNoise();
 
 PluginLoad(Stochastica)
 {
@@ -18,5 +20,7 @@ PluginLoad(Stochastica)
     registerSDDistributions();
     registerSDStateProcesses();
     registerSDMapSonifiers();
+    registerSDAdvancedEvents();
+    registerSDShotNoise();
 }
 

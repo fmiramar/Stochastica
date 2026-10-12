@@ -1,0 +1,89 @@
+class:: RandomTelegraph
+summary:: Persistent two-state stochastic switching
+categories:: UGens>Generators>Stochastic
+related:: Guides/Stochastica, Classes/SemiMarkov, Classes/LFNoise0
+
+description::
+
+RandomTelegraph stays in one of two regimes for a random dwell time, then switches. Separate transition rates let an active state last much longer than a resting state. It is useful for switching synthesis algorithms, density, brightness, or harmonic organization. Unlike link::Classes/SemiMarkov:: it needs no transition or duration buffers: its two-state Markov structure is explicit.
+
+The continuous-time Markov chain has mean low dwell code::1/upRate::, mean high dwell code::1/downRate::, and stationary high occupancy code::upRate/(upRate+downRate)::. This is the classical telegraph process; see S. Goldstein, On diffusion by discontinuous movements (1951), link::https://doi.org/10.1093/qjmam/4.2.129::.
+
+An exponential integrated-hazard threshold is consumed across calculations. Switches are located within each interval using piecewise-constant rates, so the new state's hazard applies to the remainder. At most eight switches are processed per calculation. Under overload, unfinished time is carried forward and evaluated using the next calculation's parameters; this delays the simulated timeline and is an approximation under modulation. The switch output is binary even if several switches occur. Keep rates far below eight times the calculation rate. No allocation or catch-up loop grows with event density.
+
+A zero transition rate makes its source state absorbing. Negative/non-finite rates become zero; non-finite output values become zero. Constructor and reset produce the requested initial state without a switch trigger. No warmup is needed.
+
+Like link::Classes/LFNoise0:: it holds values, but it alternates two persistent states with exponential dwell times rather than selecting a fresh value on a fixed grid.
+
+subsection:: Process view
+
+image::random-telegraph-dynamics.png#Two-level trajectory with asymmetric dwell times; the high regime has twice the expected duration.::
+
+classmethods::
+
+method:: ar
+argument:: low
+Output value of the low state; default -1. Can change while that state is active.
+argument:: high
+Output value of the high state; default 1.
+argument:: upRate
+Nonnegative low-to-high hazard per second; default 1. Zero traps the low state.
+argument:: downRate
+Nonnegative high-to-low hazard per second; default 1. Zero traps the high state.
+argument:: initialState
+At construction/reset: nonpositive starts low, positive starts high; default 0.
+argument:: seed
+Init-rate local PCG32 seed. Zero derives a seed from the parent Synth; nonzero is reproducible. Reset restores the original seed.
+argument:: reset
+Rising edge restores initialState, seed, and hazard schedule; clears timing debt. Reset wins over switching.
+returns:: Exactly two outputs: [value, switchTrigger].
+
+method:: kr
+Control-rate version: one calculation spans the full control block. Event outputs last one block.
+
+instancemethods::
+
+examples::
+
+subsection:: Two persistent pitches
+
+Separate dwell rates make the upper pitch last longer.
+
+code::
+(
+{ SinOsc.ar(RandomTelegraph.kr(220, 660, 1, 0.4)[0], 0, 0.08) }.play
+)
+::
+
+subsection:: Transitions
+
+Hear only the state changes.
+
+code::
+(
+{ Ringz.ar(RandomTelegraph.ar(upRate: 2, downRate: 0.5)[1], 1000, 0.08) * 0.03 }.play
+)
+::
+
+subsection:: Stochastic form
+
+Switch between sparse resonant particles and a sustained noisy regime, with a brief transition accent.
+
+code::
+(
+{
+    var regime = RandomTelegraph.kr(0, 1, 0.5, 0.3);
+    var sparse = Ringz.ar(Dust.ar(3), [400, 700, 1100], 0.15).sum * 0.015;
+    var dense = BPF.ar(PinkNoise.ar(0.2), 1800, 0.3);
+    Pan2.ar(SelectX.ar(Lag.kr(regime[0], 0.08), [sparse, dense])
+        + SinOsc.ar(1600, 0, Decay2.kr(regime[1], 0.001, 0.08) * 0.03))
+        * Line.kr(0, 1, 0.05)
+}.play
+)
+::
+
+subsection:: See also
+
+link::Guides/Stochastica::
+link::Classes/SemiMarkov::
+link::Classes/LFNoise0::

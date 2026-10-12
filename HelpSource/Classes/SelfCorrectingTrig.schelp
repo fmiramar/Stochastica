@@ -1,0 +1,79 @@
+class:: SelfCorrectingTrig
+summary:: Stochastic events with inhibitory feedback
+categories:: UGens>Generators>Stochastic
+related:: Guides/Stochastica, Classes/HawkesTrig, Classes/Dust
+
+description::
+
+SelfCorrectingTrig makes stochastic rhythms that resist clusters. Silence builds event pressure; each event lowers that pressure. The rate sets the target density and correction sets the strength of this refractory spacing. Use it for irregular pulse trains, sparse textures that refill silent gaps, or probabilistic rhythms with lower count variance than Poisson noise. link::Classes/HawkesTrig:: instead increases the chance of another event after an event.
+
+This is a normalized version of Isham and Westcott's self-correcting point process (1979), link::https://doi.org/10.1016/0304-4149(79)90008-5::. Intensity is code::rate * exp(z)::; between events code::dz/dt = correction * rate::, and an event subtracts correction from z. Each calculation first advances z, then draws one event with probability code::-expm1(-intensity * dt):: and reports the pre-event intensity. This is a discretized hazard model; rates should remain well below the calculation rate for the target density to be accurate.
+
+The explicit intensity ceiling also caps z at code::log(maxRate/rate)::. Zero rate or zero ceiling is silent and holds z. Non-finite parameters become zero. Reset outputs no event and the capped base rate; a held-positive reset creates only one edge. There is no warmup requirement, although count statistics need observation over time.
+
+Like link::Classes/Dust:: this emits random impulses, but their probability carries inhibitory memory instead of staying independent.
+
+subsection:: Process view
+
+image::self-correcting-dynamics.png#Event ticks and intensity: a Poisson case beside inhibitory suppression and recovery.::
+
+classmethods::
+
+method:: ar
+argument:: rate
+Nonnegative target events per second; default 1. Zero is silent.
+argument:: correction
+Nonnegative log-intensity reduction per event; default 1. Zero gives a constant-rate Poisson approximation.
+argument:: maxRate
+Nonnegative explicit intensity ceiling in events/second; default 20000.
+argument:: seed
+Init-rate local PCG32 seed. Zero derives a seed from the parent Synth; nonzero is reproducible. Reset restores the original seed.
+argument:: reset
+Rising edge clears z and restores the seed. Reset takes priority over event generation.
+returns:: Exactly two outputs: [trigger, preEventIntensity]. Triggers are binary.
+
+method:: kr
+Control-rate version: one calculation spans the full control block. Event outputs last one block.
+
+instancemethods::
+
+examples::
+
+subsection:: Minimal rhythm
+
+Hear stochastic spacing immediately.
+
+code::
+(
+{ Decay2.ar(SelfCorrectingTrig.ar(6, 1.5)[0], 0.001, 0.04) * 0.1 }.play
+)
+::
+
+subsection:: Intensity recovery
+
+Watch pressure fall after events and recover during silence.
+
+code::
+(
+{ SelfCorrectingTrig.kr(3, 2, seed: 21)[1].poll(10) }.play
+)
+::
+
+subsection:: Inhibition versus excitation
+
+Left clusters; right spaces events. Both sides use the same sound and roughly six events per second.
+
+code::
+(
+{
+    var events = [HawkesTrig.ar(2, 8, 12, seed: 10)[0], SelfCorrectingTrig.ar(6, 1.5, seed: 11)[0]];
+    SinOsc.ar(700, 0, Decay2.ar(events, 0.001, 0.05) * 0.08)
+}.play
+)
+::
+
+subsection:: See also
+
+link::Guides/Stochastica::
+link::Classes/HawkesTrig::
+link::Classes/Dust::
