@@ -21,6 +21,11 @@ image::chua-state-space-3d.png#Figure 1. Oblique state-space projection after no
 
 image::chua-state-space-projections.png#Figure 2. Orthogonal phase planes from left to right: x-y, x-z, and y-z. The first named coordinate is horizontal.::
 
+subsection:: See also
+
+link::Guides/Stochastica::
+link::Classes/MackeyGlass::
+
 classmethods::
 
 method:: ar
@@ -69,8 +74,8 @@ code::
 ::
 
 code::
-// Physically Modeled Double Scroll
 (
+// Physically Modeled Double Scroll
 {
     var sig, freq, mod, out;
     // Continuous, chaotic ODE solver simulating a real electronic circuit

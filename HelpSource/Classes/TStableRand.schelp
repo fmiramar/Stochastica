@@ -1,7 +1,7 @@
 class:: TStableRand
 summary:: Triggered alpha-stable sampler in Nolan S0 parameterization
 categories:: UGens>Generators>Stochastic>Distributions
-related:: Guides/Stochastica, Classes/TCauchyRand, Classes/TGaussRand
+related:: Guides/Stochastica, Classes/TCauchyRand, Classes/TRand
 
 description::
 
@@ -11,11 +11,17 @@ Samples Nolan's S0 alpha-stable parameterization with the Chambers–Mallows–S
 
 Alpha 2 is Gaussian under this parameterization; alpha 1 with beta 0 is Cauchy. Moments may not exist, and extreme finite values are expected and may require explicit user-side limiting before direct audio use.
 
-Like link::Classes/TGaussRand::, alpha 2 produces Gaussian-shaped draws; unlike it, TStableRand spans skewed heavy-tailed stable laws with a local resettable seed.
+Like vanilla link::Classes/TRand::, TStableRand samples on trigger edges and holds. Its alpha=2 endpoint is Gaussian, while lower alpha values give heavy-tailed stable laws, with a local resettable seed.
 
 subsection:: Stable-family shape
 
 image::stable-density.png#Smoothed empirical S0 densities with beta = 0, scale = 1, and alpha = 2, 1.5, and 1, shown in muted teal, blue, and plum over a finite display interval. Smaller alpha makes the center sharper and the tails heavier.::
+
+subsection:: See also
+
+link::Guides/Stochastica::
+link::Classes/TCauchyRand::
+link::Classes/TRand::
 
 classmethods::
 
@@ -59,8 +65,8 @@ code::
 ::
 
 code::
-// Extreme Heavy-Tailed Glitches
 (
+// Extreme Heavy-Tailed Glitches
 {
     var trig, freq, sig;
     trig = Impulse.kr(8);

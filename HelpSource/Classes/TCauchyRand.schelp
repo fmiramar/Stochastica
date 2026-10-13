@@ -1,7 +1,7 @@
 class:: TCauchyRand
 summary:: Triggered Cauchy-distribution sampler
 categories:: UGens>Generators>Stochastic>Distributions
-related:: Guides/Stochastica, Classes/TStableRand, Classes/TGaussRand
+related:: Guides/Stochastica, Classes/TStableRand, Classes/TRand
 
 description::
 
@@ -9,11 +9,17 @@ The Cauchy distribution is a notorious pathological probability distribution. Ma
 
 Uses the inverse transform code::location + abs(scale)*tan(pi*(U-0.5)):: with an open uniform variate. The Cauchy distribution has no finite mean or variance.
 
-Extreme finite values are expected and may require explicit user-side limiting before direct audio use. Like link::Classes/TGaussRand::, it samples and holds on triggers; unlike it, TCauchyRand has a much heavier tail and local resettable seed.
+Extreme finite values are expected and may require explicit user-side limiting before direct audio use. Like vanilla link::Classes/TRand::, it samples and holds on triggers. TCauchyRand uses an unbounded heavy-tailed law and a local resettable seed.
 
 subsection:: Distribution shape
 
 image::cauchy-density.png#Centered Cauchy densities with scale = 0.5, 1, and 2, shown in muted teal, blue, and plum over a deliberately finite display interval. Larger scale lowers the center and puts more probability in the heavy tails.::
+
+subsection:: See also
+
+link::Guides/Stochastica::
+link::Classes/TStableRand::
+link::Classes/TRand::
 
 classmethods::
 
@@ -53,8 +59,8 @@ code::
 ::
 
 code::
-// Pathological Outlier Glitches
 (
+// Pathological Outlier Glitches
 {
     var trig, freq, sig;
     trig = Impulse.kr(10);

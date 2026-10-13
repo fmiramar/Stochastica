@@ -17,6 +17,12 @@ subsection:: State-space portrait
 
 image::coupled-logistic-map-phase.png#The two coupled logistic states at the documented defaults. x is horizontal and y is vertical; diagonal structure shows synchronization between the maps.::
 
+subsection:: See also
+
+link::Guides/Stochastica::
+link::Classes/CoupledMapLattice::
+link::Classes/CircleMap::
+
 classmethods::
 
 method:: ar
@@ -56,8 +62,8 @@ code::
 ::
 
 code::
-// Stereo Coordinated Tics
 (
+// Stereo Coordinated Tics
 {
     var trig, coords, freqs, sig;
     trig = Impulse.kr(8);

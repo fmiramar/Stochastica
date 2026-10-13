@@ -1,6 +1,6 @@
 class:: RandomTelegraph
 summary:: Persistent two-state stochastic switching
-categories:: UGens>Generators>Stochastic
+categories:: UGens>Generators>Stochastic>Processes
 related:: Guides/Stochastica, Classes/SemiMarkov, Classes/LFNoise0
 
 description::
@@ -18,6 +18,12 @@ Like link::Classes/LFNoise0:: it holds values, but it alternates two persistent 
 subsection:: Process view
 
 image::random-telegraph-dynamics.png#Two-level trajectory with asymmetric dwell times; the high regime has twice the expected duration.::
+
+subsection:: See also
+
+link::Guides/Stochastica::
+link::Classes/SemiMarkov::
+link::Classes/LFNoise0::
 
 classmethods::
 
@@ -81,9 +87,3 @@ code::
 }.play
 )
 ::
-
-subsection:: See also
-
-link::Guides/Stochastica::
-link::Classes/SemiMarkov::
-link::Classes/LFNoise0::

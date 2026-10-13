@@ -1,6 +1,6 @@
 class:: SemiMarkov
 summary:: Finite-state process with state-specific dwell distributions
-categories:: UGens>Control>Markov
+categories:: UGens>Generators>Stochastic>State
 related:: Guides/Stochastica, Classes/MarkovChain, Classes/RenewalTrig
 
 description::
@@ -14,6 +14,12 @@ At most one transition occurs per calculation and negative timing remainder is c
 subsection:: State and dwell view
 
 image::semi-markov-dynamics.png#Left: a three-state semi-Markov realization using fixed, gamma, and Weibull dwell laws. Right: remaining dwell time counting down and resampling at transitions; the varying ramp heights make timing part of the model state.::
+
+subsection:: See also
+
+link::Guides/Stochastica::
+link::Classes/MarkovChain::
+link::Classes/RenewalTrig::
 
 classmethods::
 
@@ -78,8 +84,8 @@ Routine {
 ::
 
 code::
-// Decoupled Structural Sequencing
 (
+// Decoupled Structural Sequencing
 Routine {
     var trans, durs, vals;
     

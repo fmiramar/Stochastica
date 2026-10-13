@@ -17,6 +17,12 @@ subsection:: State-space portrait
 
 image::clifford-map-phase.png#The Clifford attractor at the documented defaults. x is horizontal and y is vertical; overlapping points make the more frequently visited regions darker.::
 
+subsection:: See also
+
+link::Guides/Stochastica::
+link::Classes/DeJongMap::
+link::Classes/LatoocarfianMap::
+
 classmethods::
 
 method:: ar
@@ -58,8 +64,8 @@ code::
 ::
 
 code::
-// Evolving Ambient Drone
 (
+// Evolving Ambient Drone
 {
     var trig, coords, freq, sig, filt;
     trig = Impulse.kr(20); // Fast triggers for continuous-feeling modulation

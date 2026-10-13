@@ -1,6 +1,6 @@
 class:: MultiHawkesTrig
 summary:: Directional cross-excitation between stochastic event streams
-categories:: UGens>Generators>Stochastic
+categories:: UGens>Triggers>Stochastic
 related:: Guides/Stochastica, Classes/HawkesTrig, Classes/SelfCorrectingTrig, Classes/Dust
 
 description::
@@ -20,6 +20,13 @@ Like link::Classes/Dust:: it generates random impulses, but events causally alte
 subsection:: Process view
 
 image::multi-hawkes-dynamics.png#Four event rasters and target intensities show activity propagating through directed connections.::
+
+subsection:: See also
+
+link::Guides/Stochastica::
+link::Classes/HawkesTrig::
+link::Classes/SelfCorrectingTrig::
+link::Classes/Dust::
 
 classmethods::
 
@@ -114,10 +121,3 @@ Routine {
 }.play;
 )
 ::
-
-subsection:: See also
-
-link::Guides/Stochastica::
-link::Classes/HawkesTrig::
-link::Classes/SelfCorrectingTrig::
-link::Classes/Dust::

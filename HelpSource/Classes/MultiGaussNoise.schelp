@@ -1,7 +1,7 @@
 class:: MultiGaussNoise
 summary:: Triggered vector of correlated Gaussian values
-categories:: UGens>Generators>Stochastic>Processes
-related:: Guides/Stochastica, Classes/MarkovChain, Classes/TGaussRand
+categories:: UGens>Generators>Stochastic>Distributions
+related:: Guides/Stochastica, Classes/MarkovChain, Classes/NRand
 
 description::
 
@@ -9,11 +9,17 @@ Multivariate Gaussian Noise generates multiple, simultaneous channels of random 
 
 Reads a row-major covariance matrix, symmetrizes it, and computes a Cholesky factor at construction, reset, or reload. A trigger multiplies independent normal draws by the factor and adds the optional mean vector.
 
-Failed factorization adds diagonal jitter in eight bounded attempts, then falls back to nonnegative diagonal variance. Like link::Classes/TGaussRand::, each component has a Gaussian marginal; unlike it, MultiGaussNoise produces a covariance-controlled vector with one local seed.
+Failed factorization adds diagonal jitter in eight bounded attempts, then falls back to nonnegative diagonal variance. Vanilla link::Classes/NRand:: approximates a bell-shaped scalar law by summing uniform draws at construction. MultiGaussNoise instead samples a Gaussian vector on triggers with specified covariance and one local seed.
 
 subsection:: Covariance view
 
 image::multigauss-correlation.png#Samples from covariance [[1, 0.8], [0.8, 1]]. The green arrow marks the high-variance principal direction and the red arrow the low-variance direction; the elongated cloud is the correlation made geometric.::
+
+subsection:: See also
+
+link::Guides/Stochastica::
+link::Classes/MarkovChain::
+link::Classes/NRand::
 
 classmethods::
 
@@ -69,8 +75,8 @@ Routine {
 ::
 
 code::
-// Cohesive Ensemble Detuning
 (
+// Cohesive Ensemble Detuning
 {
     var noise, freqs, sig;
     // 4 simultaneous noise channels that wander randomly but share a correlated trend

@@ -15,6 +15,12 @@ subsection:: Probability mass
 
 image::negative-binomial-mass.png#Failures before two successes for probability = 0.25, 0.5, and 0.75, shown in muted teal, blue, and plum. Lower success probability shifts mass toward larger counts and increases dispersion.::
 
+subsection:: See also
+
+link::Guides/Stochastica::
+link::Classes/TGammaRand::
+link::Classes/TPoissonRand::
+
 classmethods::
 
 method:: ar
@@ -53,8 +59,8 @@ code::
 ::
 
 code::
-// Algorithmic Burst Counting
 (
+// Algorithmic Burst Counting
 {
     var trig, bursts, sig;
     trig = Impulse.kr(4);

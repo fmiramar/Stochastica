@@ -1,7 +1,7 @@
 class:: TLogNormalRand
 summary:: Triggered lognormal-distribution sampler
 categories:: UGens>Generators>Stochastic>Distributions
-related:: Guides/Stochastica, Classes/TGaussRand
+related:: Guides/Stochastica, Classes/TRand
 
 description::
 
@@ -9,11 +9,16 @@ The Lognormal distribution describes a variable whose logarithm is normally dist
 
 Computes code::exp(mu + abs(sigma)*normal):: using cached Box–Muller normal draws. Exponential overflow returns the largest finite float.
 
-Like link::Classes/TGaussRand::, it is driven by a normal variate; unlike TGaussRand, exponentiation produces positive skewed values and the random sequence is local and resettable.
+Like vanilla link::Classes/TRand::, it samples on triggers and holds. TLogNormalRand exponentiates a normal variate to produce positive skewed values, using a local resettable sequence.
 
 subsection:: Distribution shape
 
 image::lognormal-density.png#Lognormal densities with mu = 0 and sigma = 0.3, 0.7, and 1, shown in muted teal, blue, and plum. Increasing sigma broadens the positive distribution and lengthens its right tail.::
+
+subsection:: See also
+
+link::Guides/Stochastica::
+link::Classes/TRand::
 
 classmethods::
 
@@ -53,8 +58,8 @@ code::
 ::
 
 code::
-// Psychoacoustic Frequency Generation
 (
+// Psychoacoustic Frequency Generation
 {
     var trig, freq, sig;
     trig = Impulse.kr(8);

@@ -15,6 +15,12 @@ subsection:: Process and stationary law
 
 image::ou-process-dynamics.png#Left: an exact finite-step OU trace with mean = 0, reversion = 1, and diffusion = 1. Right: its stationary Gaussian density; the process fluctuates continually but is pulled back toward the center.::
 
+subsection:: See also
+
+link::Guides/Stochastica::
+link::Classes/BrownNoise::
+link::Classes/FBrownianMotion::
+
 classmethods::
 
 method:: ar
@@ -60,8 +66,8 @@ code::
 ::
 
 code::
-// Analog Tape Wow and Flutter
 (
+// Analog Tape Wow and Flutter
 {
     var drift, freq, sig;
     // The mean-reverting drift of OU Process acts as a perfectly bounded random LFO
@@ -74,8 +80,8 @@ code::
 ::
 
 code::
-// Generative Drone Pitch Drifting
 (
+// Generative Drone Pitch Drifting
 {
     var drift, freqs, sig;
     // Array of 4 OU processes, each wandering independently but always returning home

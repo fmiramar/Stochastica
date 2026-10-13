@@ -1,7 +1,7 @@
 class:: BoundedWalk
 summary:: Triggered random walk with explicit boundary and increment rules
 categories:: UGens>Generators>Stochastic>Processes
-related:: Guides/Stochastica, Classes/OUProcess, Classes/TBrownRand
+related:: Guides/Stochastica, Classes/OUProcess, Classes/BrownNoise
 
 description::
 
@@ -9,11 +9,17 @@ A Bounded Walk is a discrete-time random walk where the accumulating state is st
 
 Adds a uniform, normal, or Cauchy increment on each rising trigger and applies an explicit reflect, wrap, clip, resample, or absorb boundary rule. Resampling stops after 64 attempts and then clips.
 
-Unlike link::Classes/TBrownRand::, BoundedWalk has deterministic local seeding, rising-edge reset, several increment distributions, and named boundary semantics.
+Like vanilla link::Classes/BrownNoise::, BoundedWalk accumulates random increments within boundaries. BoundedWalk exposes trigger-driven stepping, local resettable seeding, several increment laws and explicit boundary rules.
 
 subsection:: Boundary comparison
 
 image::bounded-walk-boundaries.png#The same seeded uniform increments under three rules: reflect at left, wrap at center, and absorb at right. Reflection reverses overshoot, wrapping jumps to the opposite edge, and absorption remains at the first boundary reached.::
+
+subsection:: See also
+
+link::Guides/Stochastica::
+link::Classes/OUProcess::
+link::Classes/BrownNoise::
 
 classmethods::
 
@@ -64,8 +70,8 @@ code::
 ::
 
 code::
-// Wandering Pentatonic Melodies
 (
+// Wandering Pentatonic Melodies
 {
     var trig, walk, scale, degree, freq, sig;
     trig = Impulse.kr([6,12]);

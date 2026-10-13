@@ -15,6 +15,12 @@ subsection:: Spectral view
 
 image::fractional-noise-spectra.png#Idealized log-frequency/log-power references for alpha = 0, 1, and 2, shown respectively in muted teal, blue, and plum. FractionalNoise approximates these slopes only inside its finite minFreq-to-maxFreq band.::
 
+subsection:: See also
+
+link::Guides/Stochastica::
+link::Classes/FBrownianMotion::
+link::Classes/PinkNoise::
+
 classmethods::
 
 method:: ar
@@ -58,8 +64,8 @@ code::
 ::
 
 code::
-// Cinematic Howling Wind
 (
+// Cinematic Howling Wind
 {
     var gust, slope, sig, verb;
     // Intermittent gusts of wind

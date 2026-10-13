@@ -15,6 +15,12 @@ subsection:: Distribution shape
 
 image::weibull-density.png#Weibull densities with scale = 1 and shape = 0.6, 1, and 2, shown in muted teal, blue, and plum. Shape 1 is exponential; values below and above one produce decreasing and increasing hazards respectively.::
 
+subsection:: See also
+
+link::Guides/Stochastica::
+link::Classes/TGammaRand::
+link::Classes/TExpRand::
+
 classmethods::
 
 method:: ar
@@ -53,8 +59,8 @@ code::
 ::
 
 code::
-// Granular Particle Lifetimes
 (
+// Granular Particle Lifetimes
 {
     var trig, dur, sig;
     trig = Dust.kr(20);

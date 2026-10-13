@@ -17,6 +17,11 @@ subsection:: State-space portrait
 
 image::lozi-map-phase.png#The default Lozi attractor after its transient. x is horizontal and y is vertical; its angular folds reflect the map's absolute-value nonlinearity.::
 
+subsection:: See also
+
+link::Guides/Stochastica::
+link::Classes/HenonMap::
+
 classmethods::
 
 method:: ar
@@ -54,8 +59,8 @@ code::
 ::
 
 code::
-// Angular IDM Bass Sequences
 (
+// Angular IDM Bass Sequences
 {
     var trig, coords, freq, sig, env;
     trig = Impulse.kr(6);

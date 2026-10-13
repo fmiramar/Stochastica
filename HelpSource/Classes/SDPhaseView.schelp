@@ -11,6 +11,12 @@ The server sends only code::fps:: state messages per second. The language proces
 
 This is a language-side documentation and exploration utility, not a server UGen. Unlike link::Classes/ScopeView::, it displays two model coordinates against one another instead of signal amplitude against time.
 
+subsection:: See also
+
+link::Guides/Stochastica::
+link::Classes/HenonMap::
+link::Classes/Chua::
+
 classmethods::
 
 method:: open

@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased — Round 3
+
+- Add MaternNoise, TDirichletRand, PolyaUrn, MarkovModulatedTrig, LevyFlight, JumpDiffusion, WilsonCowan, and Lorenz96 at audio and control rates.
+- Add exact half-integer Matérn transitions, log-space allocation sampling, reinforced state, hidden event regimes, stable transport, compound-Poisson shocks, and fixed-substep population/lattice flows.
+- Preserve existing seeded sequences through a regression-tested categorical helper extraction.
+- Add numerical, statistical, server ABI, sanitizer, stress, endurance, performance and documentation checks, with eight reproducible mathematical figures.
+- Reorganize the guide around technical families and forms of memory/interaction; audit all 54 class help pages, correct unresolved comparison links, and place related links before examples while retaining earlier runnable expressions.
+- Keep expansions unreleased; no existing DSP behavior is intentionally changed.
+
 ## Unreleased — Round 2
 
 - Add MultiHawkesTrig, SelfCorrectingTrig, RandomTelegraph, ShotNoise, MultiOUProcess, DoubleWellProcess, TVonMisesRand, and KuramotoNetwork at audio and control rates.

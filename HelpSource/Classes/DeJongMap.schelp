@@ -17,6 +17,11 @@ subsection:: State-space portrait
 
 image::dejong-map-phase.png#The Peter de Jong attractor at the documented defaults. x is horizontal and y is vertical; density, rather than a connected line, describes this discrete orbit.::
 
+subsection:: See also
+
+link::Guides/Stochastica::
+link::Classes/CliffordMap::
+
 classmethods::
 
 method:: ar
@@ -58,8 +63,8 @@ code::
 ::
 
 code::
-// Chaotic Flanger Modulation
 (
+// Chaotic Flanger Modulation
 {
     var trig, coords, source, delay;
     trig = Impulse.kr(30);

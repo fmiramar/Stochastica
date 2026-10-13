@@ -17,6 +17,11 @@ subsection:: State-space portrait
 
 image::tinkerbell-map-phase.png#The default Tinkerbell orbit after its transient. x is horizontal and y is vertical; points retain the map's discrete-time character.::
 
+subsection:: See also
+
+link::Guides/Stochastica::
+link::Classes/DeJongMap::
+
 classmethods::
 
 method:: ar
@@ -61,8 +66,8 @@ code::
 ::
 
 code::
-// Fairy Flight Sweeps
 (
+// Fairy Flight Sweeps
 {
     var trig, coords, freq, rq, sig, env;
     trig = Impulse.kr(LFNoise1.kr(2).exprange(2, 12));

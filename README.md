@@ -2,17 +2,28 @@
 
 # Stochastica
 
-Stochastica is a suite of chaotic and unpredictable SuperCollider plugins (UGens) designed for generative music, glitch, and organic sound design. Built as a companion to SuperCollider's classic noise generators, it provides advanced mathematical tools for sequencing rhythms, modulating parameters, and generating raw audio.
+Stochastica provides mathematical SuperCollider UGens for generative music: nonlinear maps and flows, shaped probability distributions, stochastic trajectories, event timing, discrete state and interacting populations. Raw state is separate from sonic mapping, so a patch can expose what a model remembers and how it organizes change.
 
-Rather than offering "black box" synthesizers, Stochastica breaks complex mathematics down into modular categories that you can patch together however you like:
+Deterministic maps and flows can be periodic, excitable or chaotic depending on parameters. Stochastic models consume random innovations. Independent triggered distributions, mean-reverting motion, event feedback and accumulated preference introduce different kinds of structure; the installed Stochastica guide explains these relationships across all 53 UGens and the language-side `SDPhaseView` utility.
 
-* **Discrete Maps (Chaotic Sequencers):** Plugins like *HenonMap* and *RulkovMap* calculate the next step in a complex mathematical formula. They act like erratic, non-repeating step sequencers—perfect for generating wild melodies or harsh, irregular rhythms.
-* **Continuous Flows (Physical Modulators):** Plugins like *Chua* and *Izhikevich* simulate physical systems, such as chaotic analog circuits or biological neurons. Because they flow continuously over time, they act like deeply organic, unpredictable LFOs.
-* **Probability Distributions (Shaped Randomness):** Triggered random number generators (like *TCauchyRand* or *TWeibullRand*) that follow specific statistical curves. Instead of pure white noise, these let you dial in exact random behaviors—from tightly clustered values to massive, violent outliers and glitches.
-* **Stochastic & Event Processes (Organic Triggers):** Systems with internal memory. This includes *OUProcess* (which wanders randomly but safely drifts back to a center point) and *HawkesTrig* (which generates triggers that arrive in biological swarms and bursts rather than on a rigid grid).
-* **State Processes (Generative Routing):** UGens like *SemiMarkov* let you build complex probabilistic state machines, randomly jumping between different musical textures or chord degrees based on rules you define.
+This remains in BiroSCa as an experimental SuperCollider-native collection independently implementing mathematical techniques, rather than wrapping an upstream plugin. Equations, adaptations and citations are documented in each help page and the [source notes](docs/sources.md).
 
-By keeping the math pure and leaving the creative routing up to you, Stochastica allows you to use a simulated biological neuron to sweep a filter, a statistical swarm to trigger a drum kit, or a chaotic map as raw audio distortion.
+## Round 3 expansion (unreleased)
+
+Eight additions develop memory, hidden organization, constrained geometry, transport and collective dynamics. They continue the existing Stochastica project; existing DSP and seeded behavior are preserved.
+
+- `MaternNoise` generates Gaussian trajectories with separate variance, correlation-time and smoothness controls. Exact finite-step linear-SDE transitions implement the half-integer Matérn family through derivative-state memory.
+- `TDirichletRand` distributes a unit budget among nonnegative shares on each trigger. Bounded Gamma sampling in log space preserves sparse allocations at small concentrations.
+- `PolyaUrn` reinforces the probability of previously selected states. Private accumulated weights expose path dependence, pre-selection probability and post-selection entropy.
+- `MarkovModulatedTrig` gives one event stream persistent quiet or dense regimes. A latent Markov state controls bounded discrete-hazard event timing independently of observed events.
+- `LevyFlight` accumulates symmetric stable increments into unbounded transport. Exact elapsed-time scaling distinguishes heavy-tailed relocations from correlated fractional motion.
+- `JumpDiffusion` combines Brownian wandering with finite-rate Gaussian-marked Poisson shocks. An aggregate jump draw exposes state, jump flag, displacement and count without a per-shock loop.
+- `WilsonCowan` models feedback between excitatory and inhibitory population activities. Fixed-substep RK4 integrates a normalized logistic variant of the population equations with optional external stochastic drive.
+- `Lorenz96` evolves locally coupled continuous states around a ring. Linear-cost cyclic RK4 stages expose spatially extended deterministic dynamics, distinct from trigger-driven coupled maps.
+
+Each addition has audio/control rates, a sourced help page, small runnable examples and a reproducible figure. The guide audits the original collection and both expansions, with comparisons of memory, regimes, movement and interaction. See the [Round 3 implementation](docs/round3-implementation.md) and [verification record](docs/round3-verification.md).
+
+Dirichlet dimension is at most 32; urn states, latent states and Lorenz cells at most 64. Event/state rates in MarkovModulatedTrig should stay well below the calculation rate. Matérn coefficient parameters are sampled at block entry. JumpDiffusion rejects Poisson means above 1e8 per calculation. Flow substeps are limited to 16; 64-cell Lorenz96 at 16 audio-rate substeps can exceed a core's real-time budget. Heavy-tailed/raw outputs require explicit sonic mapping, and the flows do not provide antialiasing.
 
 ## Round 2 expansion (unreleased)
 
@@ -40,7 +51,7 @@ See the installed Stochastica guide, [implementation record](docs/round2-impleme
 - An event process emits one-sample or one-control-block events.
 - A sonifier explicitly folds and maps raw-map state into audio.
 
-Seeded classes use a local PCG32 generator. An explicit nonzero seed produces the same algorithmic sequence across supported platforms; zero derives a seed from the parent Synth generator. Reset restores the original local seed.
+Seeded classes use a local PCG32 generator. An explicit nonzero seed repeats the local algorithmic sequence for the same inputs and calculation rate; zero derives a seed from the parent Synth generator at construction. Reset restores the original local seed. Floating-point library differences may affect last-bit values across platforms.
 
 ## Classes
 
@@ -114,12 +125,18 @@ cmake --install build --config Release
 
 Install the staged `Stochastica` folder in the SuperCollider user extension directory and recompile the class library. For supernova, configure with `-DSUPERNOVA=ON`.
 
+Configure with `-DBUILD_TESTING=ON` and run `ctest --test-dir build --output-on-failure` for the numerical, statistical and server ABI checks. Local server/doc commands and performance limits are in the [verification record](docs/round3-verification.md). Platform verification workflows stage architecture-labeled extension artifacts; this source expansion has not been published.
+
 ## Buffer formats
 
 - `CoupledMapLattice`: at least `numCells` samples.
 - `MarkovChain`: one-channel, row-major `numStates * numStates` transition weights; optional one-channel values.
 - `SemiMarkov`: the same matrix plus a three-channel duration buffer containing mean seconds, shape, and distribution code.
 - `MultiGaussNoise`: one-channel, row-major covariance matrix; optional one-channel mean vector.
+- `TDirichletRand`: mono positive concentration vector.
+- `PolyaUrn`: mono nonnegative base weights with positive total; optional finite value vector.
+- `MarkovModulatedTrig`: mono row-major transition weights plus event-rate and transition-opportunity-rate vectors.
+- `Lorenz96`: optional mono finite initial vector; reload stores a template and a later reset applies it.
 
 Buffer examples use a `Routine` and `s.sync` before Synth creation.
 

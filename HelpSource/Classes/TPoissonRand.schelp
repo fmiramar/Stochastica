@@ -15,6 +15,12 @@ subsection:: Probability mass
 
 image::poisson-mass.png#Poisson mass functions for lambda = 1, 4, and 10, shown in muted teal, blue, and plum. The support is discrete; increasing lambda moves the center rightward and widens it by the square root of lambda.::
 
+subsection:: See also
+
+link::Guides/Stochastica::
+link::Classes/TGeometricRand::
+link::Classes/TIRand::
+
 classmethods::
 
 method:: ar
@@ -51,8 +57,8 @@ code::
 ::
 
 code::
-// Radioactive Event Counting
 (
+// Radioactive Event Counting
 {
     var trig, count, freq, sig;
     trig = Impulse.kr(2);

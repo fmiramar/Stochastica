@@ -1,6 +1,6 @@
 class:: TVonMisesRand
 summary:: Triggered random directions on a circle
-categories:: UGens>Generators>Stochastic
+categories:: UGens>Generators>Stochastic>Distributions
 related:: Guides/Stochastica, Classes/TTruncNormalRand, Classes/TRand, Classes/PanAz
 
 description::
@@ -20,6 +20,13 @@ Like link::Classes/TRand:: it samples and holds on triggers, but it samples a ci
 subsection:: Process view
 
 image::von-mises-circular.png#Polar sample histograms for concentration 0, 2, and 8. The wrap boundary is continuous.::
+
+subsection:: See also
+
+link::Guides/Stochastica::
+link::Classes/TTruncNormalRand::
+link::Classes/TRand::
+link::Classes/PanAz::
 
 classmethods::
 
@@ -80,10 +87,3 @@ code::
 }.play
 )
 ::
-
-subsection:: See also
-
-link::Guides/Stochastica::
-link::Classes/TTruncNormalRand::
-link::Classes/TRand::
-link::Classes/PanAz::

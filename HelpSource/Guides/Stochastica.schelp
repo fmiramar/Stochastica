@@ -1,77 +1,170 @@
 title:: Stochastica
-summary:: Raw maps, flows, stochastic processes, distributions, state processes, and explicit sonifiers
+summary:: A vocabulary of memory, probability, nonlinear feedback and collective organization
 categories:: UGens>Generators>Stochastic, UGens>Generators>Chaotic
 related:: Classes/WhiteNoise, Classes/BrownNoise, Classes/LFNoise0, Classes/TIRand, Classes/Stepper
 
 description::
 image::scdoc_banner.jpg::
 
-Vanilla SuperCollider provides standard stochastic generators (e.g., WhiteNoise, LFNoise, Dust) and basic chaotic attractors (e.g., HenonC, ChaosGen). However, advanced generative modeling often requires mathematically pure implementations of dynamical systems, non-uniform probability distributions, and state-aware stochastic processes that operate independently of audio-rate interpolation or internal scaling. 
+Stochastica supplies raw mathematical models for SuperCollider: deterministic recurrences and flows, shaped independent draws, evolving stochastic trajectories, event timing, discrete state, and collective dynamics. Choose a model for what it remembers and how its parts interact, then make its sonic mapping explicit. A position need not be a pitch; an event intensity need not be a volume; a chaotic coordinate need not fit an audio range.
 
-Stochastica introduces a formal mathematical suite for these exact models on the audio server. The collection separates the mathematical simulation of a system from its sonic application. Discrete maps and continuous flows produce raw coordinate trajectories; probability distributions sample from precise statistical models; and stochastic processes maintain memory over time. This structure allows for rigorous algorithmic composition, physical modeling, and complex modulation networks.
+strong::Deterministic chaos is not stochastic randomness.:: A chaotic map or flow follows its state and parameters without random innovations. Sensitivity to initial conditions can still make its future hard to predict. Stochastic models instead consume probabilistic innovations. Both can sound irregular, but their causes, repeatability and useful controls differ. The documentation's Chaotic>Flows browser category is a technical family, not a claim that every setting or every flow is chaotic.
 
-A distribution sampler produces independent values when triggered. A stochastic process has memory over time. A discrete map updates a state through a recurrence. A continuous system integrates differential equations. A sonifier maps an internal state to an audible signal and is therefore not the same object as the mathematical system it uses.
+subsection:: Three rounds of organization
 
-Seeded classes use a local PCG32 generator. A nonzero seed is deterministic; zero derives a seed from the parent Synth. Rising triggers and resets use a shared nonpositive-to-positive edge rule.
+The original collection establishes nonlinear iteration, continuous feedback, independent probability laws, Gaussian drift, fractional approximations, event timing, state transitions, vector covariance and explicit sonification. These are distinct mathematical objects, not interchangeable noise flavors.
 
-subsection:: Class overview
+Round 2 adds relationships: cross-excitation, inhibition, persistent regimes, material responses to impacts, multivariate motion, metastability, circular geometry and phase synchronization. Round 3 adds derivative-state memory, constrained allocation, accumulated preference, hidden event regimes, stable transport, explicit shocks, opposing populations and spatially extended continuous dynamics. Round 2 and Round 3 are local unreleased expansions in this source tree; publication status does not change their conceptual place in the library.
+
+subsection:: Technical families and complete class inventory
+
+Source folders are implementation organization. The following families describe the mathematical object exposed to a patch. Behavioral roles can cross these families.
 
 table::
-## strong::Category:: || strong::Classes::
-## Raw maps || link::Classes/HenonMap::, link::Classes/GbmanMap::, link::Classes/LatoocarfianMap::, link::Classes/IkedaMap::, link::Classes/LoziMap::, link::Classes/TinkerbellMap::, link::Classes/CliffordMap::, link::Classes/DeJongMap::, link::Classes/CircleMap::, link::Classes/CoupledLogisticMap::, link::Classes/CoupledMapLattice::, link::Classes/RulkovMap::
-## Continuous systems || link::Classes/MackeyGlass::, link::Classes/Chua::, link::Classes/Izhikevich::, link::Classes/KuramotoNetwork::
-## Processes || link::Classes/OUProcess::, link::Classes/RenewalTrig::, link::Classes/HawkesTrig::, link::Classes/FractionalNoise::, link::Classes/FBrownianMotion::, link::Classes/BoundedWalk::, link::Classes/MultiHawkesTrig::, link::Classes/SelfCorrectingTrig::, link::Classes/RandomTelegraph::, link::Classes/ShotNoise::, link::Classes/DoubleWellProcess::
-## Distributions || link::Classes/TGammaRand::, link::Classes/TWeibullRand::, link::Classes/TLogNormalRand::, link::Classes/TCauchyRand::, link::Classes/TPoissonRand::, link::Classes/TGeometricRand::, link::Classes/TNegBinomialRand::, link::Classes/TTruncNormalRand::, link::Classes/TStableRand::, link::Classes/TLevyRand::, link::Classes/TVonMisesRand::
-## State and vector processes || link::Classes/MarkovChain::, link::Classes/SemiMarkov::, link::Classes/MultiGaussNoise::, link::Classes/MultiOUProcess::
-## Explicit sonifiers || link::Classes/HenonSonify::, link::Classes/GbmanSonify::, link::Classes/LatoocarfianSonify::
+## strong::Family:: || strong::What evolves or is sampled:: || strong::Classes::
+## Raw maps || Triggered recurrence coordinates || link::Classes/HenonMap::, link::Classes/GbmanMap::, link::Classes/LatoocarfianMap::, link::Classes/IkedaMap::, link::Classes/LoziMap::, link::Classes/TinkerbellMap::, link::Classes/CliffordMap::, link::Classes/DeJongMap::, link::Classes/CircleMap::, link::Classes/CoupledLogisticMap::, link::Classes/CoupledMapLattice::, link::Classes/RulkovMap::
+## Continuous flows || Differential-equation state, including explicit delay or optional stochastic forcing || link::Classes/MackeyGlass::, link::Classes/Chua::, link::Classes/Izhikevich::, link::Classes/KuramotoNetwork::, link::Classes/WilsonCowan::, link::Classes/Lorenz96::
+## Stochastic trajectories || Positions or responses that carry random history through time || link::Classes/OUProcess::, link::Classes/FractionalNoise::, link::Classes/FBrownianMotion::, link::Classes/BoundedWalk::, link::Classes/RandomTelegraph::, link::Classes/ShotNoise::, link::Classes/DoubleWellProcess::, link::Classes/MaternNoise::, link::Classes/LevyFlight::, link::Classes/JumpDiffusion::
+## Event processes || Arrival times and intensity/dwell state || link::Classes/RenewalTrig::, link::Classes/HawkesTrig::, link::Classes/MultiHawkesTrig::, link::Classes/SelfCorrectingTrig::, link::Classes/MarkovModulatedTrig::
+## Triggered distributions || Independent scalar/vector draws for fixed parameters || link::Classes/TGammaRand::, link::Classes/TWeibullRand::, link::Classes/TLogNormalRand::, link::Classes/TCauchyRand::, link::Classes/TPoissonRand::, link::Classes/TGeometricRand::, link::Classes/TNegBinomialRand::, link::Classes/TTruncNormalRand::, link::Classes/TStableRand::, link::Classes/TLevyRand::, link::Classes/TVonMisesRand::, link::Classes/TDirichletRand::
+## State and vector models || Discrete transitions, reinforced histories, instantaneous covariance or correlated trajectories || link::Classes/MarkovChain::, link::Classes/SemiMarkov::, link::Classes/MultiGaussNoise::, link::Classes/MultiOUProcess::, link::Classes/PolyaUrn::
+## Explicit sonifiers || Rendering of mathematical state into frequency and level || link::Classes/HenonSonify::, link::Classes/GbmanSonify::, link::Classes/LatoocarfianSonify::
+## Language-side visualization || Display of the exact server state being sonified || link::Classes/SDPhaseView::
 ::
 
-The categories represent distinct mathematical paradigms:
+subsection:: Discrete nonlinear iteration and excitability
 
-list::
-## strong::Raw maps::: Discrete-time dynamical systems defined by recurrence relations. The state is updated iteratively on each trigger, producing chaotic or periodic coordinate sequences.
-## strong::Continuous systems::: Ordinary differential equations (ODEs) integrated over time. They describe physical or abstract systems that evolve continuously, outputting their multi-dimensional state.
-## strong::Processes::: Stochastic models with memory (e.g., Brownian motion, Ornstein-Uhlenbeck). Their current output depends on previous states combined with random innovations, creating evolving trajectories.
-## strong::Distributions::: Memoryless probability models. When triggered, they generate independent random variables shaped by specific probability density functions (e.g., Gamma, Cauchy, Weibull).
-## strong::State and vector processes::: Multivariate systems and state-transition models, including Markov chains and covariance matrices, where multiple probabilities interact to determine the next discrete state or continuous vector.
-## strong::Explicit sonifiers::: Specialized wrappers that fold, scale, and interpolate the raw mathematical coordinates of discrete maps directly into usable audio signals.
+link::Classes/HenonMap:: uses a quadratic recurrence, link::Classes/GbmanMap:: an absolute-value recurrence, and link::Classes/LatoocarfianMap:: a documented two-sine recurrence. link::Classes/IkedaMap:: models nonlinear optical rotation; link::Classes/LoziMap:: introduces a piecewise-linear fold; link::Classes/TinkerbellMap:: uses a polynomial coordinate update. link::Classes/CliffordMap:: and link::Classes/DeJongMap:: use different trigonometric recurrences. link::Classes/CircleMap:: is a wrapped phase recurrence that can show locking. These raw maps follow deterministic rules and can be used for irregular sequencing or coordinate modulation; parameters can also produce periodic motion or divergence.
+
+link::Classes/CoupledLogisticMap:: exchanges influence between two recurrence states. link::Classes/CoupledMapLattice:: adds a spatial ring with local coupling, allowing collective patterns to emerge from interaction. Neither coupling nor a chaotic-looking trace implies a source of random innovations.
+
+link::Classes/RulkovMap:: belongs technically to discrete maps but behaviorally to excitability: fast and slow states can produce quiescence, spikes and bursts. That role connects it to the continuous voltage/recovery model link::Classes/Izhikevich::, whose threshold and reset generate discrete spikes. They should not be treated simply as two generic chaotic oscillators.
+
+subsection:: Continuous feedback, history and populations
+
+link::Classes/MackeyGlass:: stores delayed history, so the derivative depends on an earlier value as well as the present. This is explicit deterministic temporal memory. link::Classes/Chua:: instead exposes the three instantaneous states of a nonlinear circuit; continuous feedback can organize low-dimensional chaos without a delay line.
+
+link::Classes/WilsonCowan:: remembers excitation and inhibition at the population level. Mutual feedback and separate time constants can yield stable activity or oscillations. Its simplified logistic equations contain no random source: use a separate stochastic UGen when perturbations are wanted. link::Classes/Lorenz96:: extends continuous feedback across a cyclic lattice. Local nonlinear interaction, damping and forcing organize a spatial population, not independent cell-wise noise.
+
+link::Classes/KuramotoNetwork:: couples phases through a collective mean field. Different natural frequencies can coexist with partial or strong synchronization; the order parameter measures coordination without a master clock. With noise=0 it is a deterministic phase flow; positive noise adds external-model phase diffusion. It is conceptually distinct from a fixed-frequency oscillator bank and from unbounded Lorenz coordinates.
+
+subsection:: Independent shaped randomness and geometry
+
+Triggered distributions are memoryless samplers for fixed parameters: a trigger draws a new value, then the output holds. Their RNG state and sample-and-hold output do not encode evolving process history. Changing a parameter from another process can of course make the resulting patch dependent in time.
+
+link::Classes/TGammaRand:: and link::Classes/TWeibullRand:: describe positive quantities with tunable shape; link::Classes/TLogNormalRand:: models positive multiplicative variation. They are useful for durations, gains and skewed scales, with different near-zero and tail behavior. link::Classes/TPoissonRand:: gives event counts; link::Classes/TGeometricRand:: gives failures before the first success; link::Classes/TNegBinomialRand:: extends that to a specified success count. These are integer-valued count/failure models, not continuous curves.
+
+link::Classes/TCauchyRand::, link::Classes/TStableRand:: and link::Classes/TLevyRand:: make extreme values more likely than Gaussian sampling in their heavy-tailed regimes. TStableRand includes a Gaussian endpoint; TLevyRand is one-sided. Accumulating symmetric stable increments over elapsed time produces link::Classes/LevyFlight::, a different object from a sequence of held independent values.
+
+link::Classes/TTruncNormalRand:: samples a Gaussian conditioned to lie inside an interval. Clipping an ordinary Gaussian instead piles probability at the boundaries. link::Classes/TVonMisesRand:: describes probability on a circle: angles near minus pi and plus pi are neighbors, and concentration gathers directions without inventing a linear seam.
+
+link::Classes/TDirichletRand:: describes probability on a simplex. Shares are nonnegative and sum to one, so allocating more to one component leaves less for others. Concentrations below one favor sparse allocations; large equal concentrations favor balance. This can redistribute a fixed amplitude or routing budget without making independent gains compete through an after-the-fact limiter.
+
+subsection:: Temporal memory and stochastic boundaries
+
+link::Classes/OUProcess:: adds a restoring drift to Gaussian diffusion. It has a stationary equilibrium for positive reversion but is mathematically unbounded, not a random walk clipped to a range. link::Classes/MaternNoise:: extends this Gaussian family with hidden derivatives and independently specified variance, correlation scale and smoothness. Its half-integer modes use exact finite-step linear-SDE transitions.
+
+link::Classes/FractionalNoise:: approximates scale-dependent spectra with a finite band of OU components. link::Classes/FBrownianMotion:: approximates fractional motion with finite-memory filtered innovations, allowing persistent or antipersistent increments. These finite-band/finite-memory implementations do not provide unlimited scale-free memory. Matérn instead sets a finite correlation scale and local differentiability explicitly.
+
+link::Classes/BoundedWalk:: puts a boundary rule inside the process: reflection, wrapping, clipping, bounded resampling and absorption create different subsequent histories. Applying an output clip to an unbounded model is a sonic mapping and does not change that model's internal motion.
+
+subsection:: Event time, interaction and inhibition
+
+link::Classes/RenewalTrig:: organizes time through independent inter-event intervals. Different interval laws change regularity and tail behavior without a metrical grid. link::Classes/HawkesTrig:: remembers past events as temporarily increased intensity, producing self-exciting bursts. link::Classes/MultiHawkesTrig:: lets one stream's events raise other streams' intensities, creating directional contagion and call-and-response. Causal influence between streams is different from mere covariance among simultaneous random values.
+
+link::Classes/SelfCorrectingTrig:: builds event pressure during silence and reduces it after an event. This inhibitory feedback can resist clustering without becoming a metronome. link::Classes/ShotNoise:: instead remembers material response: marked arrivals contribute to an exponentially decaying sum. Sparse impacts remain distinct; overlapping impacts create a continuous texture. Arrival timing and the accumulated response are separate outputs.
+
+subsection:: Discrete state, dwell time and learned preference
+
+link::Classes/MarkovChain:: selects a transition row using the current state: the next choice depends on where the process is now. link::Classes/SemiMarkov:: separates destination choice from residence time through a state-specific duration distribution. This makes phrase lengths or texture dwell times explicit.
+
+link::Classes/PolyaUrn:: carries a different history. Every chosen category increases its own future weight, so an early accident can become a lasting preference. Zero reinforcement removes this adaptation. Its entropy reports current diversity; individual runs can favor different categories even when the ensemble remains symmetric. Reloading its initial weights restarts preference, while changing a Markov row changes a transition rule.
+
+link::Classes/MultiGaussNoise:: creates instantaneous covariance across a triggered vector, without temporal motion between draws. link::Classes/MultiOUProcess:: adds correlated innovations to mean-reverting trajectories. Several voices can share movement without being identical; the distinction is correlation across coordinates versus memory through time.
+
+subsection:: Three meanings of regime
+
+table::
+## strong::Model:: || strong::What persists and what changes:: || strong::Audible use::
+## link::Classes/RandomTelegraph:: || A discrete state itself persists for a random dwell, then switches || Alternate two persistent conditions
+## link::Classes/MarkovModulatedTrig:: || A hidden Markov state changes event statistics; observed events do not cause the state change || Quiet and dense passages of the same sound
+## link::Classes/DoubleWellProcess:: || A continuous nonlinear state spends time near preferred regions and crosses a barrier under noise || Metastable motion with visible transition paths
 ::
 
-subsection:: Forms of stochastic organization
+DoubleWellProcess can also demonstrate stochastic resonance: moderate noise can help a weak periodic drive organize barrier crossings. Increasing noise indefinitely does not improve that relationship. A discrete switch, a hidden intensity regime and continuous metastability are three different mechanisms, even when all produce alternating passages.
 
-strong::Interaction.:: link::Classes/MultiHawkesTrig:: lets an event in one stream temporarily raise event probability in another. This makes contagion, call-and-response, and directional cascades. The connection is causal: one process changes another process's future intensity, rather than merely producing correlated outputs.
+subsection:: Four meanings of irregular movement
 
-strong::Inhibition.:: link::Classes/SelfCorrectingTrig:: builds pressure while no event occurs, then reduces it when an event arrives. Stochastic regularity and refractory spacing emerge without a metronome. HawkesTrig means “event, then more near-future events”; SelfCorrectingTrig means “event, then fewer near-future events.”
+table::
+## strong::Model:: || strong::Mechanism and memory:: || strong::Practical consequence::
+## link::Classes/OUProcess:: || Position plus a restoring drift, driven by Gaussian innovations || Local wandering around an equilibrium
+## link::Classes/MaternNoise:: || Position and hidden derivatives with a prescribed stationary covariance || Change roughness while holding variance and correlation scale fixed
+## link::Classes/LevyFlight:: || Accumulated independent stable increments, no restoring force || Local exploration with potentially very large relocations
+## link::Classes/JumpDiffusion:: || Brownian wandering plus independent finite-rate Gaussian-marked Poisson shocks || Hear and accent shocks separately from continuous motion
+::
 
-strong::Regime switching.:: link::Classes/RandomTelegraph:: remains in one condition for a random dwell time, then changes to the other. Separate transition rates organize active/resting, dense/sparse, or bright/dark regimes. These are persistent states, not fresh independent choices on every sample or steps in a fixed sequence.
+OU and Matérn have finite stationary spread under fixed valid parameters. Lévy and jump diffusion accumulate displacement and have no stationary position distribution. For alpha below two the stable increment variance is infinite. Jump diffusion with finite Gaussian marks has finite increment moments and exposes jump count explicitly. These distinctions matter when selecting a register mapping or deciding whether a long performance should return toward a center.
 
-strong::Stochastic impulses.:: link::Classes/ShotNoise:: gives random arrivals a decaying memory. Each contributes energy; overlapping responses accumulate. Sparse arrivals sound like separate impacts, while dense arrivals become crackle, rain, or a fluctuation field. Its event flag and accumulated signal expose the difference between arrival times and material response.
+subsection:: Four meanings of interaction
 
-strong::Correlated motion.:: link::Classes/MultiOUProcess:: combines temporal memory with correlated innovations. Several voices can drift separately while breathing together. MultiGaussNoise produces correlated values at individual trigger moments; MultiOUProcess produces correlated trajectories through time.
+table::
+## strong::Model:: || strong::What influences what:: || strong::Organization::
+## link::Classes/MultiHawkesTrig:: || Events alter other streams' event intensities || Contagion and cascades in event time
+## link::Classes/KuramotoNetwork:: || Phases respond to their population mean field || Collective phase synchronization
+## link::Classes/WilsonCowan:: || Excitatory and inhibitory activities feed back on each other || Population rhythms, suppression and response
+## link::Classes/Lorenz96:: || Neighboring spatial coordinates enter each local derivative || Propagating irregular structure around a ring
+::
 
-strong::Metastability and stochastic resonance.:: link::Classes/DoubleWellProcess:: moves in a nonlinear landscape with two preferred regions. Noise can cause a rare barrier crossing after a long stay near one well. A weak periodic drive that cannot cause crossings alone can become more effective with moderate noise: transitions become statistically related to the drive. Increasing noise indefinitely does not improve this relationship.
+Interaction can organize timing, circular phase, population activity or spatial state. These are different feedback variables and topologies; replacing one with another changes the process rather than merely the timbre.
 
-strong::Circular statistics.:: link::Classes/TVonMisesRand:: treats angles as a periodic domain. Minus pi and plus pi are neighboring representations of the same direction. Circular concentration groups phases or azimuths around a preferred angle without an artificial boundary separating the endpoints of a linear distribution.
+subsection:: Forms of organization
 
-strong::Collective synchronization.:: link::Classes/KuramotoNetwork:: couples oscillators with their own natural frequencies. Weak coupling can leave them dispersed; stronger coupling can create partial or strong phase coordination. No master clock imposes synchronization. The order parameter r measures the population: near zero means widely dispersed phases, near one means strong alignment.
+This navigation table selects by behavior. The technical families above specify the mathematical object and the class pages give equations, controls, numerical limits, sources and runnable examples.
 
-subsection:: Raw state and sound
+table::
+## strong::Desired behavior:: || strong::Representative classes::
+## Independent shaped draws || link::Classes/TGammaRand::, link::Classes/TStableRand::, link::Classes/TTruncNormalRand::
+## Deterministic nonlinear iteration || link::Classes/HenonMap::, link::Classes/CliffordMap::, link::Classes/CircleMap::
+## Continuous deterministic feedback || link::Classes/Chua::, link::Classes/MackeyGlass::, link::Classes/WilsonCowan::
+## Excitability and spikes || link::Classes/RulkovMap::, link::Classes/Izhikevich::
+## Mean-reverting drift || link::Classes/OUProcess::, link::Classes/MultiOUProcess::
+## Controlled smooth random trajectories || link::Classes/MaternNoise::
+## Approximate long-memory or scale-dependent correlation || link::Classes/FractionalNoise::, link::Classes/FBrownianMotion::
+## Boundary-dependent motion || link::Classes/BoundedWalk::
+## Random event spacing || link::Classes/RenewalTrig::
+## Self-exciting bursts || link::Classes/HawkesTrig::
+## Interacting contagion || link::Classes/MultiHawkesTrig::
+## Inhibitory event timing || link::Classes/SelfCorrectingTrig::
+## Persistent discrete switching || link::Classes/RandomTelegraph::, link::Classes/SemiMarkov::
+## Hidden event-density regimes || link::Classes/MarkovModulatedTrig::
+## Stochastic impacts and material response || link::Classes/ShotNoise::
+## Instantaneous vector covariance || link::Classes/MultiGaussNoise::
+## Historical reinforcement || link::Classes/PolyaUrn::
+## Random allocation summing to one || link::Classes/TDirichletRand::
+## Anomalous long-range motion || link::Classes/LevyFlight::
+## Diffusion with explicit shocks || link::Classes/JumpDiffusion::
+## Metastability and stochastic resonance || link::Classes/DoubleWellProcess::
+## Circular randomness || link::Classes/TVonMisesRand::
+## Collective phase synchronization || link::Classes/KuramotoNetwork::
+## Excitation/inhibition at population level || link::Classes/WilsonCowan::
+## Spatially extended deterministic dynamics || link::Classes/CoupledMapLattice::, link::Classes/Lorenz96::
+::
 
-Raw maps expose mathematical coordinates and may diverge. They do not clip, fold, interpolate, or interpret a coordinate as frequency. Use ordinary SuperCollider mapping operators in a SynthDef, or choose an explicitly named sonifier when its folding and interpolation model is useful.
+subsection:: Raw state and explicit sonification
 
-Continuous systems likewise expose unnormalized state. Begin with low output levels and map a state only after observing its useful range.
+link::Classes/HenonSonify::, link::Classes/GbmanSonify:: and link::Classes/LatoocarfianSonify:: deliberately map coordinates into iteration frequency and level with their documented folding and interpolation. They are rendering strategies. The raw maps do not clip, fold, interpolate or interpret their coordinates as frequency. Similarly, a raw flow or transport process can diverge or produce extreme finite values; make audible range mapping explicit in the SynthDef. No general antialiasing guarantee follows from mathematical accuracy.
 
-subsection:: Choosing a visualization
+Seeded models use a local PCG32 generator. Nonzero seeds repeat their local algorithmic sequences for the same inputs and calculation rate; zero derives a seed from the parent Synth at construction. Floating library differences can affect last-bit values across platforms. Rising triggers, resets and reloads mean a nonpositive-to-positive edge. Round 3 reset wins over concurrent operations and consumes their edge histories. Check each page for whether reset rereads a buffer, restores a cached snapshot or only changes dynamic state.
 
-Use a phase portrait for a two-state map, a 3D orbit with orthogonal projections for link::Classes/Chua::, a delay embedding plus time series for link::Classes/MackeyGlass::, and a space-time heatmap for link::Classes/CoupledMapLattice::. Stochastic scalar processes are better represented by time series, distributions, correlations, or spectra; event processes by rasters and interval statistics; and Markov processes by transition graphs and state timelines.
+subsection:: Buffers and calculation cost
 
-A terrain surface should be shown only when a sonifier actually reads a scalar field or wavetable at the displayed coordinates. The current map and flow UGens produce trajectories rather than terrains. See link::Classes/Chua:: for the three-state static and real-time form; the live example transports the exact state being sonified at display rate and keeps all drawing in the language process. The other class pages now apply the map, flow, process, event, state, covariance, and probability views appropriate to their own mathematics.
+Allocate/fill Buffers inside a Routine, call code::s.sync::, then create the Synth. Output dimensions and RK4 substeps are construction-time choices in Round 3. Snapshot buffers are private copies and need reload to see edits; older MarkovChain and SemiMarkov transition weights are live reads under the shared buffer lock. Reloading large matrices can cost more than an ordinary sample. Lorenz96's maximum cell/substep configuration is bounded but can exceed a core's audio-rate budget: use control rate when the musical role permits it.
 
-link::Classes/SDPhaseView:: provides the same exact-state rule for two-output map examples. It is a bounded language-side GUI helper, not a UGen, and sends state from the server only at display rate.
+subsection:: Choose a visualization that exposes the model
 
-subsection:: Buffers
+Use phase portraits for low-dimensional maps; a 3D orbit for Chua; delayed coordinates plus a time series for MackeyGlass; cell-index versus time heatmaps for CoupledMapLattice and Lorenz96. A ternary plot reveals Dirichlet allocation geometry. Probability histories and entropy reveal reinforcement. Event rasters with intensity/state traces expose hidden regimes. Covariance and increment plots distinguish Gaussian smoothness from heavy-tailed transport. Do not normalize away jumps or label a trajectory as a terrain unless a scalar field is actually being read.
 
-link::Classes/CoupledMapLattice::, link::Classes/MarkovChain::, link::Classes/SemiMarkov::, and link::Classes/MultiGaussNoise:: validate their buffer dimensions and use the server's shared buffer lock. Allocate or fill each Buffer inside a Routine, call code::s.sync::, and only then create the Synth.
+link::Classes/SDPhaseView:: is a language-side display/sonification helper, not a UGen or stochastic model. It transports the exact shared server state only at display rate and does its bounded drawing/storage outside the audio thread. Class pages contain process-specific figures and minimal examples; the few combinations below teach relationships across models. Earlier runnable guide examples are retained.
 
 subsection:: Distribution, process, and map
 
@@ -85,6 +178,29 @@ code::
     var freq = independent + map[0].linlin(-1.5, 1.5, 100, 1000);
     Pan2.ar(SinOsc.ar(freq, 0, 0.08), continuous.tanh)
 }.play
+)
+::
+
+subsection:: Fresh allocation versus accumulated preference
+
+Dirichlet draws redistribute a whole independently. The urn gradually changes its own future choice probabilities. On the left all four voices share a newly drawn budget; on the right one register is chosen from accumulated history. Both begin from equal parameters, with no Markov transition matrix.
+
+code::
+(
+Routine {
+    var equal = Buffer.loadCollection(s, [1, 1, 1, 1]);
+    var node;
+    s.sync;
+    node = {
+        var trigger = Impulse.kr(5);
+        var voices = SinOsc.ar([220, 330, 550, 880]);
+        var shares = TDirichletRand.kr(4, equal, trigger, seed: 401);
+        var choice = PolyaUrn.kr(4, equal, trigger, seed: 48)[0];
+        [Mix(voices * Lag.kr(shares, 0.02)), Select.ar(choice, voices)]
+            * Decay2.kr(trigger, 0.003, 0.12) * 0.07
+    }.play;
+    20.wait; node.free; s.sync; equal.free;
+}.play;
 )
 ::
 
