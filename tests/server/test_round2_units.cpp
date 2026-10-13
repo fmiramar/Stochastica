@@ -88,6 +88,7 @@ struct Instance {
 int main(int argc,char**argv)
 {
     try {
+        require(argc > 1,"usage: sd_round2_unit_tests REFERENCE_FILE [--write-fixtures]");
         InterfaceTable table{};ft=&table;table.fDefineUnit=define;table.fRTAlloc=allocate;table.fRTFree=release;table.fClearUnitOutputs=clear;
         registerSDAdvancedEvents();registerSDShotNoise();registerSDCircularDistributions();registerSDMultiOU();registerSDMultiHawkes();registerSDDoubleWell();registerSDKuramoto();
         require(definitions.size()==8,"registration count");
@@ -132,6 +133,57 @@ int main(int argc,char**argv)
                 a.step(64);a.input(spec.reset,1);a.step();a.input(spec.reset,0);
             }
             std::cout<<spec.name<<(audio?" ar":" kr")<<" reference/reset/rates/buffers OK\n";
+        }
+        for(bool audio:{false,true}) {
+            // OU reload replaces coefficients but keeps the current value. A
+            // subsequent reset uses the new mean. A held reload is not repeated.
+            Instance ou(specs[4],audio);
+            auto before=ou.step();
+            std::fill(ou.data[0].begin(),ou.data[0].end(),0);
+            std::fill(ou.data[2].begin(),ou.data[2].end(),0);
+            ou.data[1][0]=5;ou.data[1][1]=-7;ou.input(3,1);
+            auto after=ou.step();
+            for(size_t i=0;i<before.size();++i)require(std::abs(before[i]-after[i])<1e-6,"OU reload preserves trajectory");
+            ou.data[1][0]=99;
+            ou.step();ou.input(5,1);
+            require(ou.step()==std::vector<float>({5,-7}),"OU reset uses snapshot, held reload ignored");
+
+            // Phase reload must update only the reset configuration. Frequency
+            // reload changes future drift while preserving present phases.
+            Spec frozen=specs[7];frozen.inputs[2]=0;frozen.inputs[3]=0;frozen.inputs[4]=0;
+            Instance kur(frozen,audio);
+            auto phases=kur.step();kur.data[7][0]=.3f;kur.data[7][1]=-.4f;
+            kur.input(6,1);require(kur.step()==phases,"phase reload teleported network");
+            kur.input(6,0);kur.step();kur.input(8,1);
+            auto restored=kur.step();require(std::abs(restored[0]-.3f)<1e-6&&std::abs(restored[1]+.4f)<1e-6,"phase reset did not use new configuration");
+            kur.input(8,0);kur.data[6][0]=2;kur.data[6][1]=-2;
+            kur.input(6,1);kur.step();kur.input(6,0);kur.input(4,1);
+            auto moved=kur.step();
+            require(std::abs(moved[0]-(restored[0]+4*3.141592653589793*kur.rate.mSampleDur))<1e-6,"frequency reload drift");
+            Spec randomPhases=specs[7];randomPhases.inputs[1]=-1;
+            Instance randomKur(randomPhases,audio);
+            auto original=randomKur.trace();randomKur.reset();require(original==randomKur.trace(),"random initial phases reset stream alignment");
+
+            // Intensity-only Hawkes state: sure source event, then persistent
+            // zero-decay excitation with the rate ceiling temporarily silent.
+            Spec hawkes=specs[5];hawkes.inputs[3]=0;
+            Instance network(hawkes,audio);
+            network.data[3][0]=1e30f;network.data[3][1]=0;
+            std::fill(network.data[5].begin(),network.data[5].end(),0);
+            network.input(4,1);network.input(3,1e30f);auto source=network.step();
+            require(source[0]==1&&source[1]==0&&source[3]==0,"Hawkes same-calculation feedback");
+            network.input(3,0);network.input(4,0);network.step();
+            network.data[3][0]=0;network.data[4][2]=30;
+            network.input(4,1);network.step();network.input(3,1000);network.input(4,0);
+            require(network.step()[3]==12,"Hawkes valid reload lost excitation state");
+
+            Instance circular(specs[3],audio);
+            circular.input(2,1);auto draw=circular.step();
+            require(circular.step()==draw,"held circular trigger resampled");
+            circular.input(4,1);auto resetDraw=circular.step();
+            circular.input(2,0);circular.input(4,0);circular.step();
+            circular.input(2,1);circular.input(4,1);
+            require(circular.step()==resetDraw,"circular reset plus trigger consumed twice");
         }
         // Repeated allocation/free and forced RT allocation failure, including raw
         // memory filled with nonzero bytes before each server constructor.

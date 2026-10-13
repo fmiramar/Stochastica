@@ -1,0 +1,82 @@
+name: Round 2 verification
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            platform: linux
+            arch: x64
+            configure: -DCMAKE_CXX_FLAGS=-m64
+            supernova: "ON"
+          - os: macos-15-intel
+            platform: macos
+            arch: x64
+            configure: -DCMAKE_OSX_ARCHITECTURES=x86_64
+            supernova: "ON"
+          - os: macos-15
+            platform: macos
+            arch: arm64
+            configure: -DCMAKE_OSX_ARCHITECTURES=arm64
+            supernova: "ON"
+          - os: windows-2022
+            platform: windows
+            arch: x64
+            configure: -A x64
+            supernova: "OFF"
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Fetch matching SuperCollider headers
+        shell: bash
+        run: |
+          git clone --branch Version-3.14.1 --depth 1 https://github.com/supercollider/supercollider.git build-sdk
+          git -C build-sdk submodule update --init external_libraries/nova-tt
+      - name: Configure explicit target architecture
+        shell: bash
+        run: |
+          cmake -S . -B build-round2 ${{ matrix.configure }} \
+            -DSC_PATH="$GITHUB_WORKSPACE/build-sdk" \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX="$GITHUB_WORKSPACE/stage-round2/Extensions" \
+            -DBUILD_TESTING=ON -DSTRICT=OFF -DSCSYNTH=ON \
+            -DSUPERNOVA=${{ matrix.supernova }}
+      - name: Build and run numerical, statistical, and server ABI checks
+        shell: bash
+        run: |
+          cmake --build build-round2 --config Release --parallel
+          ctest --test-dir build-round2 -C Release --output-on-failure
+          python tests/server/check_round2_docs.py
+      - name: Stage installable extension
+        run: cmake --install build-round2 --config Release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.repository_owner }}-Stochastica-v0.1.0-round2-preview-${{ matrix.platform }}-${{ matrix.arch }}
+          path: stage-round2/Extensions
+          if-no-files-found: error
+
+  sanitize:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch matching headers
+        run: git clone --branch Version-3.14.1 --depth 1 https://github.com/supercollider/supercollider.git build-sdk
+      - name: Build and test with ASan and UBSan
+        run: |
+          cmake -S . -B build-round2-sanitize -DSC_PATH="$GITHUB_WORKSPACE/build-sdk" \
+            -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=ON -DSD_SANITIZE=ON \
+            -DSCSYNTH=OFF -DSUPERNOVA=OFF
+          cmake --build build-round2-sanitize --parallel
+          ctest --test-dir build-round2-sanitize --output-on-failure
