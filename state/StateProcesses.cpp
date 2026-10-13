@@ -1,5 +1,6 @@
 #include "SC_PlugIn.h"
 #include "SDBuffer.hpp"
+#include "SDCategorical.hpp"
 #include "SDDistributions.hpp"
 #include "SDServer.hpp"
 
@@ -28,24 +29,7 @@ int sampleTransition(Unit* unit, sd::PCG32& rng, int currentState,
 
     LOCK_SNDBUF_SHARED(transition);
     const float* row = transition->data + currentState * states;
-    double sum = 0.0;
-    for (int destination = 0; destination < states; ++destination) {
-        const double weight = row[destination];
-        if (sd::finite(weight) && weight > 0.0)
-            sum += weight;
-    }
-    if (!(sum > 0.0) || !sd::finite(sum))
-        return currentState;
-    double target = static_cast<double>(sd::uniform01ClosedOpen(rng)) * sum;
-    for (int destination = 0; destination < states; ++destination) {
-        const double weight = row[destination];
-        if (sd::finite(weight) && weight > 0.0) {
-            target -= weight;
-            if (target <= 0.0)
-                return destination;
-        }
-    }
-    return states - 1;
+    return sd::categoricalSample(rng, row, states, currentState);
 }
 
 double stateValue(Unit* unit, int state, int states, int bufferInput)
