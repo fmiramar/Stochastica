@@ -90,3 +90,62 @@ papers or an external simulation framework was copied into the plugin.
 The SuperCollider 3.14.1 `WritingUGens.schelp`, `SC_Unit.h`, `SC_InterfaceTable.h`,
 `SC_Rate.h`, and `MultiOutUGen` conventions determine construction, buffer locking,
 output shape and calculation duration. The old Stochastica classes are unchanged.
+
+## Round 3 sources and adaptations
+
+Round 3 independently implements equations and reuses the existing bounded
+Gamma, Gaussian, Poisson and stable samplers. No external simulator or paper code
+is included. The categorical helper's default path retains old seeded arithmetic;
+new models explicitly opt into the double-uniform path.
+
+- **MaternNoise:** Särkkä and Solin, *Applied Stochastic Differential Equations*,
+  section 12.3, equations 12.33–12.35 and example 12.7
+  ([author text](https://users.aalto.fi/~asolin/sde-book/sde-book.pdf)).
+  Exact half-integer state-space transitions, derivative-scaled coordinates and
+  integrated innovation covariance; a bounded small-step series prevents
+  cancellation before Cholesky. Variance is stationary output variance, with
+  lambda=sqrt(2*nu)/correlationTime. Reset is deterministic, requiring warmup.
+- **TDirichletRand:** the independent-Gamma construction documented in the
+  [GSL reference](https://www.gnu.org/software/gsl/doc/latex/gsl-ref.pdf),
+  section 20.28. The existing Gamma primitive supplies shape-boosted draws;
+  log normalization preserves corner behavior at tiny concentrations. There is
+  no GSL linkage or copied implementation.
+- **PolyaUrn:** Pemantle, *A survey of random processes with reinforcement*,
+  [arXiv](https://arxiv.org/abs/math/0610076). Standard additive reinforcement
+  with a configurable amount; private rescaling also rescales future increments
+  to preserve the model. Probability is measured before reinforcement, entropy
+  after it. This is accumulated-history preference, not a Markov transition row.
+- **MarkovModulatedTrig:** Fischer and Meier-Hellstern, *The Markov-modulated
+  Poisson process (MMPP) cookbook*, 1993,
+  [DOI](https://doi.org/10.1016/0166-5316(93)90035-S).
+  A finite-calculation approximation draws independent event and transition
+  hazards from the old state, then chooses a destination. It resolves at most
+  one event and one opportunity per calculation, with explicit rate ceilings.
+- **LevyFlight:** Nolan's *Stable Distributions: Models for Heavy Tailed Data*,
+  [author chapter](https://edspace.american.edu/jpnolan/wp-content/uploads/sites/1720/2020/09/Chap1.pdf).
+  Symmetric S0 increments scale as dt^(1/alpha); alpha=2 has variance
+  2*scale^2*dt. Finite double state is retained without musical clipping, with
+  documented recovery when a numerical path cannot be represented.
+- **JumpDiffusion:** Siegrist's
+  [compound-Poisson derivation](https://www.randomservices.org/random/poisson/Compound.html).
+  Independent Gaussian diffusion plus uncompensated Gaussian-marked Poisson
+  displacement; conditional aggregation replaces an unbounded per-jump loop.
+  The count mean must be at most 1e8 per calculation; unsupported values recover
+  explicitly rather than silently changing the rate.
+- **WilsonCowan:** Wilson and Cowan, *Excitatory and inhibitory interactions in
+  localized populations of model neurons*, 1972,
+  [DOI](https://doi.org/10.1016/S0006-3495(72)86068-5).
+  The API implements a normalized logistic variant without the original
+  refractory factors. It uses deterministic fixed-substep RK4 and external,
+  optional noise sources. Figure settings were checked for fixed-point versus
+  sustained oscillatory behavior in this specific parameterization.
+- **Lorenz96:** Lorenz, *Predictability: a problem partly solved*,
+  [ECMWF paper](https://www.ecmwf.int/sites/default/files/elibrary/1995/10829-predictability-problem-partly-solved.pdf).
+  The cyclic local stencil is evaluated at each RK4 stage with linear spatial
+  cost. Default initialization perturbs the uniform equilibrium; reloading a
+  user vector changes the reset template without jumping current state.
+
+The plotting exporter calls the same numerical kernels as the plugin. Seeds,
+burn-in, axes and scales are recorded in the figures. The guide distinguishes
+the mathematical models from their finite precision, bounded sampler and
+finite-calculation adaptations.

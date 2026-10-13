@@ -1,0 +1,81 @@
+class:: MarkovModulatedTrig
+summary:: Random events whose intensity is controlled by a persistent latent Markov state
+categories:: UGens>Triggers>Stochastic
+related:: Classes/MarkovChain, Classes/SemiMarkov, Classes/RenewalTrig, Classes/HawkesTrig, Classes/RandomTelegraph, Guides/Stochastica
+
+description::
+A latent Markov state selects the rate of an observed event stream. Quiet, active and dense passages can persist and switch while every event excites the same sound. Events do not cause transitions or raise future intensity: the hidden state supplies that organization. HawkesTrig instead remembers its own events through self-excitation; SemiMarkov exposes dwell-time state changes; RandomTelegraph directly exposes a two-state regime.
+
+At each calculation, draw an event with probability code::1-exp(-eventRate[state]*dt):: and an independent transition opportunity with probability code::1-exp(-stateRate[state]*dt)::. Both use the old state. On an opportunity, sample its row of transition weights, then output the resulting state. intensity remains the old state's capped rate, making the probability actually used observable. A diagonal choice is an opportunity without a stateChange; an all-zero row holds. The implied small-step generator has off-diagonal entries code::Q[i,j] = stateRate[i]*P[i,j]::.
+
+This is a bounded discrete hazard approximation to Markov-modulated Poisson timing, motivated by Fischer and Meier-Hellstern's link::https://doi.org/10.1016/0166-5316(93)90035-S:: MMPP model. At most one observed event and one state opportunity occur per calculation. Multiple arrivals and within-step transitions are unresolved; keep both rates well below the calculation rate. Self-transition weights lengthen actual state residence beyond the mean opportunity interval. It is not an exact continuous-time event scheduler.
+
+Snapshots cost O(N squared), ordinary updates O(1), and an opportunity O(N). Buffers are copied under the server lock and never modified. A missing/short/non-mono snapshot clears the whole model to zero rates and weights, holding a silent state; individual negative/non-finite entries are sanitized to zero. No allocation occurs during calculation.
+
+Vanilla link::Classes/Dust:: provides independent random impulses. MarkovModulatedTrig adds persistent hidden regimes and reports the intensity and state that organize those impulses.
+
+image::round3-mmpp.png::
+
+subsection:: See also
+link::Classes/MarkovChain::, link::Classes/SemiMarkov::, link::Classes/RenewalTrig::, link::Classes/HawkesTrig::, link::Classes/RandomTelegraph::, link::Guides/Stochastica::
+
+classmethods::
+method:: ar, kr
+argument:: numStates
+Construction-time state count, clipped to 2..64.
+argument:: transitionBuf
+Mono row-major Buffer of at least numStates squared nonnegative weights. Row i supplies destination probabilities from i after normalization. Zero rows hold. Snapshotted at construction/reload.
+argument:: eventRateBuf
+Mono Buffer of at least numStates event intensities per real second, indexed by latent state. Snapshotted with transitionBuf.
+argument:: stateRateBuf
+Mono Buffer of at least numStates transition-opportunity rates per real second. A rate of zero freezes transitions from that state. Snapshotted with the other buffers.
+argument:: initialState
+Index restored at construction/reset, clipped to valid states.
+argument:: maxEventRate
+Nonnegative ceiling on event intensity, sampled each calculation. Negative/non-finite ceilings become zero.
+argument:: maxStateRate
+Nonnegative ceiling on transition-opportunity rate. This bounds workload but does not make high rates accurate.
+argument:: reload
+Rising edge replaces all snapshots without forcing a transition, event or RNG rewind. Normal stochastic evolution still occurs on that calculation using the new model.
+argument:: seed
+Local PCG32 seed; nonzero repeats a sequence. Zero derives from the parent Synth only at construction.
+argument:: reset
+Rising edge restores initialState and original local seed, emits no event/change, and reports that state's capped intensity. Wins over simultaneous reload, whose edge is consumed. Does not reread buffers.
+returns::
+Four outputs: code::[event, stateIndex, intensity, stateChange]::. Flags last one audio sample or control block. stateIndex is after any transition; intensity is before it. Allocation failure produces silence.
+
+examples::
+subsection:: Minimal two-regime timing
+code::
+(
+Routine {
+    var transition = Buffer.loadCollection(s, [0, 1, 1, 0]);
+    var events = Buffer.loadCollection(s, [1, 12]);
+    var changes = Buffer.loadCollection(s, [0.7, 0.7]);
+    var node;
+    s.sync;
+    node = { SinOsc.ar(700, 0, Decay2.ar(MarkovModulatedTrig.ar(2, transition, events, changes, seed: 81)[0], 0.001, 0.04) * 0.08) ! 2 }.play;
+    15.wait; node.free; s.sync; [transition, events, changes].do(_.free);
+}.play;
+)
+::
+
+subsection:: Listen to statistics, observe the hidden regime
+The pitch and envelope stay fixed. Only the statistics change among quiet, active and dense states; polling reveals the hidden cause of those passages.
+code::
+(
+Routine {
+    var transition = Buffer.loadCollection(s, [0, 1, 0, 0.35, 0, 0.65, 1, 0, 0]);
+    var events = Buffer.loadCollection(s, [1, 8, 28]);
+    var changes = Buffer.loadCollection(s, [0.7, 0.8, 1.2]);
+    var node;
+    s.sync;
+    node = {
+        var model = MarkovModulatedTrig.ar(3, transition, events, changes, seed: 81);
+        A2K.kr(model[1]).poll(2, "hidden state");
+        SinOsc.ar(700, 0, Decay2.ar(model[0], 0.001, 0.04) * 0.08) ! 2
+    }.play;
+    20.wait; node.free; s.sync; [transition, events, changes].do(_.free);
+}.play;
+)
+::

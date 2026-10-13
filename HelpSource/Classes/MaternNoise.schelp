@@ -1,0 +1,63 @@
+class:: MaternNoise
+summary:: Gaussian motion with independently controlled variance, correlation time and local smoothness
+categories:: UGens>Generators>Stochastic>Processes
+related:: Classes/OUProcess, Classes/FractionalNoise, Classes/FBrownianMotion, Classes/MultiOUProcess, Guides/Stochastica
+
+description::
+A stationary Gaussian process in the half-integer Matérn family. Its hidden derivative states remember the direction and curvature of motion. Increasing smoothness reduces local roughness without turning the process into a periodically interpolated random target. This is finite-dimensional Gaussian memory, not the scale-dependent memory approximated by FractionalNoise or FBrownianMotion.
+
+Let code::nu = smoothness + 0.5::, code::lambda = sqrt(2*nu)/correlationTime:: and code::u = lambda*abs(lag)::. The stationary covariance is variance times code::exp(-u)::, code::(1+u)*exp(-u)::, or code::(1+u+u*u/3)*exp(-u):: for modes 0, 1 and 2. Mode 0 is an OU process with reversion lambda and diffusion amplitude code::sqrt(2*lambda*variance)::. Modes 1 and 2 have one and two mean-square derivatives.
+
+The server uses a one-, two- or three-state linear SDE, an exact matrix-exponential transition and its integrated Gaussian innovation covariance. A scaled small-step covariance calculation avoids cancellation; there is no Euler approximation. Coefficient work is bounded by a 3-by-3 matrix and is cached between parameter changes. Source: Särkkä and Solin, link::https://users.aalto.fi/~asolin/sde-book/sde-book.pdf::, section 12.3 and example 12.7. This is an independent implementation of that mathematical technique.
+
+Construction and reset start from a specified position with zero hidden derivatives, not a stationary draw. Allow several correlation times of warmup before measuring stationary statistics. With fixed parameters, the covariance is exact at either calculation interval; rapid parameter changes describe a time-varying system, not one stationary Matérn law. Finite state is not musically limited; a non-finite numerical update restores initial position and zero derivatives without rewinding the RNG. Serialization alone saturates values beyond float range. Raw output is not antialiased.
+
+Like vanilla link::Classes/LFNoise2::, this can provide smooth random modulation. LFNoise2 interpolates random targets; MaternNoise implements a specified Gaussian covariance and derivative-state memory.
+
+image::round3-matern.png::
+
+subsection:: See also
+link::Classes/OUProcess::, link::Classes/FractionalNoise::, link::Classes/FBrownianMotion::, link::Classes/MultiOUProcess::, link::Guides/Stochastica::
+
+classmethods::
+method:: ar, kr
+argument:: mean
+Finite long-term center, sampled each calculation. Non-finite values become zero.
+argument:: variance
+Target stationary variance, not standard deviation. Nonnegative; zero leaves deterministic relaxation. Sampled at block entry even for an audio-rate input.
+argument:: correlationTime
+Positive Matérn length scale in model seconds, floored at 0.000001. Longer values extend correlation without changing target variance. Sampled at block entry; changes preserve physical hidden derivatives.
+argument:: smoothness
+Construction-time integer mode, clipped to 0..2, selecting nu=1/2, 3/2 or 5/2. Recreate the Synth to change it.
+argument:: timeScale
+Model time per real second. Nonpositive or non-finite values hold the state. Sampled at block entry; .ar uses one audio sample and .kr one control block as its elapsed interval.
+argument:: initial
+Position restored at construction, reset, or numerical recovery. Non-finite values become zero.
+argument:: seed
+Local PCG32 seed. Nonzero seeds repeat the sequence; zero derives a seed from the Synth RNG only at construction. No parent RNG is consumed during calculation.
+argument:: reset
+Nonpositive-to-positive edge restores initial position, zero derivatives and the original local seed. No evolution occurs on that calculation; a held positive value does not reset repeatedly.
+returns::
+One raw position signal. Different rates consume different innovation sequences even when their elapsed-time statistics agree.
+
+examples::
+subsection:: Minimal pitch motion
+code::
+(
+{ SinOsc.ar(MaternNoise.kr(600, 90000, 0.5, 1, initial: 600, seed: 37).clip(80, 4000), 0, 0.08) }.play
+)
+::
+
+subsection:: Equal spread, different smoothness
+All three voices use the same mean, variance and correlationTime. Stereo position separates rough, moderately smooth and very smooth trajectories; clipping belongs to the pitch mapping only.
+code::
+(
+{
+    var voices = [0, 1, 2].collect { |mode|
+        var pitch = MaternNoise.kr(60, 16, 0.35, mode, initial: 60, seed: 1729);
+        SinOsc.ar(pitch.clip(36, 84).midicps, 0, 0.04)
+    };
+    Splay.ar(voices) * Line.kr(0, 1, 0.05)
+}.play
+)
+::

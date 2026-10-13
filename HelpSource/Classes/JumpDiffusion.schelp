@@ -1,0 +1,65 @@
+class:: JumpDiffusion
+summary:: Gaussian diffusion with explicit compound-Poisson shocks and jump diagnostics
+categories:: UGens>Generators>Stochastic>Processes
+related:: Classes/OUProcess, Classes/ShotNoise, Classes/TPoissonRand, Classes/LevyFlight, Guides/Stochastica
+
+description::
+A trajectory combining continuous Brownian wandering with occasional Gaussian-marked Poisson shocks. State remembers all previous displacement. Unlike LevyFlight, its jumps form a separate finite-rate mechanism with directly observable count and aggregate size. ShotNoise makes impacts decay toward zero; JumpDiffusion accumulates their displacement permanently. Setting jumpRate to zero leaves Brownian drift/diffusion, without OU mean reversion.
+
+For each model interval dt, draw code::K ~ Poisson(jumpRate*dt):: and independently add code::drift*dt + diffusion*sqrt(dt)*Z::. Conditional on K, the total jump is Gaussian with mean code::K*jumpMean:: and standard deviation code::sqrt(K)*jumpStd::. One aggregate Gaussian draw replaces a loop over individual shocks. This is an exact finite-interval increment law for constant parameters, not a resolved timestamp for each within-step jump.
+
+Expected displacement per interval is code::(drift+jumpRate*jumpMean)*dt:: and variance is code::(diffusion.squared+jumpRate*(jumpStd.squared+jumpMean.squared))*dt::. The Poisson component is uncompensated: drift does not subtract its average contribution. Source: the compound-Poisson moment derivation in Siegrist's link::https://www.randomservices.org/random/poisson/Compound.html::, combined with independent Gaussian diffusion. The existing bounded Poisson and Gaussian samplers are reused.
+
+Raw finite double state is preserved without musical limiting; serialization saturates only beyond float range. Non-finite updates, or a Poisson mean above 100000000 per calculation, restore initial with zero jump diagnostics while keeping the runtime RNG position. This explicit numerical domain protects the uint32 count sampler and does not silently cap jumpRate. Counts above 2^24 lose integer resolution as floats. The sampler has at most 64 rejection attempts and a deterministic rounded-mean fallback. Work is bounded independently of the sampled count; no runtime allocation occurs. Abrupt shocks are not antialiased.
+
+Vanilla link::Classes/BrownNoise:: provides audible random wandering; JumpDiffusion exposes an unbounded displacement model and separate Poisson shocks. Vanilla link::Classes/Dust:: can mark isolated impacts, while this UGen also preserves multiple shocks in one calculation through jumpCount and aggregate jumpSize.
+
+image::round3-jump.png::
+
+subsection:: See also
+link::Classes/OUProcess::, link::Classes/ShotNoise::, link::Classes/TPoissonRand::, link::Classes/LevyFlight::, link::Guides/Stochastica::
+
+classmethods::
+method:: ar, kr
+argument:: drift
+Deterministic displacement per model second; finite, otherwise zero.
+argument:: diffusion
+Brownian diffusion amplitude, interpreted by magnitude. Variance contribution is diffusion squared times elapsed model time. Non-finite becomes zero.
+argument:: jumpRate
+Nonnegative Poisson rate per model second. Negative/non-finite becomes zero. Rate times elapsed model time must not exceed 100000000.
+argument:: jumpMean
+Finite mean of each individual Gaussian shock, otherwise zero.
+argument:: jumpStd
+Standard deviation of each shock, interpreted by magnitude. Zero gives fixed-size marks; non-finite becomes zero.
+argument:: timeScale
+Nonnegative model seconds per real second. .ar uses sample duration and .kr block duration. Nonpositive/non-finite values hold state and zero all jump diagnostics. Parameters are sampled each calculation.
+argument:: initial
+Position at construction, reset or numerical recovery. Non-finite becomes zero.
+argument:: seed
+Local PCG32 seed; nonzero repeats a sequence. Zero derives from the parent Synth only at construction.
+argument:: reset
+Rising nonpositive-to-positive edge restores initial and the original seed, clears all jump diagnostics and skips evolution. Held positive does not repeat.
+returns::
+Four outputs: code::[state, jumpTrig, jumpSize, jumpCount]::. jumpTrig is one when the count is positive, even if marks cancel or are zero. jumpSize is only the aggregate shock, excluding diffusion and drift. Flags and diagnostics describe one calculation, not latched events.
+
+examples::
+subsection:: Minimal wandering pitch
+code::
+(
+{ SinOsc.ar((60 + JumpDiffusion.kr(diffusion: 1, jumpRate: 1, jumpStd: 7, seed: 72)[0]).clip(30, 96).midicps, 0, 0.07) ! 2 }.play
+)
+::
+
+subsection:: Hear each structural shock
+State moves the oscillator register; jumpTrig adds a short high accent. Audio-rate timing preserves short event flags and an explicit mapping bounds the audible pitch.
+code::
+(
+{
+    var model = JumpDiffusion.ar(diffusion: 1, jumpRate: 0.8, jumpStd: 7, seed: 72);
+    var pitch = (60 + model[0]).clip(30, 96).midicps;
+    var body = SinOsc.ar(pitch, 0, 0.065);
+    var accent = SinOsc.ar(2400, 0, Decay2.ar(model[1], 0.001, 0.08) * 0.04);
+    (body + accent) ! 2 * Line.kr(0, 1, 0.05)
+}.play
+)
+::

@@ -1,0 +1,71 @@
+class:: TDirichletRand
+summary:: Triggered random allocations whose nonnegative weights sum to one
+categories:: UGens>Generators>Stochastic>Distributions
+related:: Classes/TGammaRand, Classes/MultiGaussNoise, Classes/PolyaUrn, Guides/Stochastica
+
+description::
+Draws a vector on the probability simplex: each component is nonnegative and their sum is one, up to floating-point rounding. These are competing shares of one budget. The joint geometry creates dependence within a vector, while successive triggered vectors are independent for fixed concentrations. Holding the previous vector between triggers does not create reinforcement or trajectory memory.
+
+For positive concentrations alpha, draw independent code::g[i] ~ Gamma(alpha[i], 1):: and return code::g[i]/sum(g)::. The mean share is code::alpha[i]/sum(alpha)::. Equal concentrations below one favor sparse corner allocations; large equal concentrations favor balance. Unequal concentrations favor particular shares. MultiGaussNoise instead describes unconstrained Gaussian vectors through covariance; PolyaUrn changes future probabilities through accumulated selections.
+
+The implementation reuses Stochastica's Gamma rejection sampler, bounded to 64 attempts. Small concentrations use the shape-boost identity in log space and a largest-log subtraction to avoid collapsing all draws to zero. At extremely small concentrations, representable draws can be simplex vertices. Source: the normalized-Gamma construction in the link::https://www.gnu.org/software/gsl/doc/latex/gsl-ref.pdf:: Dirichlet reference; no GSL runtime dependency. Work is O(N) with bounded sampling, and storage is O(N).
+
+Like vanilla link::Classes/TRand::, values are drawn on trigger edges and held. TDirichletRand draws a constrained multichannel allocation instead of independent scalar uniform values.
+
+image::round3-dirichlet.png::
+
+subsection:: See also
+link::Classes/TGammaRand::, link::Classes/MultiGaussNoise::, link::Classes/PolyaUrn::, link::Guides/Stochastica::
+
+classmethods::
+method:: ar, kr
+argument:: numChannels
+Construction-time output count, clipped to 2..32. Recreate the Synth to change it.
+argument:: alphaBuf
+Mono Buffer with at least numChannels finite, strictly positive concentrations. Copied at construction or reload, never modified. Any invalid entry, missing buffer or short buffer makes the whole parameter set invalid; subsequent draws and resets return uniform weights. Allocate and fill before creating the Synth.
+argument:: trig
+Nonpositive-to-positive edge requests a vector. Held positive values do not repeatedly draw. Construction initializes to the concentration mean without a draw; a default held trig=1 therefore needs a fresh edge to sample.
+argument:: reload
+Rising edge copies concentrations without changing held outputs or RNG position. If trigger and reload coincide, the draw uses the new snapshot.
+argument:: seed
+Local PCG32 seed; nonzero repeats a sequence. Zero derives a seed from the parent Synth only at construction.
+argument:: reset
+Rising edge restores the original local seed and the cached concentration mean without a random draw. Wins over simultaneous reload and trigger; those edge histories are still consumed.
+returns::
+An Array of numChannels weights at audio or control rate. Concentrations affect triggered draws; buffer edits alone have no effect until reload. Allocation failure produces silent outputs.
+
+examples::
+subsection:: Minimal two-voice allocation
+code::
+(
+Routine {
+    var alpha = Buffer.loadCollection(s, [1, 1]);
+    var node;
+    s.sync;
+    node = { (SinOsc.ar([330, 550]) * TDirichletRand.kr(2, alpha, Impulse.kr(2), seed: 31) * 0.08).sum ! 2 }.play;
+    10.wait; node.free; s.sync; alpha.free;
+}.play;
+)
+::
+
+subsection:: Sparse versus balanced mixtures
+The same four registers share a fixed total amplitude budget on both sides. Low concentrations on the left favor temporary solos; high concentrations on the right keep all voices present. A fixed amplitude sum is not a guarantee of constant perceived loudness or acoustic energy.
+code::
+(
+Routine {
+    var sparse = Buffer.loadCollection(s, [0.2, 0.2, 0.2, 0.2]);
+    var balanced = Buffer.loadCollection(s, [8, 8, 8, 8]);
+    var node;
+    s.sync;
+    node = {
+        var trigger = Impulse.kr(2);
+        var voices = SinOsc.ar([220, 330, 550, 880]);
+        [sparse, balanced].collect { |alpha|
+            var weights = TDirichletRand.kr(4, alpha, trigger, seed: 401);
+            Mix(voices * Lag.kr(weights, 0.03)) * 0.09
+        } * Line.kr(0, 1, 0.05)
+    }.play;
+    20.wait; node.free; s.sync; [sparse, balanced].do(_.free);
+}.play;
+)
+::

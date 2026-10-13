@@ -1,0 +1,94 @@
+class:: WilsonCowan
+summary:: Deterministic excitation and inhibition in two coupled neural populations
+categories:: UGens>Generators>Chaotic>Flows
+related:: Classes/Izhikevich, Classes/RulkovMap, Classes/SelfCorrectingTrig, Classes/MaternNoise, Guides/Stochastica
+
+description::
+Two population activities remember their own relaxation and interact through recurrent excitation and inhibition. Depending on parameters they can settle, respond to perturbations, or oscillate. This is a deterministic flow, not a noise generator or an individual spiking neuron. Izhikevich and RulkovMap describe individual excitable state; SelfCorrectingTrig supplies stochastic inhibition of event intensity. External noise can perturb this model without becoming part of its internal definition.
+
+With code::S(z)=1/(1+exp(-z))::, the normalized equations are code::tauExc*dE/dt = -E + S(gainExc*(wEE*E-wEI*I+inputExc-thresholdExc)):: and code::tauInh*dI/dt = -I + S(gainInh*(wIE*E-wII*I+inputInh-thresholdInh))::. These are a simplified logistic population model inspired by Wilson and Cowan's link::https://doi.org/10.1016/S0006-3495(72)86068-5:: paper, not its full refractory-factor equations or a physiological calibration.
+
+Stable logistic evaluation avoids exponential overflow. Fixed-substep RK4 advances both states simultaneously. The continuous equations preserve [0,1] when started there, but a large numerical step need not: finite overshoot is exposed, never clamped. Non-finite updates restore the requested initial states. Choose an elapsed substep small relative to both time constants; raising timeScale or gains can require more substeps. The positive time-constant floor prevents division by zero, not numerical instability. No random generator, allocation, adaptive solver or internal audio conditioning is used.
+
+Like vanilla link::Classes/FBSineC:: this can make deterministic nonlinear modulation, but its E/I states represent interacting populations integrated in model time rather than coordinates of an interpolated map. No particular parameter setting is guaranteed to oscillate.
+
+image::round3-wilson.png::
+The displayed example changes only wEE from 0 to 16 with inputExc=3, wEI=12, wIE=15, wII=3, tauExc=0.02, tauInh=0.04, thresholds 4 and 3, and unit gains. These two settings were numerically checked; they are not universal bifurcation boundaries.
+
+subsection:: See also
+link::Classes/Izhikevich::, link::Classes/RulkovMap::, link::Classes/SelfCorrectingTrig::, link::Classes/MaternNoise::, link::Guides/Stochastica::
+
+classmethods::
+method:: ar, kr
+argument:: inputExc
+External drive to the excitatory population. All dynamic parameters are sampled each calculation; non-finite drives become zero.
+argument:: inputInh
+External drive to the inhibitory population.
+argument:: wEE
+Excitatory feedback onto E. Finite signed coefficient; non-finite becomes zero.
+argument:: wEI
+Inhibitory feedback subtracted from E. Positive values inhibit; negative values reverse this sign.
+argument:: wIE
+Excitatory feedback onto I.
+argument:: wII
+Inhibitory feedback subtracted from I. All four weights are raw coefficients, not normalized probabilities.
+argument:: tauExc
+Excitatory relaxation time in model seconds, floored at 0.000001. Non-finite values use the floor.
+argument:: tauInh
+Inhibitory relaxation time with the same positive floor.
+argument:: gainExc
+Slope multiplier inside the excitatory logistic. Finite signed value; non-finite becomes zero.
+argument:: thresholdExc
+Excitatory input threshold before applying gainExc. Non-finite becomes zero.
+argument:: gainInh
+Slope multiplier inside the inhibitory logistic.
+argument:: thresholdInh
+Inhibitory input threshold before applying gainInh.
+argument:: timeScale
+Nonnegative model seconds per real second. Nonpositive/non-finite values hold state. .ar uses audio sample duration, .kr full block duration.
+argument:: substeps
+Construction-time RK4 steps per calculation, clipped to 1..16. Work scales linearly; use .kr for slow modulation and increase substeps to check convergence.
+argument:: initialExc
+Excitatory state restored at construction/reset or numerical recovery. No [0,1] clipping; non-finite becomes 0.1.
+argument:: initialInh
+Inhibitory initial state with the same policy.
+argument:: reset
+Nonpositive-to-positive edge restores both initial states and skips evolution on that calculation. Held positive does not repeat. There is no seed because the model is deterministic.
+returns::
+Two raw outputs: code::[exc, inh]::. Float serialization alone saturates beyond machine range. Direct audio use is not antialiased.
+
+examples::
+subsection:: Minimal population modulation
+code::
+(
+{ SinOsc.ar(220 + (WilsonCowan.kr(substeps: 4)[0] * 500), 0, 0.07) ! 2 }.play
+)
+::
+
+subsection:: Two opposing timbral forces
+Recurrent excitation moves the model between the verified low-activity and oscillatory settings. E opens a filter while I attenuates the source. This uses a deterministic ramp and one simple source so the feedback relationship remains audible.
+code::
+(
+{
+    var feedback = LFTri.kr(0.08).range(0, 16);
+    var population = WilsonCowan.kr(3, wEE: feedback, wEI: 12, wIE: 15, wII: 3,
+        tauExc: 0.02, tauInh: 0.04, thresholdExc: 4, thresholdInh: 3, substeps: 4);
+    var cutoff = population[0].clip(0, 1).linexp(0, 1, 200, 6000);
+    var level = (1 - (population[1].clip(0, 1) * 0.8)) * 0.07;
+    RLPF.ar(Saw.ar(110), cutoff, 0.3) * level ! 2 * Line.kr(0, 1, 0.05)
+}.play
+)
+::
+
+subsection:: External Gaussian perturbation
+The stochastic source is a separate module. With the same noise sequence, reset and parameters, the driven population trajectory repeats.
+code::
+(
+{
+    var drive = 3 + MaternNoise.kr(variance: 0.04, correlationTime: 0.1, seed: 39);
+    var population = WilsonCowan.kr(drive, wEE: 16, wIE: 15, wII: 3,
+        tauInh: 0.04, thresholdExc: 4, thresholdInh: 3, substeps: 4);
+    SinOsc.ar(330 + (population[0] * 300), 0, (1 - population[1].clip(0, 1)) * 0.07) ! 2
+}.play
+)
+::

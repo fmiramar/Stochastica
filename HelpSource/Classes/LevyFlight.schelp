@@ -1,0 +1,61 @@
+class:: LevyFlight
+summary:: Unbounded stochastic transport with independent symmetric stable increments
+categories:: UGens>Generators>Stochastic>Processes
+related:: Classes/TStableRand, Classes/TLevyRand, Classes/OUProcess, Classes/FBrownianMotion, Classes/JumpDiffusion, Guides/Stochastica
+
+description::
+Accumulates symmetric alpha-stable increments into a position. Lower alpha permits rare large relocations among smaller movements. This memory is accumulated position, not correlated increments: successive innovations are independent. FBrownianMotion models increment correlation through a finite-memory approximation; OUProcess pulls toward a center; LevyFlight does neither. TStableRand samples individual stable values, while TLevyRand is a one-sided Levy distribution, not this symmetric motion.
+
+Each calculation advances code::x += drift*dt + scale*dt.pow(1/alpha)*S::, with S a unit symmetric stable variable in the existing Nolan S0 convention. For beta=0 its characteristic function is code::exp(-abs(t).pow(alpha))::. Alpha=2 is Gaussian with increment variance code::2*scale*scale*dt::; alpha=1 is Cauchy. For alpha below two the stable variance is infinite, and for alpha at most one the mean is undefined. A symmetric finite sample is not evidence of a finite population mean.
+
+The server reuses the bounded Chambers–Mallows–Stuck sampler used by TStableRand. Source: Nolan's link::https://edspace.american.edu/jpnolan/wp-content/uploads/sites/1720/2020/09/Chap1.pdf:: stable-distribution reference. The elapsed interval includes timeScale and is one sample for .ar or one block for .kr. Equal model time has the same stable law with fixed parameters, though sequences differ between rates.
+
+State and finite increments remain unbounded doubles internally. They are not wrapped, folded or normalized. Only float serialization saturates at machine range. Non-finite updates restore initial and emit a zero increment, keeping the runtime RNG position; an explicit reset additionally rewinds it. Extremely small alpha or large scales can exceed numeric range, so recovery truncates those otherwise unrepresentable paths. Each calculation has bounded constant work and no allocation. Discontinuities and fast sonification can alias.
+
+Like vanilla link::Classes/BrownNoise::, this remembers a random walk position. BrownNoise is a bounded audio-noise generator; LevyFlight exposes unbounded transport and stable rather than bounded uniform increments.
+
+image::round3-levy.png::
+
+subsection:: See also
+link::Classes/TStableRand::, link::Classes/TLevyRand::, link::Classes/OUProcess::, link::Classes/FBrownianMotion::, link::Classes/JumpDiffusion::, link::Guides/Stochastica::
+
+classmethods::
+method:: ar, kr
+argument:: alpha
+Stable exponent, clipped to 0.01..2, sampled each calculation. Smaller values yield heavier tails; non-finite values use the lower bound.
+argument:: scale
+Stable scale per unit model time, interpreted by magnitude; non-finite becomes zero. Alpha=2 corresponds to Brownian diffusion amplitude sqrt(2)*scale.
+argument:: drift
+Finite deterministic displacement per model second. Non-finite becomes zero.
+argument:: timeScale
+Nonnegative model seconds per real second. Nonpositive/non-finite values hold state and emit zero increment.
+argument:: initial
+Position at construction, reset or numerical recovery. Non-finite becomes zero.
+argument:: seed
+Local PCG32 seed; nonzero repeats a sequence. Zero derives from the Synth RNG only at construction.
+argument:: reset
+Nonpositive-to-positive edge restores initial and the original local seed, emits zero increment and skips evolution. Held positive does not repeat.
+returns::
+Two outputs: code::[state, increment]::. The second is the complete displacement on this calculation, including drift. Construction emits initial and zero increment.
+
+examples::
+subsection:: Minimal register motion
+code::
+(
+{ SinOsc.ar((60 + LevyFlight.kr(1.2, 3, seed: 57)[0]).clip(30, 96).midicps, 0, 0.07) ! 2 }.play
+)
+::
+
+subsection:: Relocations and an unchanged voice
+The left channel has Gaussian transport, the right heavy-tailed transport. Clipping is an explicit pitch-domain decision; the raw paths in the figure are not clipped. Neither process returns to a center, so a long run may remain at a pitch boundary.
+code::
+(
+{
+    [2, 1.2].collect { |alpha|
+        var position = LevyFlight.kr(alpha, 4, seed: 57)[0];
+        var pitch = (60 + position).clip(30, 96);
+        SinOsc.ar(pitch.midicps, 0, 0.065)
+    } * Line.kr(0, 1, 0.05)
+}.play
+)
+::

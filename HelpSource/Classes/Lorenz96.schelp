@@ -1,0 +1,79 @@
+class:: Lorenz96
+summary:: A cyclic continuous-time lattice with local nonlinear interaction and spatial chaos
+categories:: UGens>Generators>Chaotic>Flows
+related:: Classes/CoupledMapLattice, Classes/Chua, Classes/KuramotoNetwork, Guides/Stochastica
+
+description::
+A ring of continuous states evolves under code::dx[i]/dt = (x[i+1]-x[i-2])*x[i-1] - x[i] + forcing::, with all indices cyclic. Local advection-like interaction, linear damping and constant forcing can produce spatially extended irregular motion. The full vector is the memory: neighboring cells shape each other's future. Given the same initial vector and parameters this is deterministic; apparent unpredictability is not stochastic innovation.
+
+This is Lorenz–96, not the three-variable Lorenz–63 system. The mathematical source is Lorenz's link::https://www.ecmwf.int/sites/default/files/elibrary/1995/10829-predictability-problem-partly-solved.pdf:: predictability model. It is independently implemented as a SuperCollider-native flow. CoupledMapLattice uses a trigger-driven discrete recurrence; KuramotoNetwork couples circular oscillator phases; Lorenz96 integrates unbounded continuous coordinates with a local cyclic stencil. Chua instead exposes three globally coupled circuit states.
+
+Every RK4 stage uses the same cyclic indexing. Fixed substeps give O(N*substeps) calculation cost and O(N) private RT storage. Large forcing, timeScale or insufficient substeps can cause numerical instability: a non-finite full update restores the reset template, without clipping finite states. Float serialization alone saturates beyond machine range. A uniform vector equal to forcing is an equilibrium, so the default adds 0.01 to cell zero to break exact symmetry. At conventional forcing=8, suitable dimensions and small steps give irregular spatial motion; this does not guarantee chaos for all dimensions and parameters.
+
+The maximum 64 cells at 16 substeps is expensive at audio rate; a local reference measurement exceeded one core's real-time budget. Prefer .kr for modulation, smaller dimensions, and the lowest substep count whose trajectory converges over the time window of interest. Chaotic long-term trajectories will separate even after very small rounding differences.
+
+There is no close vanilla UGen exposing this continuous cyclic lattice. The practical use is a coupled bank of modulation coordinates, with all pitch, level and spatial mappings made explicitly outside the model.
+
+image::round3-lorenz.png::
+
+subsection:: See also
+link::Classes/CoupledMapLattice::, link::Classes/Chua::, link::Classes/KuramotoNetwork::, link::Guides/Stochastica::
+
+classmethods::
+method:: ar, kr
+argument:: numCells
+Construction-time cell/output count, clipped to 4..64. Recreate the Synth to change it.
+argument:: forcing
+Finite drive F, sampled each calculation, otherwise 8. It is a raw parameter, not an amplitude. Default resets sample it at block entry.
+argument:: timeScale
+Nonnegative model seconds per real second. Nonpositive/non-finite values hold state. .ar uses a sample interval; .kr uses a control block interval.
+argument:: substeps
+Construction-time RK4 steps per calculation, clipped to 1..16. Controls integration accuracy and CPU cost; no adaptive solver runs.
+argument:: initialBuf
+Optional mono Buffer with at least numCells finite values. Copied at construction or reload. Missing, negative, non-mono, short or non-finite buffers select the default reset template: all cells equal current block forcing, plus 0.01 at cell zero. User data is never modified.
+argument:: reload
+Nonpositive-to-positive edge replaces the stored initial template without jumping the current state. Normal integration continues. A separate subsequent reset applies the new template.
+argument:: reset
+Rising edge restores the cached initial template and skips integration. Wins over simultaneous reload, whose edge is consumed. There is no seed; supplied initial conditions completely specify deterministic state.
+returns::
+An Array of numCells raw states in cell order. Allocation failure produces silence. Output is not normalized or antialiased.
+
+examples::
+subsection:: Minimal cell modulation
+code::
+(
+{ SinOsc.ar((60 + Lorenz96.kr(8, timeScale: 3, substeps: 4)[0]).clip(30, 96).midicps, 0, 0.07) ! 2 }.play
+)
+::
+
+subsection:: Sixteen voices share one spatial system
+Each cell controls one partial's amplitude. Splay exposes spatial movement; no independent random modulation is added to the voices. The default perturbation first grows away from the uniform equilibrium, so allow a few seconds for spatial structure to develop.
+code::
+(
+{
+    var cells = Lorenz96.kr(16, forcing: 8, timeScale: 3, substeps: 4);
+    var voices = cells.collect { |state, i|
+        var level = (state * 0.12).tanh.linlin(-1, 1, 0.005, 0.035);
+        SinOsc.ar(110 * (i + 1), 0, level)
+    };
+    Splay.ar(voices) * Line.kr(0, 1, 0.1)
+}.play
+)
+::
+
+subsection:: Load a specified initial vector
+Here the snapshot is available before Synth creation. Later edits to this buffer require reload followed by a separate reset; reload alone preserves the evolving state.
+code::
+(
+Routine {
+    var initial = Buffer.loadCollection(s, [8.1, 7.8, 8, 8.2, 8, 7.9, 8, 8]);
+    var node;
+    s.sync;
+    node = {
+        var cells = Lorenz96.kr(8, timeScale: 2, substeps: 4, initialBuf: initial);
+        Splay.ar(SinOsc.ar((60 + cells).clip(30, 96).midicps, 0, 0.025)) * Line.kr(0, 1, 0.05)
+    }.play;
+    15.wait; node.free; s.sync; initial.free;
+}.play;
+)
+::

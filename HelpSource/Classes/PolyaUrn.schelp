@@ -1,0 +1,74 @@
+class:: PolyaUrn
+summary:: Triggered choices that reinforce their own future selection probability
+categories:: UGens>Generators>Stochastic>State
+related:: Classes/MarkovChain, Classes/SemiMarkov, Classes/TDirichletRand, Guides/Stochastica
+
+description::
+A Pólya urn stores accumulated choice weights. At each trigger it selects state i with probability code::w[i]/sum(w)::, then adds reinforcement to that state's weight. Early chance selections can become persistent preferences. Unlike MarkovChain, which remembers the current state and selects a transition row, the urn remembers the entire history through its weights. Unlike TDirichletRand, it does not redraw an independent allocation each time. Zero reinforcement gives fixed categorical sampling.
+
+The selectedProbability output reports the chance of the selected state before reinforcement. normalizedEntropy describes all probabilities after reinforcement: code::-sum(p*log(p))/log(numStates)::. One means equal diversity; zero means one surviving category. Entropy need not decrease monotonically, and a balanced ensemble of urns can contain very different individual preferences. Source: the classical reinforced urn described in Pemantle's link::https://arxiv.org/abs/math/0610076:: survey.
+
+The initial Buffer is a snapshot and is never rewritten. Private weights are proportionally rescaled above total 2^40; future reinforcement is converted into the same units, preserving the additive model apart from rounding. Each draw is O(N), including entropy, with N at most 64. Extremely small probabilities can eventually be below floating precision; this is not an explicit elimination rule.
+
+Vanilla link::Classes/TWindex:: also selects a weighted category. PolyaUrn carries the reinforcing weight history inside the UGen and exposes its diversity.
+
+image::round3-urn.png::
+
+subsection:: See also
+link::Classes/MarkovChain::, link::Classes/SemiMarkov::, link::Classes/TDirichletRand::, link::Guides/Stochastica::
+
+classmethods::
+method:: ar, kr
+argument:: numStates
+Construction-time state count, clipped to 2..64.
+argument:: weightBuf
+Mono Buffer with at least numStates finite nonnegative base weights and positive total. Invalid data falls back to equal weights. Zero-weight states cannot be selected. Copied at construction/reload; user data is never modified.
+argument:: trig
+Nonpositive-to-positive selection edge. Construction selects no random state; held default trig=1 needs a fresh edge. Outputs hold between events.
+argument:: reinforcement
+Nonnegative amount added after a selection, sampled on that edge. Negative/non-finite values become zero.
+argument:: valueBuf
+Optional mono Buffer mapping states to finite values. Negative, missing, short or non-finite buffers fall back to indices. Copied with weightBuf.
+argument:: reload
+Rising edge replaces base weights and values, restores the current urn to those weights and state zero, and recomputes diagnostics without drawing or rewinding RNG. Suppresses a coincident selection.
+argument:: seed
+Local PCG32 seed. Nonzero repeats a sequence; zero derives from the parent Synth only at construction.
+argument:: reset
+Rising edge restores cached base weights, state zero and the original local seed. Has priority over reload and selection without rereading the Buffer. Simultaneous edges are consumed.
+returns::
+Four outputs: code::[stateIndex, stateValue, selectedProbability, normalizedEntropy]::. State indices are zero-based. At construction/reset/reload, probability is state zero's base probability and entropy is the base distribution's entropy. Allocation failure produces silence.
+
+examples::
+subsection:: Minimal reinforced choice
+code::
+(
+Routine {
+    var weights = Buffer.loadCollection(s, [1, 1]);
+    var node;
+    s.sync;
+    node = { SinOsc.ar(220 * (PolyaUrn.kr(2, weights, Impulse.kr(6), seed: 17)[0] + 1), 0, 0.07) ! 2 }.play;
+    12.wait; node.free; s.sync; weights.free;
+}.play;
+)
+::
+
+subsection:: Preference and audible diversity
+Four registers compete. Falling entropy narrows the stereo field, exposing the diversity of the current preference as well as the selected category. A fixed Markov transition matrix would condition each choice on the previous category; this example's probabilities reflect every prior choice.
+code::
+(
+Routine {
+    var weights = Buffer.loadCollection(s, [1, 1, 1, 1]);
+    var values = Buffer.loadCollection(s, [165, 330, 660, 1320]);
+    var node;
+    s.sync;
+    node = {
+        var trigger = Impulse.kr(8);
+        var urn = PolyaUrn.kr(4, weights, trigger, 1, values, seed: 48);
+        var position = urn[0].linlin(0, 3, -1, 1) * urn[3];
+        Pan2.ar(SinOsc.ar(urn[1], 0, Decay2.kr(trigger, 0.003, 0.09) * 0.09), position)
+            * Line.kr(0, 1, 0.05)
+    }.play;
+    25.wait; node.free; s.sync; [weights, values].do(_.free);
+}.play;
+)
+::
