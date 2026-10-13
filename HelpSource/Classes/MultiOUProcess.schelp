@@ -1,0 +1,114 @@
+class:: MultiOUProcess
+summary:: Correlated mean-reverting trajectories with temporal memory
+categories:: UGens>Generators>Stochastic
+related:: Guides/Stochastica, Classes/OUProcess, Classes/MultiGaussNoise, Classes/LFNoise1
+
+description::
+
+MultiOUProcess creates several continuous stochastic trajectories that drift separately while sharing random innovations. Each component remembers its previous value and returns toward its mean; covariance relates its motion to the other components. Use it for ensemble breathing, coordinated spatial movement, and related parameter drift. link::Classes/MultiGaussNoise:: gives correlated values at trigger moments; MultiOUProcess gives correlated trajectories with memory through time.
+
+It implements the diagonal-reversion multivariate Ornstein-Uhlenbeck SDE code::dX = -Theta*(X-mu)dt + B*dW::, where the buffer supplies diffusion covariance code::Sigma = B*B.transpose::. This extends the Ornstein-Uhlenbeck process (Uhlenbeck and Ornstein, 1930), link::https://doi.org/10.1103/PhysRev.36.823::. With code::s = theta_i+theta_j::, the exact innovation covariance is code::Q_ij = Sigma_ij * -expm1(-s*dt)/s::, or code::Sigma_ij*dt:: at s=0. Update is code::mu + exp(-theta*dt)*(X-mu) + L*z:: where code::L*L.transpose = Q::. Positive reversion gives stationary covariance code::Sigma_ij/(theta_i+theta_j)::, not Sigma itself.
+
+Snapshots and Cholesky factorization happen at construction and explicit reload, never during ordinary updates. Covariance is symmetrized, then the same bounded jitter policy as MultiGaussNoise is used: eight attempts from code::max(largestDiagonal,1)*1e-12:: through 1e-5, followed by independent nonnegative diagonal variances. An exactly zero covariance remains zero. A missing/wrong-sized covariance uses identity diffusion; missing/wrong-sized optional vectors use zero means and unit reversions. Non-finite buffer entries become zero. All buffers must be mono; extra samples are ignored.
+
+Reload preserves the current trajectory and RNG. Reset restores the loaded mean vector and seed, and suppresses a simultaneous reload. Constructor and reset start at the mean, so stationary variance builds over several reversion time constants. A non-finite or float-unrepresentable update restores the entire mean vector. Snapshot data are owned by the UGen; buffers are never modified. Sync buffer edits before sending a single reload edge. Large matrices make reload more expensive than ordinary O(N squared) updates.
+
+Like link::Classes/LFNoise1:: it supports drifting modulation, but uses an exact stochastic transition with specified covariance and reversion rather than interpolated independent random targets.
+
+subsection:: Process view
+
+image::multi-ou-dynamics.png#A two-dimensional path and its component time series reveal temporal memory and correlated geometry.::
+
+classmethods::
+
+method:: ar
+argument:: numChannels
+Init-rate output dimension, clipped to 1..32; default 2.
+argument:: covarianceBuf
+Required mono row-major N by N diffusion covariance; default buffer 0.
+argument:: meanBuf
+Mono N-value mean vector; negative selects zeros (default -1).
+argument:: reversionBuf
+Mono N-value reversion vector in inverse seconds; negative buffer number selects ones (default -1). Negative entries become zero, the Brownian limit.
+argument:: reload
+Rising edge snapshots coefficients and refactors Q. Use occasional control-rate edges; no RNG reset.
+argument:: seed
+Init-rate local PCG32 seed. Zero derives a seed from the parent Synth; nonzero is reproducible. Reset restores the original seed.
+argument:: reset
+Rising edge outputs loaded means and restores seed; takes priority over reload.
+returns:: Exactly numChannels process outputs, in buffer-vector order. Outputs are raw and not normalized.
+
+method:: kr
+Control-rate version: one calculation spans the full control block. Event outputs last one block.
+
+instancemethods::
+
+examples::
+
+subsection:: Two related trajectories
+
+The buffer is ready before synthesis starts. This demonstration frees itself after 12 seconds.
+
+code::
+(
+Routine {
+    var covariance = Buffer.loadCollection(s, [1, 0.8, 0.8, 1]);
+    var node;
+    s.sync;
+    node = { MultiOUProcess.kr(2, covariance).poll(5) }.play;
+    12.wait;
+    node.free;
+    s.sync;
+    covariance.free;
+}.play;
+)
+::
+
+subsection:: Opposing motion
+
+A negative cross covariance moves the two pitches in opposing directions.
+
+code::
+(
+Routine {
+    var covariance = Buffer.loadCollection(s, [1, -0.8, -0.8, 1]);
+    var node;
+    s.sync;
+    node = { SinOsc.ar(330 * (MultiOUProcess.kr(2, covariance) * 2).midiratio, 0, 0.05) * Line.kr(0, 1, 0.05) }.play;
+    15.wait;
+    node.free;
+    s.sync;
+    covariance.free;
+}.play;
+)
+::
+
+subsection:: Ensemble breathing
+
+Four voices share a tendency without becoming identical. The diagonal is stronger than the cross terms.
+
+code::
+(
+Routine {
+    var covariance = Buffer.loadCollection(s, Array.fill(16, { |i| if((i div: 4) == (i % 4), 1, 0.7) }));
+    var node;
+    s.sync;
+    node = {
+        var drift = MultiOUProcess.kr(4, covariance, seed: 41);
+        Splay.ar(SinOsc.ar([220, 275, 330, 440] * (drift * 1.5).midiratio, 0, 0.04))
+            * Line.kr(0, 1, 0.05)
+    }.play;
+    20.wait;
+    node.free;
+    s.sync;
+    covariance.free;
+}.play;
+)
+::
+
+subsection:: See also
+
+link::Guides/Stochastica::
+link::Classes/OUProcess::
+link::Classes/MultiGaussNoise::
+link::Classes/LFNoise1::

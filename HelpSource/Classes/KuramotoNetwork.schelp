@@ -1,0 +1,128 @@
+class:: KuramotoNetwork
+summary:: Collective phase synchronization without a master clock
+categories:: UGens>Generators>Stochastic
+related:: Guides/Stochastica, Classes/Chua, Classes/MultiOUProcess, Classes/SinOsc
+
+description::
+
+KuramotoNetwork is a population of phase oscillators. Each has its own natural frequency, while coupling encourages alignment. Coordination emerges through mutual influence rather than an imposed clock. Use it for rhythm populations, coupled LFOs, and ensembles that move between scattered and coordinated pulses. link::Classes/Chua:: models one nonlinear circuit; KuramotoNetwork exposes a collective state and a measurement of its coherence.
+
+The all-to-all homogeneous model is code::dtheta_i/dt = omega_i + K/N * sum_j sin(theta_j-theta_i):: plus optional independent phase diffusion code::noise*dW_i::. The complex mean code::mean(exp(i*theta)) = r*exp(i*psi):: gives coherence r and mean phase psi. See S. H. Strogatz, From Kuramoto to Crawford (2000), equations 3.1–3.3, link::https://doi.org/10.1016/S0167-2789(00)00094-4::. r near zero means dispersed phases; r near one means aligned phases. psi becomes numerically arbitrary near zero coherence.
+
+The drift is evaluated as code::omega_i + K*(meanSin*cos(theta_i)-meanCos*sin(theta_i))::, reducing work to O(N) per substep. Fixed Euler-Maruyama substeps update phases simultaneously and wrap to [-pi, pi). Inputs are held over each calculation's substeps. The maximum 64-oscillator, 16-substep audio-rate combination can exceed a single core's real-time budget; use control rate, fewer oscillators, or fewer substeps. See the project verification record for measured costs. This is a phase model without antialiasing: large frequencies, coupling, diffusion, or timeScale need smaller time steps. More substeps improve integration but cannot remove output aliasing.
+
+Buffers are mono snapshots; missing/wrong-sized frequency buffers give zero natural frequencies. Missing/wrong-sized phase buffers use deterministic uniform phases from the seed. Non-finite buffer entries become zero. Reload changes frequencies and the stored reset phases but never teleports current phases or resets RNG. Reset restores stored phases and the original diffusion RNG state, including the position after random initial-phase generation. It suppresses a simultaneous reload. Buffer edits need s.sync before reload. No buffer is modified. Non-finite internal updates restore the complete stored configuration and RNG; finite circular wrapping is part of the mathematical domain.
+
+Constructor/reset exposes the initial network. Synchronization takes time; it is not guaranteed for arbitrary frequency spread or coupling. A short output fade avoids an abrupt start when phases are used as amplitude controls.
+
+Like a bank of link::Classes/SinOsc::, phases can drive periodic sound, but mutual coupling changes their motion and the explicit order parameter reports population coherence.
+
+subsection:: Process view
+
+image::kuramoto-coherence.png#The phase circle and order vector for weak and strong coupling. Vector length is r; its angle is psi.::
+
+classmethods::
+
+method:: ar
+argument:: numOscillators
+Init-rate population size, clipped to 1..64; default 8.
+argument:: frequencyBuf
+Mono N-value natural frequencies in cycles per model second; default 0. Converted internally to radians.
+argument:: phaseBuf
+Mono N-value reset phases in radians, wrapped. Negative selects seeded uniform phases; default -1.
+argument:: coupling
+Angular coupling rate in radians/model second; default 0. Positive encourages alignment; negative is allowed.
+argument:: noise
+Phase diffusion magnitude in radians/square-root model second; default 0. Uses absolute value.
+argument:: timeScale
+Model seconds per real second; default 1. Nonpositive holds phases.
+argument:: substeps
+Init-rate integer clipped to 1..16; default 1. Work is O(N * substeps).
+argument:: reload
+Rising edge snapshots frequencies and stored reset phases. Current phases and RNG remain intact.
+argument:: seed
+Init-rate local PCG32 seed. Zero derives a seed from the parent Synth; nonzero is reproducible. Reset restores the original seed.
+argument:: reset
+Rising edge restores the stored initial phases and RNG. No integration or reload on that calculation.
+returns:: Exactly N+2 outputs: [theta_0 ... theta_N-1, r, psi]. Phases/psi are radians in [-pi, pi); r is in [0,1].
+
+method:: kr
+Control-rate version: one calculation spans the full control block. Event outputs last one block.
+
+instancemethods::
+
+examples::
+
+subsection:: Measure coherence
+
+The first five outputs are phases; output 5 is r.
+
+code::
+(
+Routine {
+    var frequencies = Buffer.loadCollection(s, [0.9, 0.95, 1, 1.05, 1.1]);
+    var node;
+    s.sync;
+    node = { KuramotoNetwork.kr(5, frequencies, coupling: 3, seed: 51)[5].poll(5) }.play;
+    12.wait;
+    node.free;
+    s.sync;
+    frequencies.free;
+}.play;
+)
+::
+
+subsection:: A specified initial population
+
+Explicit phase and frequency vectors define a reproducible network.
+
+code::
+(
+Routine {
+    var frequencies = Buffer.loadCollection(s, [1, 1.02, 0.98]);
+    var phases = Buffer.loadCollection(s, [-2, 0, 2]);
+    var node;
+    s.sync;
+    node = {
+        var network = KuramotoNetwork.kr(3, frequencies, phases, coupling: 2);
+        Splay.ar(SinOsc.ar([220, 330, 440], 0, network[0..2].cos.squared * 0.04)) * Line.kr(0, 1, 0.05)
+    }.play;
+    15.wait;
+    node.free;
+    s.sync;
+    [frequencies, phases].do(_.free);
+}.play;
+)
+::
+
+subsection:: Audible emergence of synchrony
+
+Each phase shapes a voice. Coupling grows and recedes, while coherence adds a small brightness change.
+
+code::
+(
+Routine {
+    var frequencies = Buffer.loadCollection(s, Array.series(12, 0.83, 0.03));
+    var node;
+    s.sync;
+    node = {
+        var coupling = SinOsc.kr(0.04, -pi/2).range(0, 6);
+        var network = KuramotoNetwork.kr(12, frequencies, coupling: coupling, substeps: 4, seed: 53);
+        var pulses = ((network[0..11].cos + 1) * 0.5).pow(12);
+        var voices = SinOsc.ar(Array.geom(12, 180, 1.08), 0, pulses * 0.025);
+        Splay.ar(voices) * (0.7 + (network[12] * 0.3)) * Line.kr(0, 1, 0.05)
+    }.play;
+    30.wait;
+    node.free;
+    s.sync;
+    frequencies.free;
+}.play;
+)
+::
+
+subsection:: See also
+
+link::Guides/Stochastica::
+link::Classes/Chua::
+link::Classes/MultiOUProcess::
+link::Classes/SinOsc::

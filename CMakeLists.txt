@@ -37,6 +37,11 @@ set(sd_cpp_files
     sonifiers/MapSonifiers.cpp
     processes/AdvancedEventProcesses.cpp
     processes/ShotNoise.cpp
+    distributions/CircularDistributions.cpp
+    state/MultiOUProcess.cpp
+    processes/MultiHawkesTrig.cpp
+    processes/DoubleWellProcess.cpp
+    flows/KuramotoNetwork.cpp
 )
 
 set(sd_sc_files
@@ -48,6 +53,11 @@ set(sd_sc_files
     Classes/SDMapSonifiers.sc
     Classes/SDVisualization.sc
     Classes/SDAdvancedProcesses.sc
+    Classes/SDCircularDistributions.sc
+    Classes/SDMultiOUProcess.sc
+    Classes/SDMultiHawkesTrig.sc
+    Classes/SDDoubleWellProcess.sc
+    Classes/SDKuramotoNetwork.sc
 )
 
 file(GLOB sd_schelp_files CONFIGURE_DEPENDS HelpSource/Classes/*.schelp)
@@ -88,7 +98,7 @@ if(TARGET Stochastica_supernova)
     set_target_properties(Stochastica_supernova PROPERTIES OUTPUT_NAME "Stochastica_supernova")
 endif()
 
-install(FILES HelpSource/Guides/Stochastica.schelp
+install(FILES HelpSource/Guides/Stochastica.schelp HelpSource/Guides/scdoc_banner.jpg
     DESTINATION Stochastica/HelpSource/Guides)
 if(sd_schelp_images)
     install(FILES ${sd_schelp_images}
@@ -149,4 +159,19 @@ if(BUILD_TESTING AND NOT CMAKE_CROSSCOMPILING)
         endif()
         add_test(NAME ${round2_target} COMMAND ${round2_target})
     endforeach()
+endif()
+
+if(BUILD_TESTING AND NOT CMAKE_CROSSCOMPILING)
+    add_executable(sd_round2_unit_tests tests/server/test_round2_units.cpp
+        processes/AdvancedEventProcesses.cpp processes/ShotNoise.cpp
+        distributions/CircularDistributions.cpp state/MultiOUProcess.cpp
+        processes/MultiHawkesTrig.cpp processes/DoubleWellProcess.cpp flows/KuramotoNetwork.cpp)
+    target_include_directories(sd_round2_unit_tests PRIVATE include
+        "${SC_PATH}/include/plugin_interface" "${SC_PATH}/include/common" "${SC_PATH}/common")
+    if(SD_SANITIZE AND CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
+        target_compile_options(sd_round2_unit_tests PRIVATE -fsanitize=address,undefined -fno-omit-frame-pointer)
+        set_property(TARGET sd_round2_unit_tests APPEND_STRING PROPERTY LINK_FLAGS " -fsanitize=address,undefined")
+    endif()
+    add_test(NAME sd_round2_unit_tests COMMAND sd_round2_unit_tests
+        "${CMAKE_CURRENT_SOURCE_DIR}/tests/server/round2-seeded-reference.txt")
 endif()

@@ -1,0 +1,89 @@
+class:: TVonMisesRand
+summary:: Triggered random directions on a circle
+categories:: UGens>Generators>Stochastic
+related:: Guides/Stochastica, Classes/TTruncNormalRand, Classes/TRand, Classes/PanAz
+
+description::
+
+TVonMisesRand chooses random directions around a preferred angle. Concentration controls how tightly the samples gather there: zero spreads them uniformly around the circle. Use it for phase, azimuth, cyclic sequences, and spatial event placement. Unlike link::Classes/TTruncNormalRand::, there is no artificial boundary separating directions near minus pi and plus pi.
+
+The density is proportional to code::exp(kappa * cos(theta-mean))::. The implementation follows D. J. Best and N. I. Fisher, Efficient Simulation of the von Mises Distribution (1979), section 4, link::https://doi.org/10.2307/2346732::. The wrapped-Cauchy rejection sampler tries at most 64 candidates. Failure returns the wrapped mean. Non-finite mean becomes zero; negative/non-finite concentration becomes zero.
+
+subsection:: Sampling limits
+
+Concentration at or below 1e-8 uses a uniform circular draw. Above 1e6 a wrapped normal with standard deviation code::1/sqrt(kappa):: is an asymptotic approximation that avoids cancellation. This approximation has the same high-concentration limit; it is not an exact von Mises sampler. Outputs are radians in [-pi, pi); float endpoint rounding is kept inside that interval. No filtering or audio normalization is applied.
+
+One sample is drawn at construction even when trig is zero, as in the other Stochastica distributions. A rising reset restores the seed and draws the first sample using current parameters; it wins over a simultaneous trigger. Values hold between edges. There is no warmup.
+
+Like link::Classes/TRand:: it samples and holds on triggers, but it samples a circular distribution instead of a uniform interval.
+
+subsection:: Process view
+
+image::von-mises-circular.png#Polar sample histograms for concentration 0, 2, and 8. The wrap boundary is continuous.::
+
+classmethods::
+
+method:: ar
+argument:: mean
+Preferred direction in radians, wrapped to [-pi, pi); default 0.
+argument:: kappa
+Nonnegative circular concentration; default 1. Zero is uniform.
+argument:: trig
+A nonpositive-to-positive edge draws one sample. Held-positive triggers draw only once.
+argument:: seed
+Init-rate local PCG32 seed. Zero derives a seed from the parent Synth; nonzero is reproducible. Reset restores the original seed.
+argument:: reset
+Rising edge restores the original seed and samples once; takes priority over trig.
+returns:: One angle in radians in [-pi, pi).
+
+method:: kr
+Control-rate version: one calculation spans the full control block. Event outputs last one block.
+
+instancemethods::
+
+examples::
+
+subsection:: Circular values
+
+Observe samples near a preferred direction.
+
+code::
+(
+{ TVonMisesRand.kr(0, 6, Impulse.kr(4)).poll }.play
+)
+::
+
+subsection:: Across the boundary
+
+Angles on both sides of pi remain neighboring phases.
+
+code::
+(
+{
+    var event = Impulse.kr(5);
+    var angle = TVonMisesRand.kr(pi - 0.1, 12, event);
+    SinOsc.ar(330, angle, Decay2.kr(event, 0.005, 0.15) * 0.08)
+}.play
+)
+::
+
+subsection:: Circular spatial concentration
+
+Four outputs form a ring. Angle divided by pi maps to PanAz position; use a four-channel output setup to hear the full ring.
+
+code::
+(
+{
+    var event = Impulse.kr(6);
+    var angle = TVonMisesRand.kr(SinOsc.kr(0.03) * pi, 5, event);
+    PanAz.ar(4, SinOsc.ar(700, 0, Decay2.kr(event, 0.002, 0.08) * 0.08), angle / pi)
+}.play
+)
+::
+
+subsection:: See also
+
+link::Guides/Stochastica::
+link::Classes/TTruncNormalRand::
+link::Classes/TRand::
+link::Classes/PanAz::

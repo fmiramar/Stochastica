@@ -1,0 +1,95 @@
+class:: DoubleWellProcess
+summary:: Metastable diffusion in a nonlinear potential
+categories:: UGens>Generators>Stochastic
+related:: Guides/Stochastica, Classes/OUProcess, Classes/RandomTelegraph, Classes/BrownNoise
+
+description::
+
+DoubleWellProcess wanders inside an energy landscape with two preferred regions. It can remain near one well for a long time before noise pushes it over the barrier. This metastability makes slowly changing timbres and competing generative states, while retaining continuous fluctuation within each region. link::Classes/OUProcess:: has one preferred mean; this process commonly has two.
+
+The equation is code::dx = (a*x-b*x^3+drive)dt + abs(noise)dW::, with potential code::V(x) = b*x^4/4-a*x^2/2-drive*x::. Positive a and b with zero drive give stable wells at plus/minus code::sqrt(a/b)::. Negative a or b are allowed and may leave the double-well regime or diverge. The model follows the standard overdamped bistable system used in stochastic-resonance research; see R. Benzi, Stochastic Resonance: from climate to biology (2007), link::https://arxiv.org/abs/nlin/0702008::, and Gammaitoni et al. (1998), link::https://doi.org/10.1103/RevModPhys.70.223::.
+
+Fixed Euler-Maruyama substeps hold the current inputs throughout each calculation. Each adds the deterministic drift times dtSub and a normal innovation scaled by code::abs(noise)*sqrt(dtSub)::. Small time steps are essential for stiff or strongly driven systems; increasing substeps improves numerical accuracy at a proportional CPU cost. There is no hidden clipping, folding, or binary classification. If a state becomes non-finite or cannot be represented as a server float, the whole calculation recovers to current initial without reseeding. Non-finite scalar inputs become zero.
+
+Reset starts in the chosen well, not in a stationary distribution. Settling and rare barrier crossings can take time. The examples accelerate model time so the behavior is apparent within seconds. A weak periodic tilt can become more effective at causing transitions with moderate noise; adding still more noise need not improve drive-related switching.
+
+Like link::Classes/BrownNoise:: it can drive wandering modulation, but its nonlinear restoring force creates preferred wells and its raw state is not bounded to an audio range.
+
+subsection:: Process view
+
+image::double-well-dynamics.png#The quartic potential and a trajectory showing noise-driven transitions between its two stable regions.::
+
+classmethods::
+
+method:: ar
+argument:: drive
+Additive force tilting the potential; default 0. Audio-rate input is allowed.
+argument:: a
+Linear drift coefficient; default 1. Not forced positive.
+argument:: b
+Cubic restoring coefficient; default 1. Not forced positive.
+argument:: noise
+Diffusion magnitude per square-root model second; default 0.35. Uses absolute value.
+argument:: timeScale
+Model seconds per real second; default 1. Nonpositive holds state.
+argument:: initial
+State at construction/reset and numerical recovery; default -1.
+argument:: substeps
+Init-rate integer clipped to 1..16; default 1.
+argument:: seed
+Init-rate local PCG32 seed. Zero derives a seed from the parent Synth; nonzero is reproducible. Reset restores the original seed.
+argument:: reset
+Rising edge restores current initial and the original seed. No integration on that calculation.
+returns:: One raw, unnormalized process state.
+
+method:: kr
+Control-rate version: one calculation spans the full control block. Event outputs last one block.
+
+instancemethods::
+
+examples::
+
+subsection:: A metastable trajectory
+
+Watch fluctuations and occasional crossings.
+
+code::
+(
+{ DoubleWellProcess.kr(noise: 0.7, timeScale: 8, substeps: 4).poll(10) }.play
+)
+::
+
+subsection:: Metastable timbre
+
+The continuously changing state moves between two spectral regions without throwing away within-well motion.
+
+code::
+(
+{
+    var state = DoubleWellProcess.kr(noise: 0.75, timeScale: 6, substeps: 4);
+    Pan2.ar(RLPF.ar(Saw.ar(90, 0.06), state.tanh.linexp(-1, 1, 180, 4500), 0.2))
+        * Line.kr(0, 1, 0.05)
+}.play
+)
+::
+
+subsection:: Weak drive and stochastic resonance
+
+Left has no noise; right has moderate noise. The same subthreshold drive tilts both wells. Listen over several periods; this is a qualitative example, not a universally optimal noise setting.
+
+code::
+(
+{
+    var drive = SinOsc.kr(0.2) * 0.25;
+    var states = DoubleWellProcess.kr(drive, noise: [0, 0.65], timeScale: 8, substeps: 8, seed: 37);
+    SinOsc.ar(states.tanh.linexp(-1, 1, 180, 850), 0, 0.06) * Line.kr(0, 1, 0.05)
+}.play
+)
+::
+
+subsection:: See also
+
+link::Guides/Stochastica::
+link::Classes/OUProcess::
+link::Classes/RandomTelegraph::
+link::Classes/BrownNoise::

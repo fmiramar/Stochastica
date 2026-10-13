@@ -1,0 +1,123 @@
+class:: MultiHawkesTrig
+summary:: Directional cross-excitation between stochastic event streams
+categories:: UGens>Generators>Stochastic
+related:: Guides/Stochastica, Classes/HawkesTrig, Classes/SelfCorrectingTrig, Classes/Dust
+
+description::
+
+MultiHawkesTrig models event contagion between streams. An event changes the short-term probability of future events elsewhere, creating call-and-response, cascades, swarms, and interacting rhythmic agents. Each row describes a receiving process and each column a sending process. Independent link::Classes/HawkesTrig:: instances cannot express these directional cross-connections.
+
+This is the exponential-kernel multivariate Hawkes model: code::lambda_i = mu_i + sum_j h_ij::, code::dh_ij/dt = -beta_ij*h_ij::, and source j events add code::alpha_ij:: to each target i. Source: A. G. Hawkes, Spectra of Some Self-Exciting and Mutually Exciting Point Processes (1971), link::https://doi.org/10.1093/biomet/58.1.83::.
+
+Every calculation decays all pair states, computes all capped pre-event intensities, then draws all binary events with probability code::-expm1(-intensity*dt)::. Only after all decisions are made is new excitation added. Events therefore influence probabilities starting on the next calculation, with no target-iteration bias. At most one event per stream/calculation is represented; use rates far below the calculation rate for accurate point-process statistics.
+
+Matrices are mono, row-major, with N squared values: row i is target, column j source. Negative/non-finite entries become zero. Zero decay deliberately preserves excitation. For positive decay, code::alpha_ij/beta_ij:: is integrated influence. Networks with excessive feedback, including persistent zero-decay loops, can remain near maxRate; no spectral-radius calculation runs on the server.
+
+Construction/reset starts with no excitation, so cascades grow from base events. Reload snapshots all three buffers and retains excitation and RNG state. Any missing, non-mono, or too-short buffer silences all base/excitation coefficients and clears history until a valid reload; no buffer is mutated. Sync all edits before reload: the separate snapshots are reader-locked but are not a transaction across buffers. Non-finite accumulated history clears the whole history. Reset wins over reload, emits zero flags, and reports capped loaded base intensities.
+
+Like link::Classes/Dust:: it generates random impulses, but events causally alter other streams' future intensities.
+
+subsection:: Process view
+
+image::multi-hawkes-dynamics.png#Four event rasters and target intensities show activity propagating through directed connections.::
+
+classmethods::
+
+method:: ar
+argument:: numProcesses
+Init-rate process count, clipped to 1..16; default 2. Work is O(N squared) per calculation.
+argument:: baseRateBuf
+Mono buffer with at least N base rates in events/second; default 0.
+argument:: excitationBuf
+Mono row-major N by N nonnegative intensity increments; default 1. Row target, column source.
+argument:: decayBuf
+Mono row-major N by N decay rates in inverse seconds; default 2. Zero intentionally preserves excitation.
+argument:: maxRate
+Nonnegative explicit per-stream intensity ceiling; default 20000. Non-finite becomes zero.
+argument:: reload
+Rising edge snapshots all coefficients without resetting seed or valid history.
+argument:: seed
+Init-rate local PCG32 seed. Zero derives a seed from the parent Synth; nonzero is reproducible. Reset restores the original seed.
+argument:: reset
+Rising edge clears excitation, restores seed, and outputs zero events. Priority over reload.
+returns:: Exactly 2*N outputs: [trig_0 ... trig_N-1, intensity_0 ... intensity_N-1]. No hidden restructuring.
+
+method:: kr
+Control-rate version: one calculation spans the full control block. Event outputs last one block.
+
+instancemethods::
+
+examples::
+
+subsection:: One stream calls another
+
+The second voice responds to events in the first. Buffers and Synth are freed after 15 seconds.
+
+code::
+(
+Routine {
+    var base = Buffer.loadCollection(s, [1, 0.2]);
+    var excite = Buffer.loadCollection(s, [0, 0, 12, 0]);
+    var decay = Buffer.loadCollection(s, [10, 10, 10, 10]);
+    var node;
+    s.sync;
+    node = { SinOsc.ar([440, 660], 0, Decay2.ar(MultiHawkesTrig.ar(2, base, excite, decay)[0..1], 0.001, 0.08) * 0.08) }.play;
+    15.wait;
+    node.free;
+    s.sync;
+    [base, excite, decay].do(_.free);
+}.play;
+)
+::
+
+subsection:: Observe intensities
+
+A source event raises the target intensity on the next calculation.
+
+code::
+(
+Routine {
+    var base = Buffer.loadCollection(s, [2, 0]);
+    var excite = Buffer.loadCollection(s, [0, 0, 8, 0]);
+    var decay = Buffer.loadCollection(s, [5, 5, 5, 5]);
+    var node;
+    s.sync;
+    node = { MultiHawkesTrig.kr(2, base, excite, decay)[2..3].poll(10) }.play;
+    12.wait;
+    node.free;
+    s.sync;
+    [base, excite, decay].do(_.free);
+}.play;
+)
+::
+
+subsection:: Four-voice propagation
+
+Activity circulates from voice 0 to 1 to 2 to 3 and weakly back to 0. Cross-excitation, rather than four independent rates, organizes the phrase.
+
+code::
+(
+Routine {
+    var base = Buffer.loadCollection(s, [1.2, 0.03, 0.03, 0.03]);
+    var excite = Buffer.loadCollection(s, [0,0,0,2, 10,0,0,0, 0,10,0,0, 0,0,10,0]);
+    var decay = Buffer.loadCollection(s, 12 ! 16);
+    var node;
+    s.sync;
+    node = {
+        var events = MultiHawkesTrig.ar(4, base, excite, decay, seed: 43)[0..3];
+        Splay.ar(Ringz.ar(events, [300, 450, 675, 1012], 0.12)) * 0.025 * Line.kr(0, 1, 0.05)
+    }.play;
+    20.wait;
+    node.free;
+    s.sync;
+    [base, excite, decay].do(_.free);
+}.play;
+)
+::
+
+subsection:: See also
+
+link::Guides/Stochastica::
+link::Classes/HawkesTrig::
+link::Classes/SelfCorrectingTrig::
+link::Classes/Dust::
