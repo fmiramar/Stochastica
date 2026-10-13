@@ -15,6 +15,14 @@ void registerSDMultiOU();
 void registerSDMultiHawkes();
 void registerSDDoubleWell();
 void registerSDKuramoto();
+void registerSDDirichlet();
+void registerSDPolya();
+void registerSDModulated();
+void registerSDMatern();
+void registerSDLevyFlight();
+void registerSDJumpDiffusion();
+void registerSDWilsonCowan();
+void registerSDLorenz96();
 
 PluginLoad(Stochastica)
 {
@@ -32,5 +40,13 @@ PluginLoad(Stochastica)
     registerSDMultiHawkes();
     registerSDDoubleWell();
     registerSDKuramoto();
+    registerSDDirichlet();
+    registerSDPolya();
+    registerSDModulated();
+    registerSDMatern();
+    registerSDLevyFlight();
+    registerSDJumpDiffusion();
+    registerSDWilsonCowan();
+    registerSDLorenz96();
 }
 

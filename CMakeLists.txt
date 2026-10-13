@@ -42,6 +42,14 @@ set(sd_cpp_files
     processes/MultiHawkesTrig.cpp
     processes/DoubleWellProcess.cpp
     flows/KuramotoNetwork.cpp
+    distributions/TDirichletRand.cpp
+    state/PolyaUrn.cpp
+    processes/MarkovModulatedTrig.cpp
+    processes/MaternNoise.cpp
+    processes/LevyFlight.cpp
+    processes/JumpDiffusion.cpp
+    flows/WilsonCowan.cpp
+    flows/Lorenz96.cpp
 )
 
 set(sd_sc_files
@@ -58,6 +66,14 @@ set(sd_sc_files
     Classes/SDMultiHawkesTrig.sc
     Classes/SDDoubleWellProcess.sc
     Classes/SDKuramotoNetwork.sc
+    Classes/SDTDirichletRand.sc
+    Classes/SDPolyaUrn.sc
+    Classes/SDMarkovModulatedTrig.sc
+    Classes/SDMaternNoise.sc
+    Classes/SDLevyFlight.sc
+    Classes/SDJumpDiffusion.sc
+    Classes/SDWilsonCowan.sc
+    Classes/SDLorenz96.sc
 )
 
 file(GLOB sd_schelp_files CONFIGURE_DEPENDS HelpSource/Classes/*.schelp)
@@ -174,4 +190,36 @@ if(BUILD_TESTING AND NOT CMAKE_CROSSCOMPILING)
     endif()
     add_test(NAME sd_round2_unit_tests COMMAND sd_round2_unit_tests
         "${CMAKE_CURRENT_SOURCE_DIR}/tests/server/round2-seeded-reference.txt")
+endif()
+
+if(BUILD_TESTING AND NOT CMAKE_CROSSCOMPILING)
+    add_executable(sd_round3_reference_tests tests/reference/test_round3_reference.cpp)
+    add_executable(sd_round3_statistical_tests tests/statistical/test_round3_statistics.cpp)
+    add_executable(sd_round3_unit_tests tests/server/test_round3_units.cpp
+        distributions/TDirichletRand.cpp state/PolyaUrn.cpp processes/MarkovModulatedTrig.cpp
+        processes/MaternNoise.cpp processes/LevyFlight.cpp processes/JumpDiffusion.cpp
+        flows/WilsonCowan.cpp flows/Lorenz96.cpp)
+    target_include_directories(sd_round3_unit_tests PRIVATE
+        "${SC_PATH}/include/plugin_interface" "${SC_PATH}/include/common" "${SC_PATH}/common")
+    foreach(kind reference statistical unit)
+        set(round3_target sd_round3_${kind}_tests)
+        target_include_directories(${round3_target} PRIVATE include)
+        if(STRICT AND NOT kind STREQUAL "unit")
+            if(MSVC)
+                target_compile_options(${round3_target} PRIVATE /W4)
+            else()
+                target_compile_options(${round3_target} PRIVATE -Wall -Wextra -Wpedantic)
+            endif()
+        endif()
+        if(SD_SANITIZE AND CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
+            target_compile_options(${round3_target} PRIVATE -fsanitize=address,undefined -fno-omit-frame-pointer)
+            set_property(TARGET ${round3_target} APPEND_STRING PROPERTY LINK_FLAGS " -fsanitize=address,undefined")
+        endif()
+        if(kind STREQUAL "unit")
+            add_test(NAME ${round3_target} COMMAND ${round3_target}
+                "${CMAKE_CURRENT_SOURCE_DIR}/tests/server/round3-seeded-reference.txt")
+        else()
+            add_test(NAME ${round3_target} COMMAND ${round3_target})
+        endif()
+    endforeach()
 endif()

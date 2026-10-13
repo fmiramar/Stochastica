@@ -30,5 +30,25 @@ inline std::array<double, Size> rk4(
     return result;
 }
 
+// Runtime-sized counterpart for bounded spatial flows. The caller owns five
+// n-element scratch arrays; existing fixed-size users retain their exact code.
+template <typename Derivative>
+inline void rk4(double* state, int n, double step, double* scratch, Derivative derivative)
+{
+    double* k1=scratch;
+    double* k2=k1+n;
+    double* k3=k2+n;
+    double* k4=k3+n;
+    double* temporary=k4+n;
+    derivative(state,k1);
+    for (int i=0; i<n; ++i) temporary[i]=state[i]+0.5*step*k1[i];
+    derivative(temporary,k2);
+    for (int i=0; i<n; ++i) temporary[i]=state[i]+0.5*step*k2[i];
+    derivative(temporary,k3);
+    for (int i=0; i<n; ++i) temporary[i]=state[i]+step*k3[i];
+    derivative(temporary,k4);
+    for (int i=0; i<n; ++i) state[i]+=(step/6.0)*(k1[i]+2*k2[i]+2*k3[i]+k4[i]);
+}
+
 } // namespace sd
 
