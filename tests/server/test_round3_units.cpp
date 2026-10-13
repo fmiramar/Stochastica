@@ -84,6 +84,21 @@ int main(int argc,char** argv)
             require(jump.step()==std::vector<float>(4,0),"paused jump has zero auxiliaries");
             jump.input(5,1);jump.input(2,1e30f);require(jump.step()==std::vector<float>(4,0),"unsupported count recovery");
         }
+        {
+            Instance vector(specs[0],true);
+            for(int i=0;i<64;++i)vector.ins[1][i]=(i%4==1)?1.0f:0.0f;
+            vector.step(64);
+            for(int i=1;i<64;++i) {
+                bool changed=false;
+                double sum=0;
+                for(int channel=0;channel<3;++channel) {
+                    changed=changed || vector.outs[channel][i]!=vector.outs[channel][i-1];
+                    sum+=vector.outs[channel][i];
+                }
+                require(changed==(i%4==1),"audio block Dirichlet edge/hold semantics");
+                require(std::abs(sum-1)<1e-7,"audio block simplex sum");
+            }
+        }
         // Coefficient inputs are block-sampled, while mean and reset may be audio-rate.
         Instance a(specs[3],true),b(specs[3],true);
         for(int i=1;i<64;++i){a.ins[1][i]=100;a.ins[2][i]=.0001f;a.ins[4][i]=100;}

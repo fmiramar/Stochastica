@@ -1,4 +1,4 @@
-name: Round 2 verification
+name: Stochastica expansion verification
 
 on:
   pull_request:
@@ -47,24 +47,25 @@ jobs:
       - name: Configure explicit target architecture
         shell: bash
         run: |
-          cmake -S . -B build-round2 ${{ matrix.configure }} \
+          cmake -S . -B build-round3 ${{ matrix.configure }} \
             -DSC_PATH="$GITHUB_WORKSPACE/build-sdk" \
             -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_INSTALL_PREFIX="$GITHUB_WORKSPACE/stage-round2/Extensions" \
+            -DCMAKE_INSTALL_PREFIX="$GITHUB_WORKSPACE/stage-round3/Extensions" \
             -DBUILD_TESTING=ON -DSTRICT=OFF -DSCSYNTH=ON \
             -DSUPERNOVA=${{ matrix.supernova }}
       - name: Build and run numerical, statistical, and server ABI checks
         shell: bash
         run: |
-          cmake --build build-round2 --config Release --parallel
-          ctest --test-dir build-round2 -C Release --output-on-failure
+          cmake --build build-round3 --config Release --parallel
+          ctest --test-dir build-round3 -C Release --output-on-failure
           python tests/server/check_round2_docs.py
+          python tests/server/check_round3_docs.py
       - name: Stage installable extension
-        run: cmake --install build-round2 --config Release
+        run: cmake --install build-round3 --config Release
       - uses: actions/upload-artifact@v4
         with:
-          name: ${{ github.repository_owner }}-Stochastica-v0.1.0-round2-preview-${{ matrix.platform }}-${{ matrix.arch }}
-          path: stage-round2/Extensions
+          name: ${{ github.repository_owner }}-Stochastica-v0.1.0-round3-preview-${{ matrix.platform }}-${{ matrix.arch }}
+          path: stage-round3/Extensions
           if-no-files-found: error
 
   sanitize:
@@ -75,8 +76,8 @@ jobs:
         run: git clone --branch Version-3.14.1 --depth 1 https://github.com/supercollider/supercollider.git build-sdk
       - name: Build and test with ASan and UBSan
         run: |
-          cmake -S . -B build-round2-sanitize -DSC_PATH="$GITHUB_WORKSPACE/build-sdk" \
+          cmake -S . -B build-round3-sanitize -DSC_PATH="$GITHUB_WORKSPACE/build-sdk" \
             -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=ON -DSD_SANITIZE=ON \
             -DSCSYNTH=OFF -DSUPERNOVA=OFF
-          cmake --build build-round2-sanitize --parallel
-          ctest --test-dir build-round2-sanitize --output-on-failure
+          cmake --build build-round3-sanitize --parallel
+          ctest --test-dir build-round3-sanitize --output-on-failure

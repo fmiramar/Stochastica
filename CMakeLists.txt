@@ -195,10 +195,17 @@ endif()
 if(BUILD_TESTING AND NOT CMAKE_CROSSCOMPILING)
     add_executable(sd_round3_reference_tests tests/reference/test_round3_reference.cpp)
     add_executable(sd_round3_statistical_tests tests/statistical/test_round3_statistics.cpp)
-    add_executable(sd_round3_unit_tests tests/server/test_round3_units.cpp
+    set(sd_round3_sources
         distributions/TDirichletRand.cpp state/PolyaUrn.cpp processes/MarkovModulatedTrig.cpp
         processes/MaternNoise.cpp processes/LevyFlight.cpp processes/JumpDiffusion.cpp
         flows/WilsonCowan.cpp flows/Lorenz96.cpp)
+    add_executable(sd_round3_unit_tests tests/server/test_round3_units.cpp ${sd_round3_sources})
+    add_executable(sd_round3_benchmark EXCLUDE_FROM_ALL
+        tests/performance/round3_benchmark.cpp ${sd_round3_sources})
+    target_include_directories(sd_round3_benchmark PRIVATE include
+        "${SC_PATH}/include/plugin_interface" "${SC_PATH}/include/common" "${SC_PATH}/common")
+    add_executable(sd_round3_analysis EXCLUDE_FROM_ALL scripts/export_round3_analysis.cpp)
+    target_include_directories(sd_round3_analysis PRIVATE include)
     target_include_directories(sd_round3_unit_tests PRIVATE
         "${SC_PATH}/include/plugin_interface" "${SC_PATH}/include/common" "${SC_PATH}/common")
     foreach(kind reference statistical unit)

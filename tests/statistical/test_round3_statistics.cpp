@@ -20,12 +20,15 @@ int main()
         sd::PCG32 rng;
         for(double concentration:{.2,1.0,8.0}) {
             double alpha[]={concentration,concentration,concentration},values[3];
-            rng.setSeed(771); Moments components[3],maximum;
+            rng.setSeed(771); Moments components[3],maximum,product;
             for(int i=0;i<100000;++i) {
                 sd::dirichletSample(rng,alpha,values,3);
                 for(int j=0;j<3;++j)components[j].add(values[j]);
                 maximum.add(*std::max_element(values,values+3));
+                product.add(values[0]*values[1]);
             }
+            const double covariance=product.mean()-components[0].mean()*components[1].mean();
+            check(std::abs(covariance+(1.0/9)/(3*concentration+1))<.003,"Dirichlet cross covariance");
             for(auto m:components) {
                 check(std::abs(m.mean()-1.0/3)<.006,"Dirichlet symmetric mean");
                 check(std::abs(m.variance()-(2.0/9)/(3*concentration+1))<.003,"Dirichlet variance");
@@ -96,12 +99,14 @@ int main()
 
         double quantileRatio[2];
         for(int mode=0;mode<2;++mode) {
-            rng.setSeed(129);std::vector<double> magnitudes(100000);Moments serial;double previous=0;
+            rng.setSeed(129);std::vector<double> magnitudes(100000);Moments serial,signs;double previous=0;
             for(size_t i=0;i<magnitudes.size();++i) {
                 double x=0,delta=0;sd::levyFlightStep(rng,x,delta,mode?1.2:2,1,0,.01);
                 magnitudes[i]=std::abs(delta);if(i)serial.add((delta>0?1.0:-1.0)*previous);previous=delta>0?1:-1;
+                signs.add(previous);
             }
             check(std::abs(serial.mean())<.015,"stable innovation sign independence");
+            check(std::abs(signs.mean())<.015,"symmetric stable sign balance");
             std::sort(magnitudes.begin(),magnitudes.end());quantileRatio[mode]=magnitudes[99000]/magnitudes[50000];
         }
         check(quantileRatio[1]>quantileRatio[0]*4,"stable heavy tails");

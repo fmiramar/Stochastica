@@ -64,7 +64,8 @@ as required by Round 3, alongside top-level `related::` metadata.
 - Jump diffusion draws one Poisson count and aggregates Gaussian marks with
   `K*jumpMean + sqrt(K)*jumpStd*Z`, plus an independent Gaussian diffusion draw.
   No per-jump loop is needed. Unsupported extreme count means must be rejected
-  before the existing uint32 sampler; document the numerical limit explicitly.
+  before the existing uint32 sampler. The supported mean is at most 1e8 per
+  calculation; larger means recover to initial with zero diagnostics.
 - Wilson–Cowan uses the requested normalized logistic equations (not the full
   refractory-factor model in the original paper), stable logistic evaluation,
   and existing fixed-substep RK4. Time constants floor at 1e-6 model seconds.
@@ -97,5 +98,21 @@ No external source code or paper text is copied into runtime implementations.
 
 ## Status
 
-Implementation and verification are in progress. Results and numerical limitations
-will be recorded separately from any unrun hosted-platform checks.
+All eight models, language classes, mathematical figures and help pages are
+implemented. The guide now covers all 53 UGens plus SDPhaseView through technical
+families and behavioral relationships. All 160 pre-existing runnable help blocks
+remain unchanged apart from comment placement and whitespace.
+
+The documentation audit kept the established map/flow/process/distribution/event
+paths, made state metadata consistent, classified MultiGaussNoise as a triggered
+vector distribution, and gave Kuramoto both flow and stochastic-process metadata.
+Its optional noise is distinguished from the deterministic zero-noise model.
+Related links are at the top of every class page. Seven older pages referenced
+unavailable TGaussRand/TBrownRand pages; their comparison prose and links now use
+installed core classes without changing examples or DSP.
+
+The local acceptance checks and limits are recorded in
+[round3-verification.md](round3-verification.md). The shared categorical default
+path still matches all 26 saved legacy channels exactly on both servers. The
+expansion workflow now includes both rounds' doc checks and all eight CTest
+suites, but no hosted job, push, PR, tag or release was started.

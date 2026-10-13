@@ -95,6 +95,11 @@ int main()
         near(transport,2e50,0,"no clipping of finite double state");
         sd::JumpResult jump{};
         transport=0;
+        rng.setSeed(41);reference.setSeed(41);
+        require(sd::jumpDiffusionStep(rng,transport,jump,.3,.7,0,9,8,.2),"zero-rate diffusion limit");
+        near(transport,.3*.2+.7*std::sqrt(.2)*sd::normalSample(reference),1e-14,"zero-rate Brownian increment");
+        require(jump.count==0 && jump.size==0,"zero-rate jump diagnostics");
+        transport=0;
         for(int j=0;j<500;++j) {
             const double old=transport;
             require(sd::jumpDiffusionStep(rng,transport,jump,0,0,5,3,0,.2),"fixed-size jumps");
