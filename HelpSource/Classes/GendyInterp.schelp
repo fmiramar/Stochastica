@@ -1,0 +1,71 @@
+class:: GendyInterp
+summary:: Four renderers for identical stochastic breakpoint histories
+categories:: UGens>Generators>Stochastic>GENDY
+related:: Guides/Stochastica, Guides/Stochastica-GENDY, Classes/Gendy1991
+
+description::
+strong::Post-Xenakis interpolation extension.::
+
+A first-order DSS engine with explicit interpolation. Brown's IDSS offers linear, cosine and square curves (2005, section 4.2); Bhob Rainey's sc3-plugins Gendy4 and Gendy5 explore cubic and non-interpolated rendering. Sources: link::https://research-repository.griffith.edu.au/server/api/core/bitstreams/dc7c2e4f-bc64-58c7-8ee0-bd7d219f39a2/content:: and link::https://github.com/supercollider/sc3-plugins/blob/main/source/BhobUGens/BhobNoise.cpp::.
+
+Stochastica defines hold, linear, cosine and cubic Hermite modes explicitly. Hermite uses zero tangents at both endpoints: its blend is t*t*(3-2*t), with no overshoot. Cosine uses (1-cos(pi*t))/2. Hold keeps the left endpoint for the entire segment and deliberately jumps. Modes 1–3 join the actual endpoints, including across cycles. This is not an exact Gendy4 renderer or a claim about Brown's unspecified square curve.
+
+All modes consume the same innovations and durations for equal controls and seeds. Interpolation shapes the rendered spectrum while leaving the stochastic history unchanged. Mode changes wait for segment boundaries; switching out of hold can still introduce a jump. Shape parameters are fixed at one.
+
+The oscillator remembers one amplitude and one incoming duration per point. Updates occur once per waveform cycle, in index order; a newly evolved first point connects from the actual previous cycle endpoint. Durations are fractional sample counts with carried remainder and a one-sample minimum. High settings therefore saturate the achievable frequency range. There is no antialiasing, automatic DC removal or loudness normalization. Start quietly; the examples use LeakDC and a short fade.
+
+Construction/reset starts amplitudes at zero and durations at the midpoint of their bounds. Motion builds an audible waveform over the first cycles; zero amplitude mobility at construction stays silent. A later freeze retains the evolved waveform. Reset can deliberately interrupt continuity. Invalid selectors and numeric controls are conditioned to documented finite bounds; non-finite frequencies use 100/1000 Hz defaults.
+
+Like vanilla link::Classes/Gendy1::, linear mode renders remembered stochastic breakpoints. GendyInterp exposes the rendering choice and keeps the same local history across all four modes.
+
+image::gendy-gendyinterp.png::
+
+subsection:: See also
+link::Guides/Stochastica-GENDY::, link::Guides/Stochastica::, link::Classes/Gendy1991::
+
+classmethods::
+method:: ar
+argument:: interp
+0 hold, 1 linear, 2 cosine, 3 cubic Hermite with zero endpoint tangents. Clipped/truncated to 0..3; changes take effect only at a segment boundary. The interpolation mode never changes the breakpoint random sequence.
+argument:: ampDist
+Amplitude innovation law: 0 uniform, 1 truncated Cauchy, 2 truncated logistic, 3 truncated hyperbolic secant, 4 arcsine, 5 mapped truncated exponential. Integer clipped to 0..5; see the GENDY guide for quantiles. Sampled at cycle entry.
+argument:: durDist
+Duration innovation law, using the same IDs as ampDist. Sampled at cycle entry.
+argument:: minFreq
+Lower frequency bound in Hz, giving the longest segment fs/(numPoints*minFreq). Bounds are sorted and clipped to 0.001..fs/numPoints. Sampled at cycle entry; this is not fixed-pitch normalization.
+argument:: maxFreq
+Upper frequency bound in Hz, giving the shortest segment fs/(numPoints*maxFreq). Equal frequency bounds fix segment duration. Sampled at cycle entry.
+argument:: ampStep
+Amplitude step as a fraction of the full interval width 2, clipped to 0..1. Once sampled, zero freezes further amplitude updates. Sampled at cycle entry.
+argument:: durStep
+Duration step as a fraction of the current duration interval width, clipped to 0..1. Zero freezes duration motion with fixed frequency bounds. Sampled at cycle entry.
+argument:: numPoints
+Construction-time number of remembered breakpoints, clipped to 2..64 and truncated to an integer. Recreate the Synth to change it.
+argument:: reset
+Nonpositive-to-positive edge rewinds the original local seed, all point states and scheduler state. The reset sample equals the first sample of a fresh instance; a held positive value does not keep resetting. Audio-rate reset is supported.
+argument:: seed
+Construction-time local PCG32 seed. Nonzero seeds repeat for identical inputs and rate. Zero derives a seed from the parent Synth RNG once; reset reuses it. Cross-platform last-bit differences are possible.
+returns::
+One audio-rate waveform, bounded to -1..1 before external scaling. No control-rate constructor is provided.
+
+examples::
+subsection:: Minimal example
+code::
+(
+{ LeakDC.ar(GendyInterp.ar(interp: 2, seed: 75)) ! 2 * 0.07 * Line.kr(0, 1, 0.05) }.play
+)
+::
+
+subsection:: Four renderings of the same history
+Left to right: hold, linear, cosine, zero-tangent Hermite. Identical seeds ensure that the changing breakpoints themselves agree.
+code::
+(
+{
+    var voices = (0..3).collect { |mode|
+        LeakDC.ar(GendyInterp.ar(mode, minFreq: 100, maxFreq: 220,
+            ampStep: 0.03, durStep: 0.01, seed: 123)) * 0.05
+    };
+    Splay.ar(voices) * Line.kr(0, 1, 0.05)
+}.play
+)
+::

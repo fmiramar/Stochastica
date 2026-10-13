@@ -1,0 +1,80 @@
+class:: Gendy1977
+summary:: First-order remembered breakpoint waveform synthesis
+categories:: UGens>Generators>Stochastic>GENDY
+related:: Guides/Stochastica, Guides/Stochastica-GENDY, Classes/Gendy1991
+
+description::
+strong::Historical reconstruction.::
+
+Implements the first-order DSS method associated with the stochastic passages of Xenakis's La Légende d’Eer (1977). Independent reflected walks move each remembered breakpoint in amplitude and incoming duration. This reconstructs the method; it does not reproduce original audio, RNGs or quantization. Source: Sergio Luque, Stochastic Synthesis: Origins and Extensions (2006), printed pp. 22–24, available from link::https://sergioluque.com/stochastics::.
+
+For a normalized innovation z, amplitude becomes R(A + 2*ampStep*z, -1, 1). Duration becomes R(D + durStep*(dMax-dMin)*z, dMin, dMax), where R repeatedly reflects overshoots. A separate draw drives each coordinate. The guide specifies distribution formulas and scheduling.
+
+The oscillator remembers one amplitude and one incoming duration per point. Updates occur once per waveform cycle, in index order; a newly evolved first point connects from the actual previous cycle endpoint. Durations are fractional sample counts with carried remainder and a one-sample minimum. High settings therefore saturate the achievable frequency range. There is no antialiasing, automatic DC removal or loudness normalization. Start quietly; the examples use LeakDC and a short fade.
+
+Construction/reset starts amplitudes at zero and durations at the midpoint of their bounds. Motion builds an audible waveform over the first cycles; zero amplitude mobility at construction stays silent. A later freeze retains the evolved waveform. Reset can deliberately interrupt continuity. Invalid selectors and numeric controls are conditioned to documented finite bounds; non-finite frequencies use 100/1000 Hz defaults.
+
+Like vanilla link::Classes/Gendy1::, this evolves a remembered polygon. Gendy1977 walks in duration measured in samples, starts flat and uses a private resettable PCG stream; Gendy1 maps its normalized state linearly to frequency and has different initialization and distributions.
+
+image::gendy-gendy1977.png::
+
+subsection:: See also
+link::Guides/Stochastica-GENDY::, link::Guides/Stochastica::, link::Classes/Gendy1991::
+
+classmethods::
+method:: ar
+argument:: ampDist
+Amplitude innovation law: 0 uniform, 1 truncated Cauchy, 2 truncated logistic, 3 truncated hyperbolic secant, 4 arcsine, 5 mapped truncated exponential. Integer clipped to 0..5; see the GENDY guide for quantiles. Sampled at cycle entry.
+argument:: durDist
+Duration innovation law, using the same IDs as ampDist. Sampled at cycle entry.
+argument:: ampShape
+Amplitude distribution shape, clipped to 0.0001..1. Uniform ignores it. The transforms are modern normalized quantiles; sampled at cycle entry.
+argument:: durShape
+Duration distribution shape, clipped to 0.0001..1; sampled at cycle entry.
+argument:: minFreq
+Lower frequency bound in Hz, giving the longest segment fs/(numPoints*minFreq). Bounds are sorted and clipped to 0.001..fs/numPoints. Sampled at cycle entry; this is not fixed-pitch normalization.
+argument:: maxFreq
+Upper frequency bound in Hz, giving the shortest segment fs/(numPoints*maxFreq). Equal frequency bounds fix segment duration. Sampled at cycle entry.
+argument:: ampStep
+Amplitude step as a fraction of the full interval width 2, clipped to 0..1. Once sampled, zero freezes further amplitude updates. Sampled at cycle entry.
+argument:: durStep
+Duration step as a fraction of the current duration interval width, clipped to 0..1. Zero freezes duration motion with fixed frequency bounds. Sampled at cycle entry.
+argument:: numPoints
+Construction-time number of remembered breakpoints, clipped to 2..64 and truncated to an integer. Recreate the Synth to change it.
+argument:: reset
+Nonpositive-to-positive edge rewinds the original local seed, all point states and scheduler state. The reset sample equals the first sample of a fresh instance; a held positive value does not keep resetting. Audio-rate reset is supported.
+argument:: seed
+Construction-time local PCG32 seed. Nonzero seeds repeat for identical inputs and rate. Zero derives a seed from the parent Synth RNG once; reset reuses it. Cross-platform last-bit differences are possible.
+returns::
+One audio-rate waveform, bounded to -1..1 before external scaling. No control-rate constructor is provided.
+
+examples::
+subsection:: Minimal example
+code::
+(
+{ LeakDC.ar(Gendy1977.ar(seed: 1977)) ! 2 * 0.07 * Line.kr(0, 1, 0.05) }.play
+)
+::
+
+subsection:: First versus second order
+Same seed and frequency bounds; left uses direct motion and right uses remembered velocity. The controls are analogous, not claimed to produce equal stationary statistics.
+code::
+(
+{
+    var first = Gendy1977.ar(minFreq: 100, maxFreq: 260, ampStep: 0.025, durStep: 0.02, seed: 73);
+    var second = Gendy1991.ar(minFreq: 100, maxFreq: 260, ampPrimaryRange: 0.025, durPrimaryRatio: 0.02, seed: 73);
+    LeakDC.ar([first, second]) * 0.07 * Line.kr(0, 1, 0.05)
+}.play
+)
+::
+
+subsection:: Freeze an evolved waveform
+Both step sizes reach zero after two seconds. The resulting polygon repeats rather than fading away.
+code::
+(
+{
+    var mobility = (Sweep.kr(0, 1) < 2) * 0.08;
+    LeakDC.ar(Gendy1977.ar(ampStep: mobility, durStep: mobility, seed: 31)) ! 2 * 0.07 * Line.kr(0, 1, 0.05)
+}.play
+)
+::

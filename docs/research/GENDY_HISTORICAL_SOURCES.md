@@ -1,6 +1,6 @@
 # GENDY source audit
 
-Audited 2026-10-13. This is a new, independent mathematical implementation in the existing Stochastica repository. No upstream Gendy implementation is being replaced. Downloaded reference documents and upstream files stay in ignored build output; their text, code and figures are not redistributed.
+Audited 2026-10-13. This is a new, independent mathematical implementation in the existing Stochastica repository. No upstream Gendy implementation is being replaced. The new mathematical quantiles for distribution IDs 0, 1, 2, 4 and 5 algebraically follow the audited Nick Collins SC adaptations, re-expressed independently with double precision and stable identities. ID 3 is a deliberate symmetric hyperbolic-secant replacement. This is mathematical reuse with source credit, not a claim that the whole distribution vocabulary is original. Downloaded reference documents and upstream files stay in ignored build output; their text, code and figures are not redistributed.
 
 ## Verified claims and consequences
 

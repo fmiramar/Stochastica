@@ -1,5 +1,11 @@
 # Changelog
 
+## GENDY expansion (unreleased)
+
+- Add Gendy1977, Gendy1991, GendyS709, GendyField, GendyPerc, GendyInterp and GendyCoupled.
+- Add a shared bounded waveform engine, local seeds/reset, independent math/statistical/lifecycle checks, and a dedicated sourced GENDY guide with reproducible figures.
+- Defer GendyDiffusion by user request pending the complete DDSS article. Existing Gendy1–5 and earlier Stochastica algorithms are unchanged.
+
 ## Unreleased — Round 3
 
 - Add MaternNoise, TDirichletRand, PolyaUrn, MarkovModulatedTrig, LevyFlight, JumpDiffusion, WilsonCowan, and Lorenz96 at audio and control rates.

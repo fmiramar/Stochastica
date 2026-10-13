@@ -149,3 +149,7 @@ The plotting exporter calls the same numerical kernels as the plugin. Seeds,
 burn-in, axes and scales are recorded in the figures. The guide distinguishes
 the mathematical models from their finite precision, bounded sampler and
 finite-calculation adaptations.
+
+## GENDY waveform expansion
+
+The seven implemented GENDY classes independently express the published DSS walk structures, IDSS-inspired mobility/interpolation extensions, and a new synchronous ring-coupling design. Sources include Luque, Hoffmann, Brown/Jenkins, and the read-only SC Gendy1–5 audit. Normalized quantiles retain the audited Collins adaptation for IDs 0, 1, 2, 4 and 5, with a deliberately symmetric sech law for ID 3. See the [historical source dossier](research/GENDY_HISTORICAL_SOURCES.md) for inspected locations, software attribution, exact departures and unresolved history. No upstream implementation or paper illustration is redistributed. GendyDiffusion remains deferred by user request pending the complete Rojas–Cádiz article.

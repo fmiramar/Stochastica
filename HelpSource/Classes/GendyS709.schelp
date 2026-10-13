@@ -1,0 +1,75 @@
+class:: GendyS709
+summary:: Internal periodic modulation of stochastic waveform motion
+categories:: UGens>Generators>Stochastic>GENDY
+related:: Guides/Stochastica, Guides/Stochastica-GENDY, Classes/Gendy1991
+
+description::
+strong::Historically informed adaptation.::
+
+Adds sine or sawtooth parameter modulation to a first-order remembered waveform. Luque (2006), printed p. 31, describes such modulation in S.709 (1994), link::https://sergioluque.com/stochastics::. Hoffmann's 2023 dictionary distinguishes its direct breakpoint drive from Gendy3's intermediary walks: link::https://www.iannis-xenakis.org/en/stochastic-synthesis/::.
+
+The original routing, depths and exact parameter values are not sufficiently specified by these sources. This class uses one bipolar internal modulator m and positive exponential factors 2.pow(depth*m) for amplitude mobility, duration mobility and a common frequency shift. Those routes are Stochastica choices, not a bit-exact S.709 reconstruction. The phase runs at audio rate; walk controls are sampled at cycle boundaries. All depths zero exactly matches Gendy1977 with shape controls at one.
+
+The oscillator remembers one amplitude and one incoming duration per point. Updates occur once per waveform cycle, in index order; a newly evolved first point connects from the actual previous cycle endpoint. Durations are fractional sample counts with carried remainder and a one-sample minimum. High settings therefore saturate the achievable frequency range. There is no antialiasing, automatic DC removal or loudness normalization. Start quietly; the examples use LeakDC and a short fade.
+
+Construction/reset starts amplitudes at zero and durations at the midpoint of their bounds. Motion builds an audible waveform over the first cycles; zero amplitude mobility at construction stays silent. A later freeze retains the evolved waveform. Reset can deliberately interrupt continuity. Invalid selectors and numeric controls are conditioned to documented finite bounds; non-finite frequencies use 100/1000 Hz defaults.
+
+Like vanilla link::Classes/Gendy1:: with external periodic control signals, this can move between restrained and rough motion. GendyS709 packages a resettable internal phase and explicit coupled modulation routes.
+
+image::gendy-gendys709.png::
+
+subsection:: See also
+link::Guides/Stochastica-GENDY::, link::Guides/Stochastica::, link::Classes/Gendy1991::
+
+classmethods::
+method:: ar
+argument:: ampDist
+Amplitude innovation law: 0 uniform, 1 truncated Cauchy, 2 truncated logistic, 3 truncated hyperbolic secant, 4 arcsine, 5 mapped truncated exponential. Integer clipped to 0..5; see the GENDY guide for quantiles. Sampled at cycle entry.
+argument:: durDist
+Duration innovation law, using the same IDs as ampDist. Sampled at cycle entry.
+argument:: minFreq
+Lower frequency bound in Hz, giving the longest segment fs/(numPoints*minFreq). Bounds are sorted and clipped to 0.001..fs/numPoints. Sampled at cycle entry; this is not fixed-pitch normalization.
+argument:: maxFreq
+Upper frequency bound in Hz, giving the shortest segment fs/(numPoints*maxFreq). Equal frequency bounds fix segment duration. Sampled at cycle entry.
+argument:: ampStep
+Amplitude step as a fraction of the full interval width 2, clipped to 0..1. Once sampled, zero freezes further amplitude updates. Sampled at cycle entry.
+argument:: durStep
+Duration step as a fraction of the current duration interval width, clipped to 0..1. Zero freezes duration motion with fixed frequency bounds. Sampled at cycle entry.
+argument:: modFreq
+Internal modulator frequency in Hz, clipped to 0..fs/2 and read each audio sample. Zero holds its phase. Reset restores phase zero.
+argument:: modShape
+0 sine or 1 ascending bipolar saw; clipped/truncated. Both use the same internal phase. At phase zero the sine is zero and the saw is -1. Sampled at cycle entry.
+argument:: ampStepDepth
+0..4 octaves of amplitude-mobility modulation. Effective ampStep = base*2.pow(depth*m), then clipped to 0..1. Sampled at cycle entry.
+argument:: durStepDepth
+0..4 octaves of duration-mobility modulation using the same bipolar m. Sampled at cycle entry.
+argument:: freqRangeDepth
+0..4 octaves of common frequency-bound motion, preserving their ratio until safety clipping. Sampled at cycle entry.
+argument:: numPoints
+Construction-time number of remembered breakpoints, clipped to 2..64 and truncated to an integer. Recreate the Synth to change it.
+argument:: reset
+Nonpositive-to-positive edge rewinds the original local seed, all point states and scheduler state. The reset sample equals the first sample of a fresh instance; a held positive value does not keep resetting. Audio-rate reset is supported.
+argument:: seed
+Construction-time local PCG32 seed. Nonzero seeds repeat for identical inputs and rate. Zero derives a seed from the parent Synth RNG once; reset reuses it. Cross-platform last-bit differences are possible.
+returns::
+One audio-rate waveform, bounded to -1..1 before external scaling. No control-rate constructor is provided.
+
+examples::
+subsection:: Minimal example
+code::
+(
+{ LeakDC.ar(GendyS709.ar(seed: 709)) ! 2 * 0.07 * Line.kr(0, 1, 0.05) }.play
+)
+::
+
+subsection:: Slow changes in stochastic activity
+A four-second sine changes both mobility and register, making the modulation audible without requiring a long wait.
+code::
+(
+{
+    var x = GendyS709.ar(minFreq: 100, maxFreq: 300, ampStep: 0.04, durStep: 0.025,
+        modFreq: 0.25, ampStepDepth: 2, durStepDepth: 2, freqRangeDepth: 0.5, seed: 42);
+    LeakDC.ar(x) ! 2 * 0.07 * Line.kr(0, 1, 0.05)
+}.play
+)
+::

@@ -1,6 +1,6 @@
 # GENDY implementation decisions
 
-Status: in progress on a local branch; unpublished. The baseline is Round 3 commit `8db8cc0`; its eight CTest suites pass with strict Release builds of both server plugins.
+Status: seven models implemented and locally verified; unpublished. GendyDiffusion is deferred by user request pending its full source article. The baseline is Round 3 commit `8db8cc0`; its eight CTest suites pass with strict Release builds of both server plugins.
 
 The research dossier is [here](research/GENDY_HISTORICAL_SOURCES.md). DDSS remains [gated](research/GendyDiffusion-source-notes.md). Seven independently specified models can proceed without it.
 
@@ -25,3 +25,13 @@ Interpolation modes: hold (left endpoint), linear, cosine ease, zero-tangent cub
 Coupling: form unconstrained first-order proposals, synchronously add kappa*(left-2*center+right), then reflect; kappa in 0..0.5, ring topology. Zero coupling is sample-identical to Gendy1977. O(N) per cycle.
 
 Field: control-rate only, 1..32 gates; independently seeded voice streams, exponential field duration, Bernoulli activity at each new field. At most eight boundaries per tick; carry time debt. Mean is floored to one control interval. Consecutive fields can have equal gates, so audible gate dwell is not field duration. Gates need external fades for audio.
+
+## Distribution specification
+
+The normalized quantiles are documented in the installed GENDY guide and implemented in SDGendy.hpp. Small-shape logistic and hyperbolic-secant transforms use atanh identities to avoid subtractive cancellation. Uniform draws are strictly open doubles from the existing PCG helper. Six laws consume exactly one draw per coordinate, without rejection loops. Shapes are 0.0001..1; exponential innovations are intentionally asymmetric.
+
+## Verification and development tools
+
+See [verification](gendy-verification.md). `scripts/gendy_reference_oracle.py` generates the independently computed three-point first-order, second-order and coupled traces. `sd_gendy_analysis` exports cycle, index, amplitude/duration primary and secondary states, segment length and audio to CSV offline; it adds no tracing to the server callback. `scripts/plot_gendy_analysis.py` creates the seven checked-in figures from that output.
+
+The common engine is header-only mathematical state and rendering; `gendy/GendyUGens.cpp` supplies thin model-specific control mappings and server lifecycle. GendyField has a separate bounded event scheduler. There are no external buffers, new framework dependencies, sample assets or GUI requirements.

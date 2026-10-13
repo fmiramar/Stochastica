@@ -1,0 +1,72 @@
+class:: GendyCoupled
+summary:: Collective breakpoint motion through neighboring proposals
+categories:: UGens>Generators>Stochastic>GENDY
+related:: Guides/Stochastica, Guides/Stochastica-GENDY, Classes/Gendy1991
+
+description::
+strong::New Stochastica design.::
+
+An experimental extension that couples neighboring breakpoint proposals around a ring. This design belongs to Stochastica; it is not a Xenakis algorithm, a historical GENDYN feature, or the Rojas–Cádiz DDSS model. Its starting point is the first-order DSS reconstruction described by Luque (2006), pp. 22–24, link::https://sergioluque.com/stochastics::.
+
+First compute all stochastic proposals q[i] from the old point states. Then compute q[i] + kappa*(q[i-1]-2*q[i]+q[i+1]) synchronously, wrapping neighbor indices, and finally reflect into the amplitude or duration bounds. Separate coupling strengths operate on amplitude and duration. One pass computes proposals and one pass computes coupled results, so work is linear in point count; array write order cannot leak into neighbor updates.
+
+At kappa=0, output exactly matches Gendy1977 with shape controls at one, for identical seeds and inputs. At kappa=0.25, neighbor differences tend to shrink. The allowed endpoint 0.5 can preserve alternating patterns, so larger values do not always mean more smoothing. Coupling establishes spatial dependence between waveform points, distinct from slowing every independent walk.
+
+The oscillator remembers one amplitude and one incoming duration per point. Updates occur once per waveform cycle, in index order; a newly evolved first point connects from the actual previous cycle endpoint. Durations are fractional sample counts with carried remainder and a one-sample minimum. High settings therefore saturate the achievable frequency range. There is no antialiasing, automatic DC removal or loudness normalization. Start quietly; the examples use LeakDC and a short fade.
+
+Construction/reset starts amplitudes at zero and durations at the midpoint of their bounds. Motion builds an audible waveform over the first cycles; zero amplitude mobility at construction stays silent. A later freeze retains the evolved waveform. Reset can deliberately interrupt continuity. Invalid selectors and numeric controls are conditioned to documented finite bounds; non-finite frequencies use 100/1000 Hz defaults.
+
+Like vanilla link::Classes/Gendy1::, this evolves a stochastic polygon. GendyCoupled adds a synchronous interaction between its remembered points; Gendy1 points evolve independently.
+
+image::gendy-gendycoupled.png::
+
+subsection:: See also
+link::Guides/Stochastica-GENDY::, link::Guides/Stochastica::, link::Classes/Gendy1991::
+
+classmethods::
+method:: ar
+argument:: ampCoupling
+Amplitude ring coupling kappa, clipped to 0..0.5 and sampled at cycle entry. 0.25 smooths neighbor differences; 0.5 can swap alternating patterns rather than remove them.
+argument:: durCoupling
+Duration ring coupling kappa, clipped to 0..0.5, applied to duration proposals before reflection. Sampled at cycle entry.
+argument:: ampDist
+Amplitude innovation law: 0 uniform, 1 truncated Cauchy, 2 truncated logistic, 3 truncated hyperbolic secant, 4 arcsine, 5 mapped truncated exponential. Integer clipped to 0..5; see the GENDY guide for quantiles. Sampled at cycle entry.
+argument:: durDist
+Duration innovation law, using the same IDs as ampDist. Sampled at cycle entry.
+argument:: minFreq
+Lower frequency bound in Hz, giving the longest segment fs/(numPoints*minFreq). Bounds are sorted and clipped to 0.001..fs/numPoints. Sampled at cycle entry; this is not fixed-pitch normalization.
+argument:: maxFreq
+Upper frequency bound in Hz, giving the shortest segment fs/(numPoints*maxFreq). Equal frequency bounds fix segment duration. Sampled at cycle entry.
+argument:: ampStep
+Amplitude step as a fraction of the full interval width 2, clipped to 0..1. Once sampled, zero freezes further amplitude updates. Sampled at cycle entry.
+argument:: durStep
+Duration step as a fraction of the current duration interval width, clipped to 0..1. Zero freezes duration motion with fixed frequency bounds. Sampled at cycle entry.
+argument:: numPoints
+Construction-time number of remembered breakpoints, clipped to 2..64 and truncated to an integer. Recreate the Synth to change it.
+argument:: reset
+Nonpositive-to-positive edge rewinds the original local seed, all point states and scheduler state. The reset sample equals the first sample of a fresh instance; a held positive value does not keep resetting. Audio-rate reset is supported.
+argument:: seed
+Construction-time local PCG32 seed. Nonzero seeds repeat for identical inputs and rate. Zero derives a seed from the parent Synth RNG once; reset reuses it. Cross-platform last-bit differences are possible.
+returns::
+One audio-rate waveform, bounded to -1..1 before external scaling. No control-rate constructor is provided.
+
+examples::
+subsection:: Minimal example
+code::
+(
+{ LeakDC.ar(GendyCoupled.ar(ampCoupling: 0.2, seed: 77)) ! 2 * 0.07 * Line.kr(0, 1, 0.05) }.play
+)
+::
+
+subsection:: Hear interaction build
+Coupling rises from zero to 0.25 in four seconds while the innovation size stays fixed.
+code::
+(
+{
+    var coupling = Line.kr(0, 0.25, 4);
+    var x = GendyCoupled.ar(coupling, minFreq: 100, maxFreq: 280,
+        ampStep: 0.1, durStep: 0.025, seed: 123);
+    LeakDC.ar(x) ! 2 * 0.1 * Line.kr(0, 1, 0.05)
+}.play
+)
+::

@@ -116,7 +116,7 @@ if(TARGET Stochastica_supernova)
     set_target_properties(Stochastica_supernova PROPERTIES OUTPUT_NAME "Stochastica_supernova")
 endif()
 
-install(FILES HelpSource/Guides/Stochastica.schelp HelpSource/Guides/scdoc_banner.jpg
+install(FILES HelpSource/Guides/Stochastica.schelp HelpSource/Guides/Stochastica-GENDY.schelp HelpSource/Guides/scdoc_banner.jpg
     DESTINATION Stochastica/HelpSource/Guides)
 if(sd_schelp_images)
     install(FILES ${sd_schelp_images}
@@ -249,7 +249,8 @@ if(BUILD_TESTING AND NOT CMAKE_CROSSCOMPILING)
             target_compile_options(${gendy_target} PRIVATE -fsanitize=address,undefined -fno-omit-frame-pointer)
             set_property(TARGET ${gendy_target} APPEND_STRING PROPERTY LINK_FLAGS " -fsanitize=address,undefined")
         endif()
-        add_test(NAME ${gendy_target} COMMAND ${gendy_target})
+        add_test(NAME ${gendy_target} COMMAND ${gendy_target}
+            "${CMAKE_CURRENT_SOURCE_DIR}/tests/reference/gendy-trace.csv")
     endforeach()
 endif()
 

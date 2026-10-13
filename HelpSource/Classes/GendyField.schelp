@@ -1,0 +1,62 @@
+class:: GendyField
+summary:: Independent stochastic sound and silence fields
+categories:: UGens>Generators>Stochastic>GENDY
+related:: Guides/Stochastica, Guides/Stochastica-GENDY, Classes/Gendy1991
+
+description::
+strong::Historically informed PARAG subset.::
+
+Outputs one control-rate gate per voice. At each field boundary, a local stream draws an exponential duration and a Bernoulli activity choice. This separates waveform microstructure from macro-level activity, following the PARAG timing account in Luque (2006), printed p. 29, and Hoffmann (2000), p. 34: link::https://sergioluque.com/stochastics:: and link::https://rohandrape.net/ut/rttcc-text/Hoffmann2000a.pdf::.
+
+This is not a reconstruction of PARAG's complete sections, voice settings or historical output. Field boundaries need not change a gate: consecutive active fields join, as do consecutive silent fields. Each voice has its own derived PCG seed, so increasing voice count preserves existing voice streams. Changing duration/probability affects the next field. Reset restarts all voice clocks and RNGs together.
+
+At most eight field boundaries are processed per control calculation, retaining negative time remainder if overloaded. Mean duration has a one-control-interval floor; individual exponential draws may be shorter. At dense settings the bounded scheduler can lag. Non-finite meanDuration uses one second and non-finite soundProb uses 0.5. Gates have sharp edges and do not fade audio; use Lag or an external envelope.
+
+Like vanilla link::Classes/LFPulse::, each output alternates between zero and one. Here durations and activity are stochastic, and a new field may keep the same gate; there is no periodic duty cycle.
+
+image::gendy-gendyfield.png::
+
+subsection:: See also
+link::Guides/Stochastica-GENDY::, link::Guides/Stochastica::, link::Classes/Gendy1991::
+
+classmethods::
+method:: kr
+argument:: numVoices
+Construction-time output count, clipped to 1..32. Each output has a separately derived local random stream.
+argument:: meanDuration
+Mean duration of a field in seconds, floored at one control interval and capped at 1e9. Sampled when a new field begins. Field durations are exponential; adjacent fields may share a gate, so this is not mean audible gate dwell.
+argument:: soundProb
+Bernoulli activity probability 0..1, sampled at each new field. Zero chooses silence, one chooses sound. Changing it does not interrupt the current field.
+argument:: reset
+Nonpositive-to-positive edge rewinds all voice streams and field clocks. The reset sample equals the first sample of a fresh instance; a held positive value does not keep resetting. Audio-rate reset is supported.
+argument:: seed
+Construction-time local PCG32 seed. Nonzero seeds repeat for identical inputs and rate. Zero derives a seed from the parent Synth RNG once; reset reuses it. Cross-platform last-bit differences are possible.
+returns::
+An array of numVoices control-rate gates, or one signal when numVoices is one.
+
+examples::
+subsection:: Minimal example
+code::
+(
+{
+    var gate = GendyField.kr(1, 0.35, 0.7, seed: 91);
+    SinOsc.ar(220, 0, 0.07) ! 2 * Lag.kr(gate, 0.02) * Line.kr(0, 1, 0.05)
+}.play
+)
+::
+
+subsection:: Six independent activity fields
+Pitch behavior lives in each waveform voice; independent field clocks organize entrances and rests. Fades suppress gate clicks.
+code::
+(
+{
+    var gates = GendyField.kr(6, 0.4, 0.55, seed: 99);
+    var voices = Array.fill(6, { |i|
+        var f = 80 * (1.25 ** i);
+        LeakDC.ar(Gendy1991.ar(minFreq: f, maxFreq: f * 1.4,
+            durPrimaryRatio: 0.01, seed: 100 + i)) * Lag.kr(gates[i], 0.025) * 0.035
+    });
+    Splay.ar(voices) * Line.kr(0, 1, 0.05)
+}.play
+)
+::

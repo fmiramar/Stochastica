@@ -1,0 +1,73 @@
+class:: Gendy1991
+summary:: Second-order reflected breakpoint dynamics
+categories:: UGens>Generators>Stochastic>GENDY
+related:: Guides/Stochastica, Guides/Stochastica-GENDY, Classes/Gendy1977
+
+description::
+strong::Historical reconstruction.::
+
+Reconstructs the two-level DSS method associated with GENDY3 (1991), crediting Iannis Xenakis and Marie-Hélène Serra. Each primary walk remembers an increment; its current position drives a secondary amplitude or duration walk. Source: Luque (2006), printed pp. 25–28, link::https://sergioluque.com/stochastics::; Peter Hoffmann, The New GENDYN Program (2000), pp. 32–34, link::https://rohandrape.net/ut/rttcc-text/Hoffmann2000a.pdf::.
+
+For secondary interval width W and primary range ratio r, P becomes R(P + z*primaryStep*2*r*W, -r*W, r*W); X becomes R(X + P, lo, hi). Both levels reflect and reset. A primary walk can maintain one sign for many cycles, keeping the secondary position near a barrier; this is different from simply slowing a first-order walk. Integer rendering and original program bugs are not reproduced.
+
+The oscillator remembers one amplitude and one incoming duration per point. Updates occur once per waveform cycle, in index order; a newly evolved first point connects from the actual previous cycle endpoint. Durations are fractional sample counts with carried remainder and a one-sample minimum. High settings therefore saturate the achievable frequency range. There is no antialiasing, automatic DC removal or loudness normalization. Start quietly; the examples use LeakDC and a short fade.
+
+Construction/reset starts amplitudes at zero and durations at the midpoint of their bounds. Motion builds an audible waveform over the first cycles; zero amplitude mobility at construction stays silent. A later freeze retains the evolved waveform. Reset can deliberately interrupt continuity. Invalid selectors and numeric controls are conditioned to documented finite bounds; non-finite frequencies use 100/1000 Hz defaults.
+
+Vanilla link::Classes/Gendy2:: also remembers amplitude/time increments. Its amplitude drive includes a Lehmer-style generator and its scaling differs; Gendy1991 exposes independent primary barriers and innovations using the same private PCG for both coordinates.
+
+image::gendy-gendy1991.png::
+
+subsection:: See also
+link::Guides/Stochastica-GENDY::, link::Guides/Stochastica::, link::Classes/Gendy1977::
+
+classmethods::
+method:: ar
+argument:: ampDist
+Amplitude innovation law: 0 uniform, 1 truncated Cauchy, 2 truncated logistic, 3 truncated hyperbolic secant, 4 arcsine, 5 mapped truncated exponential. Integer clipped to 0..5; see the GENDY guide for quantiles. Sampled at cycle entry.
+argument:: durDist
+Duration innovation law, using the same IDs as ampDist. Sampled at cycle entry.
+argument:: ampShape
+Amplitude distribution shape, clipped to 0.0001..1. Uniform ignores it. The transforms are modern normalized quantiles; sampled at cycle entry.
+argument:: durShape
+Duration distribution shape, clipped to 0.0001..1; sampled at cycle entry.
+argument:: minFreq
+Lower frequency bound in Hz, giving the longest segment fs/(numPoints*minFreq). Bounds are sorted and clipped to 0.001..fs/numPoints. Sampled at cycle entry; this is not fixed-pitch normalization.
+argument:: maxFreq
+Upper frequency bound in Hz, giving the shortest segment fs/(numPoints*maxFreq). Equal frequency bounds fix segment duration. Sampled at cycle entry.
+argument:: ampPrimaryRange
+Primary amplitude half-width as a ratio of the full secondary interval width 2, clipped to 0..1. Zero sets the primary increment to zero and freezes the secondary amplitude. Sampled at cycle entry.
+argument:: durPrimaryRatio
+Primary duration half-width divided by the secondary duration interval width, clipped to 0..1. Zero freezes duration. Sampled at cycle entry.
+argument:: ampPrimaryStep
+Innovation size as a fraction of the full primary amplitude interval, clipped to 0..1. Zero freezes the primary walk, whose retained position can still move the secondary walk. Sampled at cycle entry.
+argument:: durPrimaryStep
+Innovation size as a fraction of the full primary duration interval, clipped to 0..1. Zero holds the primary position, not necessarily the duration. Sampled at cycle entry.
+argument:: numPoints
+Construction-time number of remembered breakpoints, clipped to 2..64 and truncated to an integer. Recreate the Synth to change it.
+argument:: reset
+Nonpositive-to-positive edge rewinds the original local seed, all point states and scheduler state. The reset sample equals the first sample of a fresh instance; a held positive value does not keep resetting. Audio-rate reset is supported.
+argument:: seed
+Construction-time local PCG32 seed. Nonzero seeds repeat for identical inputs and rate. Zero derives a seed from the parent Synth RNG once; reset reuses it. Cross-platform last-bit differences are possible.
+returns::
+One audio-rate waveform, bounded to -1..1 before external scaling. No control-rate constructor is provided.
+
+examples::
+subsection:: Minimal example
+code::
+(
+{ LeakDC.ar(Gendy1991.ar(seed: 1991)) ! 2 * 0.07 * Line.kr(0, 1, 0.05) }.play
+)
+::
+
+subsection:: Motion near reflecting barriers
+Small primary innovations change the persistent direction slowly; low range ratios retain more audible pitch structure.
+code::
+(
+{
+    var x = Gendy1991.ar(minFreq: 90, maxFreq: 240, ampPrimaryRange: 0.03,
+        durPrimaryRatio: 0.015, ampPrimaryStep: 0.025, durPrimaryStep: 0.025, seed: 67);
+    LeakDC.ar(x) ! 2 * 0.07 * Line.kr(0, 1, 0.05)
+}.play
+)
+::

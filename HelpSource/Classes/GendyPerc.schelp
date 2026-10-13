@@ -1,0 +1,77 @@
+class:: GendyPerc
+summary:: Triggered contraction of stochastic waveform mobility
+categories:: UGens>Generators>Stochastic>GENDY
+related:: Guides/Stochastica, Guides/Stochastica-GENDY, Classes/Gendy1991
+
+description::
+strong::Post-Xenakis IDSS-inspired extension.::
+
+Inspired by Andrew R. Brown and Greg Jenkins's IDSS work (2004) and Brown's Extending Dynamic Stochastic Synthesis (2005), section 4.1: link::https://research-repository.griffith.edu.au/server/api/core/bitstreams/dc7c2e4f-bc64-58c7-8ee0-bd7d219f39a2/content::. The gesture contracts stochastic mobility so a bright, rapidly varying waveform settles into a stable tone. It does not apply an amplitude envelope.
+
+Brown describes two walk stages per dimension. Accordingly this uses the Gendy1991 two-level engine, with primary innovation fractions fixed at 0.1. The four step-oriented endpoint controls set primary range ratios. Shrinking primary bounds reflects existing primary positions into a smaller space and reduces their subsequent innovations. Zero final ratios freeze both secondary coordinates. The final polygon can retain DC and a nonzero audible level.
+
+Elapsed time starts at construction or trigger. Positive endpoint ratios interpolate geometrically to the final ratio over decay seconds; if either is zero the trajectory is linear. The finite-time trajectory, fixed innovation fractions and exact ratio mapping are explicit Stochastica choices, not an IDSS binary port. resetState=1 can interrupt the waveform on retrigger; use an external envelope when that is unwanted.
+
+The oscillator remembers one amplitude and one incoming duration per point. Updates occur once per waveform cycle, in index order; a newly evolved first point connects from the actual previous cycle endpoint. Durations are fractional sample counts with carried remainder and a one-sample minimum. High settings therefore saturate the achievable frequency range. There is no antialiasing, automatic DC removal or loudness normalization. Start quietly; the examples use LeakDC and a short fade.
+
+Construction/reset starts amplitudes at zero and durations at the midpoint of their bounds. Motion builds an audible waveform over the first cycles; zero amplitude mobility at construction stays silent. A later freeze retains the evolved waveform. Reset can deliberately interrupt continuity. Invalid selectors and numeric controls are conditioned to documented finite bounds; non-finite frequencies use 100/1000 Hz defaults.
+
+Vanilla link::Classes/Gendy2:: provides two-level stochastic waveform motion. GendyPerc adds a trigger and coordinated contraction of primary barriers; multiplying Gendy2 by an amplitude envelope would leave its internal mobility unchanged.
+
+image::gendy-gendyperc.png::
+
+subsection:: See also
+link::Guides/Stochastica-GENDY::, link::Guides/Stochastica::, link::Classes/Gendy1991::
+
+classmethods::
+method:: ar
+argument:: trig
+Nonpositive-to-positive edge restarts the mobility trajectory. Construction starts a gesture even with trig=0. With resetState=1, an edge also rewinds the waveform and seed.
+argument:: decay
+Seconds from trigger to final mobility, clipped to 0..1e9. Zero selects final mobility immediately. This is not an amplitude envelope time constant. Sampled at cycle entry.
+argument:: minFreq
+Lower frequency bound in Hz, giving the longest segment fs/(numPoints*minFreq). Bounds are sorted and clipped to 0.001..fs/numPoints. Sampled at cycle entry; this is not fixed-pitch normalization.
+argument:: maxFreq
+Upper frequency bound in Hz, giving the shortest segment fs/(numPoints*maxFreq). Equal frequency bounds fix segment duration. Sampled at cycle entry.
+argument:: startAmpStep
+Initial primary amplitude range ratio, clipped to 0..1. Despite the step-oriented name, this controls primary barriers in the two-level engine. Sampled at cycle entry.
+argument:: endAmpStep
+Final primary amplitude range ratio, 0..1. Zero freezes the final amplitude shape. Positive endpoints interpolate geometrically; a zero endpoint selects a linear trajectory.
+argument:: startDurStep
+Initial primary duration range ratio, 0..1. Controls duration mobility through the primary barriers; sampled at cycle entry.
+argument:: endDurStep
+Final primary duration range ratio, 0..1. Zero freezes final segment durations. Uses the same trajectory rule as amplitude.
+argument:: numPoints
+Construction-time number of remembered breakpoints, clipped to 2..64 and truncated to an integer. Recreate the Synth to change it.
+argument:: resetState
+Read on each trigger: positive rewinds all point and RNG state; nonpositive preserves the running waveform/RNG and restarts only elapsed gesture time.
+argument:: seed
+Construction-time local PCG32 seed. Nonzero seeds repeat for identical inputs and rate. Zero derives a seed from the parent Synth RNG once; reset reuses it. Cross-platform last-bit differences are possible.
+returns::
+One audio-rate waveform, bounded to -1..1 before external scaling. No control-rate constructor is provided.
+
+examples::
+subsection:: Minimal example
+code::
+(
+{
+    var trig = Impulse.kr(1);
+    var x = GendyPerc.ar(trig, decay: 0.7, endAmpStep: 0, endDurStep: 0, seed: 81);
+    LeakDC.ar(x) ! 2 * 0.07 * Line.kr(0, 1, 0.05)
+}.play
+)
+::
+
+subsection:: Timbre stabilization versus volume decay
+Left contracts mobility at constant gain. Right keeps mobility fixed and uses a conventional amplitude envelope; both are retriggered once per second.
+code::
+(
+{
+    var trig = Impulse.kr(1);
+    var settling = GendyPerc.ar(trig, 0.7, endAmpStep: 0, endDurStep: 0, seed: 81);
+    var moving = GendyPerc.ar(trig, 0.7, endAmpStep: 0.5, endDurStep: 0.5, seed: 81);
+    var env = EnvGen.kr(Env.perc(0.01, 0.8), trig);
+    LeakDC.ar([settling, moving * env]) * 0.07 * Line.kr(0, 1, 0.05)
+}.play
+)
+::

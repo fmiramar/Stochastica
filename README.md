@@ -4,9 +4,25 @@
 
 Stochastica provides mathematical SuperCollider UGens for generative music: nonlinear maps and flows, shaped probability distributions, stochastic trajectories, event timing, discrete state and interacting populations. Raw state is separate from sonic mapping, so a patch can expose what a model remembers and how it organizes change.
 
-Deterministic maps and flows can be periodic, excitable or chaotic depending on parameters. Stochastic models consume random innovations. Independent triggered distributions, mean-reverting motion, event feedback and accumulated preference introduce different kinds of structure; the installed Stochastica guide explains these relationships across all 53 UGens and the language-side `SDPhaseView` utility.
+Deterministic maps and flows can be periodic, excitable or chaotic depending on parameters. Stochastic models consume random innovations. Independent triggered distributions, mean-reverting motion, event feedback and accumulated preference introduce different kinds of structure; the installed Stochastica guide explains these relationships across all 60 UGens and the language-side `SDPhaseView` utility.
 
 This remains in BiroSCa as an experimental SuperCollider-native collection independently implementing mathematical techniques, rather than wrapping an upstream plugin. Equations, adaptations and citations are documented in each help page and the [source notes](docs/sources.md).
+
+## GENDY waveform expansion (unreleased)
+
+Seven additions bring stochastic processes directly into evolving waveform geometry. The dedicated **Stochastica-GENDY** help guide explains their historical sources, mathematical differences and practical use alongside the existing Gendy1–5 family.
+
+- `Gendy1977` evolves remembered amplitudes and segment durations with first-order reflected walks. It reconstructs the method associated with Xenakis's 1977 DSS, using explicit modern seeding and duration scaling.
+- `Gendy1991` gives each breakpoint two levels of stochastic memory. Primary reflected walks drive secondary amplitude/duration walks, following the method associated with GENDY3 and crediting Xenakis and Marie-Hélène Serra.
+- `GendyS709` periodically changes the rules of first-order waveform motion. Sine/saw modulation is historically informed; its exponential control routes are explicit Stochastica choices.
+- `GendyField` supplies independently timed sound/silence gates. Exponential durations and Bernoulli activity implement the PARAG timing subset, without recreating its complete sections.
+- `GendyPerc` contracts stochastic mobility after each trigger. Brown and Jenkins's IDSS work informs its two-level walk and transition from rough motion to a stable polygon, independently of volume envelopes.
+- `GendyInterp` renders identical breakpoint histories with hold, linear, cosine or zero-tangent cubic Hermite interpolation. This extends the rendering vocabulary without claiming exact equivalence to sc3-plugins Gendy4/5.
+- `GendyCoupled` makes neighboring breakpoint proposals interact around a ring. Its synchronous discrete Laplacian is a new Stochastica design, with exact uncoupled-baseline behavior at zero coupling.
+
+Waveform classes are audio-only with 2–64 points; GendyField is control-only with 1–32 gates. These oscillators are not bandlimited and can contain DC. Bounds, initialization, scheduling and interpolation differ intentionally from the original programs. **GendyDiffusion is deferred** until the full Rojas–Cádiz DDSS article is available; no placeholder algorithm or public class is included.
+
+See the [implementation decisions](docs/gendy-implementation.md), [research audit](docs/research/GENDY_HISTORICAL_SOURCES.md), and [verification record](docs/gendy-verification.md).
 
 ## Round 3 expansion (unreleased)
 
