@@ -14,6 +14,23 @@ Rather than offering "black box" synthesizers, Stochastica breaks complex mathem
 
 By keeping the math pure and leaving the creative routing up to you, Stochastica allows you to use a simulated biological neuron to sweep a filter, a statistical swarm to trigger a drum kit, or a chaotic map as raw audio distortion.
 
+## Round 2 expansion (unreleased)
+
+Eight new models extend Stochastica's stochastic organization. This work remains an experimental, unreleased expansion; existing UGen behavior is preserved.
+
+- `MultiHawkesTrig` spreads activity between event streams through directional cross-excitation. A bounded exponential-kernel Hawkes network draws simultaneous events before updating its interaction matrix.
+- `SelfCorrectingTrig` produces random events that resist clustering. Its log-intensity builds during silence and falls after an event, providing inhibitory feedback beside `HawkesTrig`.
+- `RandomTelegraph` switches between two persistent regimes with asymmetric random dwell times. Integrated exponential hazards preserve timing under ordinary rate modulation.
+- `ShotNoise` accumulates Gaussian-marked Poisson impacts into a decaying signal. Analytical inter-event decay connects isolated particles to dense continuous textures.
+- `MultiOUProcess` generates correlated trajectories with temporal memory. Exact finite-step OU covariance combines the scalar process's mean reversion with `MultiGaussNoise`-style matrix handling.
+- `DoubleWellProcess` produces continuous metastable motion and noise-driven barrier crossings. Fixed Euler–Maruyama substeps expose the raw quartic-potential dynamics without audio-range clipping.
+- `TVonMisesRand` samples angles around a preferred direction. Bounded Best–Fisher rejection treats the wrap boundary as part of a circle.
+- `KuramotoNetwork` models an oscillator population that can synchronize through mutual coupling. A linear-cost mean-field update exposes every phase, coherence, and mean phase.
+
+Telegraph and shot scheduling process at most eight internal events per calculation; overload carries time forward and can delay the model. Hawkes/self-correcting events use a discrete hazard approximation, so individual rates should remain well below the calculation rate. Vector reloads are explicit snapshots; OU factorization costs more than an ordinary update. Kuramoto and double-well integration need suitable time steps, and raw outputs are not normalized or antialiased.
+
+See the installed Stochastica guide, [implementation record](docs/round2-implementation.md), and [verification record](docs/round2-verification.md). This expansion stays in BiroSCa because it develops experimental SuperCollider-native generative systems from mathematical techniques rather than wrapping an upstream plugin.
+
 ## Design
 
 - A raw map updates recurrence state only on a rising trigger.

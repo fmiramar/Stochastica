@@ -19,10 +19,10 @@ subsection:: Class overview
 table::
 ## strong::Category:: || strong::Classes::
 ## Raw maps || link::Classes/HenonMap::, link::Classes/GbmanMap::, link::Classes/LatoocarfianMap::, link::Classes/IkedaMap::, link::Classes/LoziMap::, link::Classes/TinkerbellMap::, link::Classes/CliffordMap::, link::Classes/DeJongMap::, link::Classes/CircleMap::, link::Classes/CoupledLogisticMap::, link::Classes/CoupledMapLattice::, link::Classes/RulkovMap::
-## Continuous systems || link::Classes/MackeyGlass::, link::Classes/Chua::, link::Classes/Izhikevich::
-## Processes || link::Classes/OUProcess::, link::Classes/RenewalTrig::, link::Classes/HawkesTrig::, link::Classes/FractionalNoise::, link::Classes/FBrownianMotion::, link::Classes/BoundedWalk::
-## Distributions || link::Classes/TGammaRand::, link::Classes/TWeibullRand::, link::Classes/TLogNormalRand::, link::Classes/TCauchyRand::, link::Classes/TPoissonRand::, link::Classes/TGeometricRand::, link::Classes/TNegBinomialRand::, link::Classes/TTruncNormalRand::, link::Classes/TStableRand::, link::Classes/TLevyRand::
-## State and vector processes || link::Classes/MarkovChain::, link::Classes/SemiMarkov::, link::Classes/MultiGaussNoise::
+## Continuous systems || link::Classes/MackeyGlass::, link::Classes/Chua::, link::Classes/Izhikevich::, link::Classes/KuramotoNetwork::
+## Processes || link::Classes/OUProcess::, link::Classes/RenewalTrig::, link::Classes/HawkesTrig::, link::Classes/FractionalNoise::, link::Classes/FBrownianMotion::, link::Classes/BoundedWalk::, link::Classes/MultiHawkesTrig::, link::Classes/SelfCorrectingTrig::, link::Classes/RandomTelegraph::, link::Classes/ShotNoise::, link::Classes/DoubleWellProcess::
+## Distributions || link::Classes/TGammaRand::, link::Classes/TWeibullRand::, link::Classes/TLogNormalRand::, link::Classes/TCauchyRand::, link::Classes/TPoissonRand::, link::Classes/TGeometricRand::, link::Classes/TNegBinomialRand::, link::Classes/TTruncNormalRand::, link::Classes/TStableRand::, link::Classes/TLevyRand::, link::Classes/TVonMisesRand::
+## State and vector processes || link::Classes/MarkovChain::, link::Classes/SemiMarkov::, link::Classes/MultiGaussNoise::, link::Classes/MultiOUProcess::
 ## Explicit sonifiers || link::Classes/HenonSonify::, link::Classes/GbmanSonify::, link::Classes/LatoocarfianSonify::
 ::
 
@@ -36,6 +36,24 @@ list::
 ## strong::State and vector processes::: Multivariate systems and state-transition models, including Markov chains and covariance matrices, where multiple probabilities interact to determine the next discrete state or continuous vector.
 ## strong::Explicit sonifiers::: Specialized wrappers that fold, scale, and interpolate the raw mathematical coordinates of discrete maps directly into usable audio signals.
 ::
+
+subsection:: Forms of stochastic organization
+
+strong::Interaction.:: link::Classes/MultiHawkesTrig:: lets an event in one stream temporarily raise event probability in another. This makes contagion, call-and-response, and directional cascades. The connection is causal: one process changes another process's future intensity, rather than merely producing correlated outputs.
+
+strong::Inhibition.:: link::Classes/SelfCorrectingTrig:: builds pressure while no event occurs, then reduces it when an event arrives. Stochastic regularity and refractory spacing emerge without a metronome. HawkesTrig means “event, then more near-future events”; SelfCorrectingTrig means “event, then fewer near-future events.”
+
+strong::Regime switching.:: link::Classes/RandomTelegraph:: remains in one condition for a random dwell time, then changes to the other. Separate transition rates organize active/resting, dense/sparse, or bright/dark regimes. These are persistent states, not fresh independent choices on every sample or steps in a fixed sequence.
+
+strong::Stochastic impulses.:: link::Classes/ShotNoise:: gives random arrivals a decaying memory. Each contributes energy; overlapping responses accumulate. Sparse arrivals sound like separate impacts, while dense arrivals become crackle, rain, or a fluctuation field. Its event flag and accumulated signal expose the difference between arrival times and material response.
+
+strong::Correlated motion.:: link::Classes/MultiOUProcess:: combines temporal memory with correlated innovations. Several voices can drift separately while breathing together. MultiGaussNoise produces correlated values at individual trigger moments; MultiOUProcess produces correlated trajectories through time.
+
+strong::Metastability and stochastic resonance.:: link::Classes/DoubleWellProcess:: moves in a nonlinear landscape with two preferred regions. Noise can cause a rare barrier crossing after a long stay near one well. A weak periodic drive that cannot cause crossings alone can become more effective with moderate noise: transitions become statistically related to the drive. Increasing noise indefinitely does not improve this relationship.
+
+strong::Circular statistics.:: link::Classes/TVonMisesRand:: treats angles as a periodic domain. Minus pi and plus pi are neighboring representations of the same direction. Circular concentration groups phases or azimuths around a preferred angle without an artificial boundary separating the endpoints of a linear distribution.
+
+strong::Collective synchronization.:: link::Classes/KuramotoNetwork:: couples oscillators with their own natural frequencies. Weak coupling can leave them dispersed; stronger coupling can create partial or strong phase coordination. No master clock imposes synchronization. The order parameter r measures the population: near zero means widely dispersed phases, near one means strong alignment.
 
 subsection:: Raw state and sound
 
@@ -79,6 +97,106 @@ code::
     var freq = TLogNormalRand.ar(6.5, 0.6, event).clip(100, 8000);
     var env = Decay2.ar(event, 0.001, 0.08);
     SinOsc.ar(freq, 0, env * 0.1)
+}.play
+)
+::
+
+subsection:: Interaction versus inhibition
+
+The same sound makes clustered timing on the left and self-correcting spacing on the right, at comparable average densities.
+
+code::
+(
+{
+    var events = [HawkesTrig.ar(2, 8, 12)[0], SelfCorrectingTrig.ar(6, 1.5)[0]];
+    SinOsc.ar(600, 0, Decay2.ar(events, 0.001, 0.05) * 0.08)
+}.play
+)
+::
+
+subsection:: Regimes bias a metastable system
+
+A telegraph state changes which well is favored. The continuous process and its noise still determine whether and when a crossing occurs.
+
+code::
+(
+{
+    var bias = RandomTelegraph.kr(-0.25, 0.25, 0.4, 0.4)[0];
+    var state = DoubleWellProcess.kr(bias, noise: 0.7, timeScale: 6, substeps: 4);
+    Pan2.ar(RLPF.ar(Saw.ar(90, 0.06), state.tanh.linexp(-1, 1, 200, 4000), 0.2))
+        * Line.kr(0, 1, 0.05)
+}.play
+)
+::
+
+subsection:: Related drift with circular event placement
+
+Two related pitch trajectories move continuously, while transient positions are sampled on a four-channel ring around a shared preferred direction. Use a four-channel output setup for the full spatial example.
+
+code::
+(
+Routine {
+    var covariance = Buffer.loadCollection(s, [1, 0.75, 0.75, 1]);
+    var node;
+    s.sync;
+    node = {
+        var drift = MultiOUProcess.kr(2, covariance);
+        var events = [Impulse.kr(4), Impulse.kr(3)];
+        var angles = TVonMisesRand.kr(SinOsc.kr(0.03) * pi, 4, events);
+        Mix.fill(2, { |i|
+            PanAz.ar(4, SinOsc.ar([330, 495][i] * drift[i].midiratio, 0,
+                Decay2.kr(events[i], 0.003, 0.15) * 0.06), angles[i] / pi)
+        }) * Line.kr(0, 1, 0.05)
+    }.play;
+    20.wait;
+    node.free;
+    s.sync;
+    covariance.free;
+}.play;
+)
+::
+
+subsection:: Cascades increase collective coordination
+
+Event interaction changes oscillator interaction: a Hawkes cascade temporarily strengthens Kuramoto coupling. Quiet intervals let the narrow frequency spread loosen the phases again.
+
+code::
+(
+Routine {
+    var base = Buffer.loadCollection(s, [0.5, 0]);
+    var excite = Buffer.loadCollection(s, [5, 2, 10, 3]);
+    var decay = Buffer.loadCollection(s, [12, 12, 12, 12]);
+    var frequencies = Buffer.loadCollection(s, Array.series(8, 0.8, 0.06));
+    var node;
+    s.sync;
+    node = {
+        var activity = MultiHawkesTrig.kr(2, base, excite, decay)[0..1].sum;
+        var coupling = Decay.kr(activity, 1.5) * 8;
+        var phases = KuramotoNetwork.kr(8, frequencies, coupling: coupling, substeps: 4)[0..7];
+        var pulses = ((phases.cos + 1) * 0.5).pow(10);
+        Splay.ar(SinOsc.ar(Array.geom(8, 200, 1.12), 0, pulses * 0.035))
+            * Line.kr(0, 1, 0.05)
+    }.play;
+    25.wait;
+    node.free;
+    s.sync;
+    [base, excite, decay, frequencies].do(_.free);
+}.play;
+)
+::
+
+subsection:: Microscopic material and slower form
+
+ShotNoise provides the individual particles. Inhibitory event timing changes the resonant material at a slower scale, keeping texture and form distinct.
+
+code::
+(
+{
+    var change = SelfCorrectingTrig.kr(0.7, 2)[0];
+    var root = Lag.kr(TChoose.kr(change, [180, 240, 320]), 0.05);
+    var particles = ShotNoise.ar(35, 0.005, 0, 0.4)[0];
+    Splay.ar(Ringz.ar(particles, root * [1, 1.7, 2.6], 0.2))
+        * 0.015 * Line.kr(0, 1, 0.05)
 }.play
 )
 ::

@@ -74,6 +74,16 @@ multi-buffer edits require `s.sync` before reload.
 
 ## Verification status
 
-Implementation and expanded verification are in progress. Hosted Linux/macOS/
-Windows CI cannot be claimed as run while publication is prohibited; local checks
-and CI configuration will be reported separately.
+All eight implementations, language classes, help pages, mathematical figures,
+and guide examples are complete. Native x86_64 builds, five CTest suites, sanitizer
+checks, scsynth/supernova integration and 600-second endurance renders, installed
+SCDoc rendering, and all 31 documentation examples passed. Both server plugins
+also cross-compiled for macOS arm64; that architecture has not been runtime-tested.
+
+The original server smoke-test sample data is unchanged from the published
+baseline on both servers. Existing DSP sources, helpers, language classes, and
+individual help pages have no edits.
+
+See [round2-verification.md](round2-verification.md) for evidence, reproduction
+commands, performance limits, and remaining hosted-platform acceptance gates.
+The new CI configuration is tracked locally; no push, PR, or release was made.

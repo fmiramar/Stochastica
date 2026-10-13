@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased — Round 2
+
+- Add MultiHawkesTrig, SelfCorrectingTrig, RandomTelegraph, ShotNoise, MultiOUProcess, DoubleWellProcess, TVonMisesRand, and KuramotoNetwork at audio and control rates.
+- Add bounded event scheduling, correlated diffusion, circular sampling, metastable motion, and collective synchronization without changing existing DSP.
+- Add seeded references, statistical checks, server ABI/allocation checks, server renders, and eight mathematical illustrations.
+- Extend the Stochastica guide with stochastic organization and cross-process examples.
+
 ## 0.1.0 - 2026-07-29
 
 - Added shared PCG32, rising-edge, range, distribution, map, flow, buffer, and server helpers.
