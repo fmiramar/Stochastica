@@ -1,11 +1,13 @@
 #include "SDGendy.hpp"
 #include <array>
 #include <iostream>
+#include <fstream>
+#include <sstream>
 #include <stdexcept>
 using namespace sd::gendy;
 void check(bool ok,const char* what) { if(!ok) throw std::runtime_error(what); }
 void near(double a,double b,double tol=1e-12) { if (!(std::abs(a-b)<tol)) {std::cerr << "actual=" << a << " expected=" << b << " tolerance=" << tol << "\n"; throw std::runtime_error("reference mismatch");} }
-int main()
+int main(int argc,char** argv)
 {
     try {
         // Independent piecewise reflection expectations, including repeated overshoot.
@@ -37,6 +39,7 @@ int main()
         near(interpolate(3,0,1,.25),.15625);
         near(mobility(1,.01,.5,1),.1);near(mobility(1,0,.5,1),.5);
         near(mobility(.4,.4,10,1),.4);near(mobility(1,.1,0,0),.1);
+        for(int i=0;i<100;++i)check(mobility(.4,.4,i/100.,1)==.4,"constant mobility rounding");
         for(int dist=0;dist<6;++dist) for(double shape:{.0001,.2,1.0}) {
             double old=-2;
             for(int j=0;j<=10000;++j) {
@@ -67,6 +70,26 @@ int main()
         // Changing modes mid-segment applies only at the next segment.
         p.interp=1;e1.reset(p);e1.sample(p);p.interp=0;e1.sample(p);check(e1.mode==1,"midsegment mode switch");
         while(e1.index==0)e1.sample(p);check(e1.mode==0,"boundary mode switch");
+        // Independent Python oracle: full internal states, not only an audio checksum.
+        if(argc>1) {
+            std::ifstream input(argv[1]);check(input.good(),"missing golden point trace");
+            std::string line;std::getline(input,line);int currentModel=-1,currentCycle=0;
+            std::array<Point,3> storage{};Engine oracle;Parameters op;
+            oracle.points=storage.data();oracle.n=3;oracle.seed=123;
+            while(std::getline(input,line)) {
+                std::replace(line.begin(),line.end(),',',' ');std::istringstream row(line);
+                int model,cycle,index;double amp,dur,ap,dp;
+                check(bool(row>>model>>cycle>>index>>amp>>dur>>ap>>dp),"malformed trace");
+                if(model!=currentModel) {
+                    op=Parameters{};op.secondOrder=model==1;
+                    if(model==2){op.ampCoupling=.25;op.durCoupling=.125;}
+                    oracle.reset(op);currentModel=model;currentCycle=0;
+                }
+                if(cycle!=currentCycle){oracle.updateCycle(op);currentCycle=cycle;}
+                near(storage[index].amp,amp,1e-11);near(storage[index].dur,dur,1e-10);
+                near(storage[index].ampPrimary,ap,1e-11);near(storage[index].durPrimary,dp,1e-10);
+            }
+        }
         std::cout<<"GENDY reference checks passed\n";
     } catch(const std::exception& ex) {std::cerr<<ex.what()<<'\n';return 1;}
 }

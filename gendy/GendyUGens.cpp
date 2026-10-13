@@ -40,7 +40,8 @@ Parameters parametersAt(GendyUnit* unit,int i)
         const double decay=bounded(in(1),0,1e9,1);
         p.ampRange=mobility(in(4),in(5),unit->gestureTime,decay);
         p.durRange=mobility(in(6),in(7),unit->gestureTime,decay);
-        p.ampStep=p.durStep=.1;
+        // Same representable constant as a 0.1 SuperCollider control input.
+        p.ampStep=p.durStep=.1f;
     } else if(unit->model==Model::Interpolation) {
         p.interp=selector(in(0),0,3);p.ampDist=selector(in(1),0,5);p.durDist=selector(in(2),0,5);
         p.minFreq=in(3);p.maxFreq=in(4);p.ampStep=in(5);p.durStep=in(6);

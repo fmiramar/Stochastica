@@ -33,8 +33,9 @@ inline int selector(double x, int lo, int hi)
 { return static_cast<int>(bounded(x, lo, hi, lo)); }
 
 // Quantile transforms on a strictly open u. All return [-1,1]. These
-// mathematical parameterizations are explicit modern choices, not a copied
-// Xenakis/Collins transform table. Exponential is deliberately asymmetric.
+// quantiles independently re-express the audited SC adaptations for IDs
+// 0,1,2,4,5; ID 3 instead uses a symmetric sech quantile. See the source
+// audit for Collins/Rainey attribution. Exponential is deliberately asymmetric.
 inline double innovation(int which, double shape, double u)
 {
     const double a = bounded(shape, .0001, 1, 1);
@@ -68,6 +69,7 @@ inline double interpolate(int mode, double a, double b, double t)
 inline double mobility(double start, double end, double elapsed, double decay)
 {
     start = bounded(start, 0, 1, 0); end = bounded(end, 0, 1, 0);
+    if (start==end) return start;
     const double t = decay > 0 ? std::clamp(elapsed/decay, 0.0, 1.0) : 1;
     if (t == 0) return start;
     if (t == 1) return end;
