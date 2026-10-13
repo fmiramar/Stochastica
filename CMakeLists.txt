@@ -50,6 +50,7 @@ set(sd_cpp_files
     processes/JumpDiffusion.cpp
     flows/WilsonCowan.cpp
     flows/Lorenz96.cpp
+    gendy/GendyUGens.cpp
 )
 
 set(sd_sc_files
@@ -74,6 +75,7 @@ set(sd_sc_files
     Classes/SDJumpDiffusion.sc
     Classes/SDWilsonCowan.sc
     Classes/SDLorenz96.sc
+    Classes/SDGendy.sc
 )
 
 file(GLOB sd_schelp_files CONFIGURE_DEPENDS HelpSource/Classes/*.schelp)
@@ -229,4 +231,32 @@ if(BUILD_TESTING AND NOT CMAKE_CROSSCOMPILING)
             add_test(NAME ${round3_target} COMMAND ${round3_target})
         endif()
     endforeach()
+endif()
+
+if(BUILD_TESTING AND NOT CMAKE_CROSSCOMPILING)
+    add_executable(sd_gendy_reference_tests tests/reference/test_gendy_reference.cpp)
+    add_executable(sd_gendy_statistical_tests tests/statistical/test_gendy_statistics.cpp)
+    add_executable(sd_gendy_unit_tests tests/server/test_gendy_units.cpp gendy/GendyUGens.cpp)
+    target_include_directories(sd_gendy_unit_tests PRIVATE
+        "${SC_PATH}/include/plugin_interface" "${SC_PATH}/include/common" "${SC_PATH}/common")
+    foreach(kind reference statistical unit)
+        set(gendy_target sd_gendy_${kind}_tests)
+        target_include_directories(${gendy_target} PRIVATE include)
+        if(STRICT AND NOT MSVC)
+            target_compile_options(${gendy_target} PRIVATE -Wall -Wextra -Wpedantic -Wno-unused-parameter)
+        endif()
+        if(SD_SANITIZE AND CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
+            target_compile_options(${gendy_target} PRIVATE -fsanitize=address,undefined -fno-omit-frame-pointer)
+            set_property(TARGET ${gendy_target} APPEND_STRING PROPERTY LINK_FLAGS " -fsanitize=address,undefined")
+        endif()
+        add_test(NAME ${gendy_target} COMMAND ${gendy_target})
+    endforeach()
+endif()
+
+if(BUILD_TESTING AND NOT CMAKE_CROSSCOMPILING)
+    add_executable(sd_gendy_analysis EXCLUDE_FROM_ALL scripts/export_gendy_analysis.cpp)
+    target_include_directories(sd_gendy_analysis PRIVATE include)
+    add_executable(sd_gendy_benchmark EXCLUDE_FROM_ALL tests/performance/gendy_benchmark.cpp gendy/GendyUGens.cpp)
+    target_include_directories(sd_gendy_benchmark PRIVATE include
+        "${SC_PATH}/include/plugin_interface" "${SC_PATH}/include/common" "${SC_PATH}/common")
 endif()

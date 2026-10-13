@@ -23,6 +23,7 @@ void registerSDLevyFlight();
 void registerSDJumpDiffusion();
 void registerSDWilsonCowan();
 void registerSDLorenz96();
+void registerSDGendy();
 
 PluginLoad(Stochastica)
 {
@@ -48,5 +49,6 @@ PluginLoad(Stochastica)
     registerSDJumpDiffusion();
     registerSDWilsonCowan();
     registerSDLorenz96();
+    registerSDGendy();
 }
 

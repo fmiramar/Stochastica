@@ -1,6 +1,8 @@
-# GendyDiffusion research gate — not yet satisfied
+# GendyDiffusion — deferred by user
 
 Required source: Emilio L. Rojas and Rodrigo F. Cádiz, *A Physically Inspired Implementation of Xenakis's Stochastic Synthesis: Diffusion Dynamic Stochastic Synthesis*, Computer Music Journal 45(2) (2021), 48–66. [DOI](https://doi.org/10.1162/comj_a_00606).
+
+The user explicitly deferred this class on 2026-10-13 until the article can be supplied. Continue the other seven models; do not substitute a guessed DDSS implementation.
 
 The complete article has **not** been obtained. The institutional abstract verifies particle-to-amplitude mapping and drift, but does not define the state equation, drift field, boundary treatment, time increment or physical parameters. Those items and their page references remain unresolved. There is no frozen API or placeholder implementation.
 
