@@ -1,0 +1,81 @@
+class:: GendyDiffusion
+summary:: Radial diffusion shapes an evolving polygonal waveform
+categories:: UGens>Generators>Stochastic>GENDY
+related:: Guides/Stochastica, Guides/Stochastica-GENDY, Classes/Gendy1977, Classes/OUProcess
+
+description::
+strong::Implementation of the published DDSS concept by Emilio L. Rojas and Rodrigo F. Cádiz, with documented numerical reconstruction choices.::
+
+Diffusion Dynamic Stochastic Synthesis (DDSS) maps simulated particle radii to the amplitudes of equally spaced waveform breakpoints. Its source is Rojas and Cádiz, A Physically Inspired Implementation of Xenakis's Stochastic Synthesis: Diffusion Dynamic Stochastic Synthesis, Computer Music Journal 45(2), 48–66 (2021 issue, copyright 2022), link::https://doi.org/10.1162/comj_a_00606::. The complete article was inspected; this independently written real-time waveform implementation does not reproduce the authors' Max instrument or its separate additive synthesis mode.
+
+Equation 19 on p. 56 is the Bessel diffusion equation: code::dr = D*(d-1)/r*dt + sqrt(2*D)*dW::. D is diffusivity and d is dimension; a Wiener increment has variance dt. Euler–Maruyama therefore proposes code::r + D*(d-1)*dt/r + sqrt(2*D*dt)*z:: for an independent standard Gaussian z. The drift pushes outward, is strongest near the origin, and vanishes at d=1. This is different from OU mean reversion. Each particle starts at radius 1; its first update follows the initial waveform cycle. D=0 or dt=0 freezes the radii, leaving a repeating polygon when x modulation is also zero.
+
+Equation 20 on p. 57 assigns angle phi=2*pi*k/N. Following table 2 on p. 60, a copy q of each radius is repeatedly reflected into -1..1. The mapped coordinates are x=q*cos(phi), y=q*sin(phi). Amplitude is y plus an oscillation of amplitude 0.1*x. Two additional zero endpoints surround the moving points. Straight-line interpolation traverses the N+1 equal intervals; only amplitude evolves, so duration randomness does not change pitch.
+
+The paper leaves the timestep, singularity treatment, exact x oscillator and reflection feedback unspecified. Stochastica uses a denominator floor of 1e-6 and reflects negative proposed radii at zero; the amplitude reflection acts on a copy, without replacing the physical radius. A common sine supplies x modulation, starting at phase zero. Fixed scaling by 1/sqrt(1.01) leaves headroom for that modulation and bounds the output. Direct linear evaluation replaces the paper's redundant intermediate table samples. These are explicit reconstruction choices; the full equation/page audit is installed in docs/research/GendyDiffusion-source-notes.md.
+
+The singularity regularization changes near-zero trajectories. Large integration steps can create large radial excursions before amplitude reflection, so numerical stability does not establish physical accuracy. Use small time steps and compare refinements when studying the process. Simulation time advances once per waveform cycle, hence raising pitch also speeds the physical evolution per audio second. Fractional dimensions define a mathematical Bessel model. Shapes are updated at cycle boundaries; a zero modulation rate holds its current phase and suppresses x modulation only when that phase is zero, as at reset.
+
+With the default point count, the initial polygon is immediately nonzero and needs no stochastic warmup. With only two particles and zero x modulation, both y coordinates are zero and the waveform is effectively silent. Both cycle endpoints are zero. Changing controls can change the next polygon; reset deliberately restarts the waveform and can interrupt continuity. No antialiasing, automatic DC removal or loudness compensation is provided. The figure compares the actual numerical engine against a simplified Gaussian DSS baseline using the same innovations, fixed spacing and pitch; it does not promise a universal ordering of brightness or fundamental strength.
+
+Like vanilla link::Classes/Gendy1::, this evolves a polygon by stochastic updates. GendyDiffusion instead uses the published radial diffusion equation, circular amplitude mapping, fixed pitch and two zero endpoints; Gendy1 uses independent amplitude/duration walks.
+
+image::gendy-gendydiffusion.png::
+
+subsection:: See also
+link::Guides/Stochastica-GENDY::, link::Guides/Stochastica::, link::Classes/Gendy1977::, link::Classes/OUProcess::
+
+classmethods::
+method:: ar
+argument:: freq
+Cycle frequency in Hz, clipped to 0.001..sampleRate/(numPoints+1), sampled at cycle entry. Each cycle advances one simulation step. Non-finite input uses 220 Hz.
+argument:: diffusivity
+Physical D, clipped to 0..10, in squared radius units per simulation-time unit. Controls both noise variance and drift; zero freezes radii. Sampled at cycle entry; non-finite input uses 1.
+argument:: dimensions
+Bessel dimension d, clipped to 1..16; fractional values are supported. One removes the radial drift while retaining diffusion. Sampled at cycle entry; non-finite input uses 2.
+argument:: timeStep
+Simulation-time increment per waveform cycle, clipped to 0..0.01; default 0.001. Zero freezes radii. This is independent of the audio sample duration. Sampled at cycle entry; non-finite input uses 0.001.
+argument:: modFreq
+Rate of the common x-modulation sine in Hz, clipped to 0..sampleRate/2. Phase advances each sample and is read into the polygon once per cycle. Use rates much lower than freq to avoid modulation aliasing; zero at reset disables x modulation. Sampled at cycle entry; non-finite input uses 0.2 Hz.
+argument:: numPoints
+Construction-time number of particles, clipped to 2..64 and truncated to an integer, excluding the two zero endpoints. The default 36 follows the paper's example. Recreate the Synth to change it.
+argument:: reset
+Nonpositive-to-positive edge rewinds radii, waveform and modulation phases, and the original private seed. Audio-rate edges are supported; the reset sample equals the first sample of a fresh instance. Holding reset high does not repeatedly restart.
+argument:: seed
+Construction-time local PCG32 seed. Nonzero seeds repeat for identical inputs and rate. Zero derives a seed from the parent Synth RNG once; reset reuses it. Cross-platform math rounding can differ.
+returns::
+One audio-rate waveform bounded to -1..1 before external scaling. No control-rate constructor is provided.
+
+examples::
+subsection:: Minimal example
+code::
+(
+{ LeakDC.ar(GendyDiffusion.ar(freq: 150, seed: 123)) ! 2 * 0.08 * Line.kr(0, 1, 0.05) }.play
+)
+::
+
+subsection:: First-order DSS and radial diffusion
+Left is Gendy1977 with fixed durations; right is the DDSS reconstruction at the same pitch and moving-point count. They have different innovations, mapping and endpoint geometry, so equal seeds do not imply equal paths. The comparison isolates the practical sound of the models, not a controlled equation experiment.
+code::
+(
+{
+    var first = Gendy1977.ar(minFreq: 150, maxFreq: 150,
+        ampStep: 0.03, durStep: 0, numPoints: 36, seed: 123);
+    var diffusion = GendyDiffusion.ar(150, timeStep: 0.001,
+        modFreq: 0, numPoints: 36, seed: 123);
+    LeakDC.ar([first, diffusion]) * 0.08 * Line.kr(0, 1, 0.05)
+}.play
+)
+::
+
+subsection:: Remove the radial drift
+Matched seeds give common Gaussian innovations. Left uses dimension 1 (zero drift), right dimension 2. Both still diffuse; both use the same origin regularization and angular mapping. Drift changes the radius history, while amplitude reflection can reverse the apparent direction of waveform motion.
+code::
+(
+{
+    var x = GendyDiffusion.ar(150, dimensions: [1, 2], timeStep: 0.001,
+        modFreq: 0, seed: 1729);
+    LeakDC.ar(x) * 0.08 * Line.kr(0, 1, 0.05)
+}.play
+)
+::

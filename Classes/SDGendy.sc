@@ -38,3 +38,8 @@ GendyCoupled : UGen {
         ^this.multiNew('audio', ampCoupling, durCoupling, ampDist, durDist, minFreq, maxFreq, ampStep, durStep, numPoints, reset, seed)
     }
 }
+GendyDiffusion : UGen {
+    *ar { |freq=220, diffusivity=1, dimensions=2, timeStep=0.001, modFreq=0.2, numPoints=36, reset=0, seed=0|
+        ^this.multiNew('audio', freq, diffusivity, dimensions, timeStep, modFreq, numPoints, reset, seed)
+    }
+}

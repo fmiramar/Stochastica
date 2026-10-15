@@ -1,12 +1,12 @@
 title:: Stochastica-GENDY
 summary:: Dynamic Stochastic Synthesis: history, waveform memory, hierarchy and extensions
 categories:: UGens>Generators>Stochastic>GENDY
-related:: Guides/Stochastica, Classes/Gendy1977, Classes/Gendy1991, Classes/GendyS709, Classes/GendyField, Classes/GendyPerc, Classes/GendyInterp, Classes/GendyCoupled
+related:: Guides/Stochastica, Classes/Gendy1977, Classes/Gendy1991, Classes/GendyS709, Classes/GendyField, Classes/GendyPerc, Classes/GendyInterp, Classes/GendyDiffusion, Classes/GendyCoupled
 
 description::
 Dynamic Stochastic Synthesis (DSS) makes the waveform itself remember and change. Imagine a polygon repeated as sound. Each corner retains its amplitude and the time needed to reach it. At the next repetition these values move by stochastic increments, so a recurring shape can wander, deform, stabilize or become noisy. This differs from using noise to control the frequency of an otherwise fixed oscillator: the changing polygon is the oscillator.
 
-The seven implemented Stochastica classes separate historical reconstructions, historically informed adaptations, post-Xenakis extensions and a new collective design. GendyDiffusion is deferred pending the full Rojas–Cádiz article; no guessed implementation is installed. These classes coexist with SuperCollider's Gendy1–3 and optional sc3-plugins Gendy4–5. They do not replace or promise sample equivalence with those implementations.
+The eight implemented Stochastica classes separate historical reconstructions, historically informed adaptations, post-Xenakis extensions and a new collective design. GendyDiffusion implements the published Rojas–Cádiz radial diffusion equation with explicit numerical reconstruction choices. These classes coexist with SuperCollider's Gendy1–3 and optional sc3-plugins Gendy4–5. They do not replace or promise sample equivalence with those implementations.
 
 subsection:: See also
 link::Guides/Stochastica::, link::Classes/Gendy1::, link::Classes/Gendy2::, link::Classes/Gendy3::, link::Classes/BoundedWalk::, link::Classes/OUProcess::
@@ -21,17 +21,17 @@ Hoffmann's The New GENDYN Program (2000) describes a research reimplementation i
 
 S.709 (1994) should not be conflated with GENDY3 (1991). Luque reports sine/saw parameter modulation in the later work; Hoffmann's dictionary distinguishes direct breakpoint increments there from Gendy3's intermediary walks. Exact original routing and depth values remain insufficiently specified for this project. GendyS709 therefore labels its particular modulation system as an adaptation.
 
-Brown and Jenkins introduced IDSS in 2004; Brown's 2005 paper describes percussion through shrinking stochastic mobility and added interpolation choices. Brown's 2019 Gendynish places that work in the context of a later Arduino approximation, not a literal reconstruction of DSS. Luque's 2006/2009 work explores stochastic concatenation; concatenation is historical context here and is not implemented. Rojas and Cádiz's DDSS article appears in Computer Music Journal 45(2), issue year 2021, with some institutional metadata dated 2022. It adds a physical diffusion model; its unverified equations must not be inferred from an abstract.
+Brown and Jenkins introduced IDSS in 2004; Brown's 2005 paper describes percussion through shrinking stochastic mobility and added interpolation choices. Brown's 2019 Gendynish places that work in the context of a later Arduino approximation, not a literal reconstruction of DSS. Luque's 2006/2009 work explores stochastic concatenation; concatenation is historical context here and is not implemented. Rojas and Cádiz's DDSS article appears in Computer Music Journal 45(2), issue year 2021, with some institutional metadata dated 2022. It adds a radial Bessel diffusion model; the full article defines its equation and waveform mapping.
 
 section:: Three scales of organization
 
 At the waveform scale, amplitude and duration walks produce the audible shape. At the parameter scale, a modulator or mobility trajectory changes the rules under which that shape evolves. At the activity scale, fields decide when complete voices sound. Keeping these scales separate lets a patch combine a chosen waveform model with an independent architecture of entrances and silences.
 
-Gendy1977 and Gendy1991 describe waveform motion. GendyS709 adds changing parameters; GendyPerc contracts them over a gesture. GendyField supplies activity gates and does not synthesize a waveform. GendyInterp changes rendering, while GendyCoupled changes interactions between points. None of these distinctions is captured by calling every output simply random noise.
+Gendy1977 and Gendy1991 describe waveform motion. GendyS709 adds changing parameters; GendyPerc contracts them over a gesture. GendyField supplies activity gates and does not synthesize a waveform. GendyInterp changes rendering, while GendyCoupled changes interactions between points. GendyDiffusion maps physical radial motion into fixed-pitch waveform amplitudes. None of these distinctions is captured by calling every output simply random noise.
 
 section:: Remembered breakpoints and elastic barriers
 
-For N points, let A[i] be amplitude and D[i] the incoming segment duration in samples. Each point's history is independent of its neighbors until coupling is explicitly introduced. With sample rate fs, frequency bounds imply code::dMin = fs/(N*maxFreq):: and code::dMax = fs/(N*minFreq)::. A cycle lasts the sum of its segment durations. Equal bounds fix that duration; otherwise pitch emerges from the evolving sum, rather than from Gendy3-style cycle normalization.
+The shared first/second-order engine works as follows; DDSS has its own fixed-spacing renderer, described below. For N points, let A[i] be amplitude and D[i] the incoming segment duration in samples. Each point's history is independent of its neighbors until coupling is explicitly introduced. With sample rate fs, frequency bounds imply code::dMin = fs/(N*maxFreq):: and code::dMax = fs/(N*minFreq)::. A cycle lasts the sum of its segment durations. Equal bounds fix that duration; otherwise pitch emerges from the evolving sum, rather than from Gendy3-style cycle normalization.
 
 An elastic barrier reflects overshoot: an amplitude proposal of 1.2 returns to 0.8 at an upper bound of 1. Large overshoots can cross the interval repeatedly. For width W, reduce code::x-lo:: modulo 2W and fold the second half back. Closed barriers return the one allowed value. Clipping would accumulate samples at the walls and wrapping would jump to the opposite side; neither is the same dynamical rule. link::Classes/BoundedWalk:: makes these distinctions explicit for a scalar process.
 
@@ -92,7 +92,15 @@ section:: Collective and physical extensions
 
 GendyCoupled is a new Stochastica design. It first computes all independent proposals q, then synchronously applies the ring Laplacian code::q[i] + k*(q[i-1]-2*q[i]+q[i+1])::, and finally reflects the result. Amplitude and duration have separate k. This is an interaction among waveform points, unlike the instantaneous covariance of link::Classes/MultiGaussNoise::, temporal mean reversion in link::Classes/MultiOUProcess::, or phase synchronization in link::Classes/KuramotoNetwork::. Ring topology relates it structurally to link::Classes/Lorenz96::, but the update laws and output meanings are different.
 
-GendyDiffusion is reserved for the Rojas–Cádiz DDSS model and remains deferred. Physical drift is not sufficient by itself to identify DDSS: OUProcess already has a particular restoring drift, while generic Brownian motion with constant drift is another model. The full article's state equation, boundaries, timestep and particle-to-breakpoint mapping must be verified before exposing that class. No DDSS examples or fabricated spectra are included in this partial round.
+link::Classes/GendyDiffusion:: implements Rojas and Cádiz's DDSS waveform concept. Their equation 19 is code::dr = D*(d-1)/r*dt + sqrt(2*D)*dW::, a radial Bessel diffusion. D is diffusivity; d is dimension. The drift is outward and strongest near zero. At d=1 that drift vanishes, but noise remains. D=0 freezes the radii. Neither case is OU mean reversion, and the model is not defined by a generic constant drift control.
+
+Each particle has a fixed angle 2*pi*k/N. A reflected copy of its radius supplies x/y coordinates; y becomes amplitude, with an additional small oscillation of amplitude 0.1*x. Two zero endpoints surround the particles. Only amplitudes move; equally spaced breakpoints keep pitch fixed. The Euler–Maruyama simulation advances once per waveform cycle, so the timeStep control is simulation time per cycle, not an audio sample duration. Higher pitch advances more simulation steps per audio second.
+
+The full paper leaves several numerical details open. Stochastica starts radius at 1, floors the drift denominator at 1e-6, reflects negative proposed radii at zero, and folds an output copy into -1..1 without feeding it back into the physical radius. A common sine supplies the unspecified x oscillation, with fixed 1/sqrt(1.01) output headroom. The renderer evaluates straight lines analytically rather than storing intermediate interpolation samples. These are documented reconstruction choices, not recovered Max defaults. Smaller timesteps improve local resolution; extreme near-zero drift is regularized and should not be mistaken for an exact physical simulation. The source audit records these distinctions with printed page references.
+
+image::../Classes/gendy-gendydiffusion.png::
+
+The figure uses identical Gaussian innovations to compare the radial model, its zero-drift dimension, and a simplified fixed-spacing DSS baseline. It is generated from project output. Angular mapping and reflection both affect the spectrum; the paper's reported fundamental prominence is not a universal guarantee for every seed and setting.
 
 section:: Choosing a model
 
@@ -105,7 +113,7 @@ table::
 ## Roughness settling into a stable waveform || link::Classes/GendyPerc:: || IDSS-inspired extension
 ## Spectral consequences of rendering || link::Classes/GendyInterp:: || Post-Xenakis interpolation extension
 ## Interaction between waveform points || link::Classes/GendyCoupled:: || New Stochastica design
-## Physical DDSS waveform motion || Deferred GendyDiffusion || Rojas–Cádiz; full-paper gate pending
+## Physical DDSS waveform motion || link::Classes/GendyDiffusion:: || Rojas–Cádiz DDSS concept; explicit numerical reconstruction
 ::
 
 Vanilla Gendy1 has first-order motion and different initialization/duration mapping. Gendy2 adds remembered increments, including its special amplitude random drive. Gendy3 constrains cycle duration to a specified pitch; its number is not a reconstruction label for the GENDY3 composition. Optional sc3-plugins Gendy4 and Gendy5 explore cubic and held rendering respectively. Existing classes retain their names and behavior.
@@ -128,6 +136,6 @@ Brown and Jenkins (2004), The Interactive Dynamic Stochastic Synthesizer, ACMC 1
 
 Brown (2019), Gendynish: link::https://research-repository.griffith.edu.au/server/api/core/bitstreams/84af0c9a-6a3c-42e5-b505-ccc0ff198af1/content::.
 
-Rojas and Cádiz (2021 issue), A Physically Inspired Implementation of Xenakis's Stochastic Synthesis: Diffusion Dynamic Stochastic Synthesis, CMJ 45(2), 48–66: link::https://doi.org/10.1162/comj_a_00606::. Abstract verified; full article pending.
+Rojas and Cádiz (2021 issue), A Physically Inspired Implementation of Xenakis's Stochastic Synthesis: Diffusion Dynamic Stochastic Synthesis, CMJ 45(2), 48–66: link::https://doi.org/10.1162/comj_a_00606::. Full article inspected; see the installed docs/research/GendyDiffusion-source-notes.md for the equation audit.
 
 Xenakis (1992), Formalized Music, and Serra (1993), Stochastic Composition and Stochastic Timbre: Gendy3 by Iannis Xenakis, Perspectives of New Music 31(1), 236–257, are cited through the inspected historical accounts; no claim of direct inspection of those editions is made.

@@ -1,5 +1,6 @@
 #include "SDServer.hpp"
 #include "SDGendy.hpp"
+#include "SDGendyDiffusion.hpp"
 
 namespace {
 using namespace sd::gendy;
@@ -127,6 +128,32 @@ void GendyField_Ctor(GendyField* unit)
     resetField(unit);SETCALC(GendyField_next);ClearUnitOutputs(unit,1);
 }
 void GendyField_Dtor(GendyField* unit){sd::freeRT(unit,unit->voices);}
+
+struct GendyDiffusion : Unit { DiffusionEngine engine; sd::RisingEdge reset; };
+void GendyDiffusion_next(GendyDiffusion* unit,int count)
+{
+    auto& e=unit->engine;
+    for(int i=0;i<count;++i) {
+        if(unit->reset.update(sd::inputAt(unit,6,i)))e.reset();
+        auto p=e.parameters;
+        if(!e.ready || e.phase>=1) {
+            p={sd::inputAt(unit,0,i),sd::inputAt(unit,1,i),sd::inputAt(unit,2,i),
+                sd::inputAt(unit,3,i),sd::inputAt(unit,4,i)};
+        }
+        OUT(0)[i]=static_cast<float>(e.sample(p));
+    }
+}
+void GendyDiffusion_Ctor(GendyDiffusion* unit)
+{
+    unit->engine=DiffusionEngine{};unit->reset.initialize(0);
+    auto& e=unit->engine;e.fs=SAMPLERATE;e.n=selector(IN0(5),2,maxPoints);
+    e.seed=sd::seedForUnit(unit,7);e.points=sd::allocateRT<DiffusionPoint>(unit,e.n);
+    if(!e.points || unit->mCalcRate!=calc_FullRate) {
+        SETCALC(ClearUnitOutputs);ClearUnitOutputs(unit,1);return;
+    }
+    e.reset();SETCALC(GendyDiffusion_next);OUT0(0)=0;
+}
+void GendyDiffusion_Dtor(GendyDiffusion* unit){sd::freeRT(unit,unit->engine.points);}
 }
 void registerSDGendy()
 {
@@ -134,4 +161,5 @@ void registerSDGendy()
     DefineDtorCantAliasUnit(GendyS709);DefineDtorCantAliasUnit(GendyField);
     DefineDtorCantAliasUnit(GendyPerc);DefineDtorCantAliasUnit(GendyInterp);
     DefineDtorCantAliasUnit(GendyCoupled);
+    DefineDtorCantAliasUnit(GendyDiffusion);
 }

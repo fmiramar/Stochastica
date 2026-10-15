@@ -2,7 +2,7 @@
 """Validate GENDY APIs, links, assets and export runnable examples."""
 import argparse,re
 from pathlib import Path
-NAMES=['Gendy1977','Gendy1991','GendyS709','GendyField','GendyPerc','GendyInterp','GendyCoupled']
+NAMES=['Gendy1977','Gendy1991','GendyS709','GendyField','GendyPerc','GendyInterp','GendyDiffusion','GendyCoupled']
 p=argparse.ArgumentParser();p.add_argument('--export',type=Path);a=p.parse_args()
 root=Path(__file__).resolve().parents[2];sc=(root/'Classes/SDGendy.sc').read_text();blocks=[]
 for name in NAMES:
@@ -18,7 +18,7 @@ for name in NAMES:
     blocks.extend((name,i,b) for i,b in enumerate(examples))
 guide=root/'HelpSource/Guides/Stochastica-GENDY.schelp';s=guide.read_text()
 for name in NAMES:assert f'link::Classes/{name}::' in s
-assert 'GendyDiffusion' not in sc and 'deferred' in s.lower()
+assert 'GendyDiffusion' in sc and 'equation 19' in s
 blocks.extend(('GENDY-guide',i,b) for i,b in enumerate(re.findall(r'code::\s*\n(.*?)\n::',s,re.S)))
 for j,(name,i,b) in enumerate(blocks):
     assert b.strip().startswith('(') and b.strip().endswith(')'),(name,i)

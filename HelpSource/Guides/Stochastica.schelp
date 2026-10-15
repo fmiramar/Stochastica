@@ -16,7 +16,7 @@ The original collection establishes nonlinear iteration, continuous feedback, in
 
 Round 2 adds relationships: cross-excitation, inhibition, persistent regimes, material responses to impacts, multivariate motion, metastability, circular geometry and phase synchronization. Round 3 adds derivative-state memory, constrained allocation, accumulated preference, hidden event regimes, stable transport, explicit shocks, opposing populations and spatially extended continuous dynamics. Round 2 and Round 3 are local unreleased expansions in this source tree; publication status does not change their conceptual place in the library.
 
-The GENDY round brings stochastic organization directly into waveform construction. The earlier rounds supply maps, processes and relationships that patches can sonify; this round remembers and evolves the audible polygon itself. Seven additions are implemented; GendyDiffusion is deferred pending its full source article. The historical distinctions, mathematical engine and model choices are developed in link::Guides/Stochastica-GENDY::.
+The GENDY round brings stochastic organization directly into waveform construction. The earlier rounds supply maps, processes and relationships that patches can sonify; this round remembers and evolves the audible polygon itself. Eight additions include a reconstruction of the published Rojas–Cádiz radial diffusion model. The historical distinctions, mathematical engine and model choices are developed in link::Guides/Stochastica-GENDY::.
 
 subsection:: Technical families and complete class inventory
 
@@ -31,7 +31,7 @@ table::
 ## Triggered distributions || Independent scalar/vector draws for fixed parameters || link::Classes/TGammaRand::, link::Classes/TWeibullRand::, link::Classes/TLogNormalRand::, link::Classes/TCauchyRand::, link::Classes/TPoissonRand::, link::Classes/TGeometricRand::, link::Classes/TNegBinomialRand::, link::Classes/TTruncNormalRand::, link::Classes/TStableRand::, link::Classes/TLevyRand::, link::Classes/TVonMisesRand::, link::Classes/TDirichletRand::
 ## State and vector models || Discrete transitions, reinforced histories, instantaneous covariance or correlated trajectories || link::Classes/MarkovChain::, link::Classes/SemiMarkov::, link::Classes/MultiGaussNoise::, link::Classes/MultiOUProcess::, link::Classes/PolyaUrn::
 ## Explicit sonifiers || Rendering of mathematical state into frequency and level || link::Classes/HenonSonify::, link::Classes/GbmanSonify::, link::Classes/LatoocarfianSonify::
-## Stochastic waveform synthesis and activity || Remembered breakpoint motion, rendering, parameter trajectories, fields and neighbor interaction || link::Classes/Gendy1977::, link::Classes/Gendy1991::, link::Classes/GendyS709::, link::Classes/GendyField::, link::Classes/GendyPerc::, link::Classes/GendyInterp::, link::Classes/GendyCoupled::
+## Stochastic waveform synthesis and activity || Remembered breakpoint motion, rendering, parameter trajectories, fields and neighbor interaction || link::Classes/Gendy1977::, link::Classes/Gendy1991::, link::Classes/GendyS709::, link::Classes/GendyField::, link::Classes/GendyPerc::, link::Classes/GendyInterp::, link::Classes/GendyDiffusion::, link::Classes/GendyCoupled::
 ## Language-side visualization || Display of the exact server state being sonified || link::Classes/SDPhaseView::
 ::
 

@@ -34,7 +34,7 @@ def main():
         run('doc-lint',[sys.executable,root/'tests/server/check_gendy_docs.py'])
         text=language('scdoc','tests/server/gendy_scdoc.scd')
         if 'GENDY_SCDOC_OK' not in text or 'WARNING' in text:raise RuntimeError('SCDoc did not finish cleanly')
-    modes=[('integration',3,23),('stress',10,24)]
+    modes=[('integration',3,25),('stress',10,26)]
     if args.endurance:modes.append(('endurance',args.endurance,2))
     for mode,duration,channels in modes:
         score=out/(mode+'.osc')

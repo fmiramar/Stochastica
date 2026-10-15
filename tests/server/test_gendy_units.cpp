@@ -1,4 +1,5 @@
 #include "SDGendyHarness.hpp"
+#include "SDGendyDiffusion.hpp"
 #include <limits>
 #include <iostream>
 InterfaceTable* ft;
@@ -46,5 +47,14 @@ int main(){try{
     for(auto spec:gendySpecs){spec.inputs[spec.seed]=0;Instance a(spec,std::string(spec.name)!="GendyField");
         const auto initial=a.parent;for(int k=0;k<100;++k){a.input(spec.reset,k%2);a.step();}
         require(a.parent.s1==initial.s1&&a.parent.s2==initial.s2&&a.parent.s3==initial.s3,"zero seed reset consulted parent");}
+    // DDSS callback agrees sample-for-sample with its independently tested engine.
+    {const auto spec=gendySpecs[7];Instance a(spec,true);std::array<sd::gendy::DiffusionPoint,36> points{};
+        sd::gendy::DiffusionEngine e;e.points=points.data();e.seed=123;e.reset();
+        sd::gendy::DiffusionParameters p{220,1,2,static_cast<double>(.001f),static_cast<double>(.2f)};
+        for(int k=0;k<48000;++k)require(a.step()[0]==static_cast<float>(e.sample(p)),"DDSS callback mapping");}
+    {Instance a(gendySpecs[7],true),b(gendySpecs[7],true);a.step(64);a.ins[6].fill(0);a.ins[6][17]=1;
+        auto x=a.step(64),y=b.step(47);for(int i=17;i<64;++i)require(x[i]==y[i-17],"DDSS in-block reset");}
+    {auto frozen=gendySpecs[7],zeroTime=frozen;frozen.inputs[1]=0;zeroTime.inputs[3]=0;zeroTime.inputs[7]=999;
+        Instance a(frozen,true),b(zeroTime,true);for(int k=0;k<1000;++k)require(a.step(64)==b.step(64),"DDSS zero diffusion/timestep");}
     require(alive==0,"RT storage leak");
 }catch(const std::exception& ex){std::cerr<<ex.what()<<'\n';return 1;}}
