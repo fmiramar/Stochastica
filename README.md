@@ -8,7 +8,7 @@ Deterministic maps and flows can be periodic, excitable or chaotic depending on 
 
 This remains in BiroSCa as an experimental SuperCollider-native collection independently implementing mathematical techniques, rather than wrapping an upstream plugin. Equations, adaptations and citations are documented in each help page and the [source notes](docs/sources.md).
 
-## GENDY waveform expansion (unreleased)
+## GENDY waveform synthesis
 
 Eight additions bring stochastic processes directly into evolving waveform geometry. The dedicated **Stochastica Gendy (Xtochastica)** help guide explains their historical sources, mathematical differences and practical use alongside the existing Gendy1–5 family.
 
@@ -25,7 +25,7 @@ Waveform classes are audio-only with 2–64 points; GendyField is control-only w
 
 See the [implementation decisions](docs/gendy-implementation.md), [research audit](docs/research/GENDY_HISTORICAL_SOURCES.md), and [verification record](docs/gendy-verification.md).
 
-## Round 3 expansion (unreleased)
+## Round 3 expansion
 
 Eight additions develop memory, hidden organization, constrained geometry, transport and collective dynamics. They continue the existing Stochastica project; existing DSP and seeded behavior are preserved.
 
@@ -42,9 +42,9 @@ Each addition has audio/control rates, a sourced help page, small runnable examp
 
 Dirichlet dimension is at most 32; urn states, latent states and Lorenz cells at most 64. Event/state rates in MarkovModulatedTrig should stay well below the calculation rate. Matérn coefficient parameters are sampled at block entry. JumpDiffusion rejects Poisson means above 1e8 per calculation. Flow substeps are limited to 16; 64-cell Lorenz96 at 16 audio-rate substeps can exceed a core's real-time budget. Heavy-tailed/raw outputs require explicit sonic mapping, and the flows do not provide antialiasing.
 
-## Round 2 expansion (unreleased)
+## Round 2 expansion
 
-Eight new models extend Stochastica's stochastic organization. This work remains an experimental, unreleased expansion; existing UGen behavior is preserved.
+Eight new models extend Stochastica's stochastic organization. This work continues Stochastica's experimental, SuperCollider-native generative systems; existing UGen behavior is preserved.
 
 - `MultiHawkesTrig` spreads activity between event streams through directional cross-excitation. A bounded exponential-kernel Hawkes network draws simultaneous events before updating its interaction matrix.
 - `SelfCorrectingTrig` produces random events that resist clustering. Its log-intensity builds during silence and falls after an event, providing inhibitory feedback beside `HawkesTrig`.

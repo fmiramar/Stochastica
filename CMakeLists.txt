@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 
-project(Stochastica VERSION 0.1.0 LANGUAGES CXX)
+project(Stochastica VERSION 0.3.0 LANGUAGES CXX)
 
 option(SCSYNTH "Build the scsynth plugin target" ON)
 option(SUPERNOVA "Build the supernova plugin target" OFF)
