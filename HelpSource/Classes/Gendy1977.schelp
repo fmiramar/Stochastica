@@ -68,13 +68,15 @@ code::
 )
 ::
 
-subsection:: Freeze an evolved waveform
-Both step sizes reach zero after two seconds. The resulting polygon repeats rather than fading away.
+subsection:: Freeze one dimension while the other moves
+After two seconds, the left voice retains its amplitude coordinates while durations keep moving. The right voice retains its durations while amplitudes keep moving; both start with the same seed.
 code::
 (
 {
     var mobility = (Sweep.kr(0, 1) < 2) * 0.08;
-    LeakDC.ar(Gendy1977.ar(ampStep: mobility, durStep: mobility, seed: 31)) ! 2 * 0.07 * Line.kr(0, 1, 0.05)
+    var fixedShape = Gendy1977.ar(ampStep: mobility, durStep: 0.08, seed: 31);
+    var fixedTiming = Gendy1977.ar(ampStep: 0.08, durStep: mobility, seed: 31);
+    LeakDC.ar([fixedShape, fixedTiming]) * 0.07 * Line.kr(0, 1, 0.05)
 }.play
 )
 ::

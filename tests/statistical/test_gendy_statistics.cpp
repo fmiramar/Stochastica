@@ -2,9 +2,28 @@
 #include <array>
 #include <iostream>
 #include <stdexcept>
+#include <vector>
 using namespace sd::gendy;
 void check(bool x,const char* s){if(!x)throw std::runtime_error(s);}
 int main(){try {
+    // Distribution fit against analytic CDFs, independently of the inverse transforms.
+    sd::PCG32 rng;rng.setSeed(602);double largestKS=0;
+    for(int law=0;law<6;++law)for(double a:{.2,1.}) {
+        std::vector<double> draws(20000);
+        for(auto& x:draws)x=innovation(law,a,sd::openUniformDouble(rng));
+        std::sort(draws.begin(),draws.end());double ks=0;
+        for(size_t i=0;i<draws.size();++i) {
+            const double x=draws[i],q=.499*a;double cdf=(x+1)/2;
+            if(law==1)cdf=.5+std::atan(10*a*x)/(2*std::atan(10*a));
+            if(law==2){const double scale=std::log((.5+q)/(.5-q));cdf=.5+(1/(1+std::exp(-scale*x))-.5)/(2*q);}
+            if(law==3){const double scale=std::log(std::tan(sd::kPi*(.5+q)/2));cdf=(2*std::atan(std::exp(scale*x))/sd::kPi-(.5-q))/(2*q);}
+            if(law==4)cdf=.5+std::asin(x*std::sin(sd::kPi*a/2))/(sd::kPi*a);
+            if(law==5)cdf=(1-std::pow(1-.999*a,(x+1)/2))/(.999*a);
+            ks=std::max({ks,std::abs(cdf-double(i)/draws.size()),std::abs(cdf-double(i+1)/draws.size())});
+        }
+        check(ks<.018,"innovation distribution fit");largestKS=std::max(largestKS,ks);
+    }
+    std::cout<<"maximum quantile CDF discrepancy="<<largestKS<<'\n';
     std::array<Point,12> ma{},mb{},mc{};Engine a,b,c;Parameters pa,pb,pc;
     a.points=ma.data();b.points=mb.data();c.points=mc.data();a.seed=b.seed=c.seed=2718;
     pa.ampStep=.02;pb=pa;pb.secondOrder=true;pb.ampRange=.02;pb.ampStep=.01;

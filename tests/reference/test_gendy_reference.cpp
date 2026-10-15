@@ -67,6 +67,18 @@ int main(int argc,char** argv)
         for(int i=0;i<10000;++i){p.interp=1;e1.sample(p);p.interp=i%4;e2.sample(p);
             for(int k=0;k<12;++k){near(m1[k].amp,m2[k].amp);near(m1[k].dur,m2[k].dur);}}
         e1.reset(p);e2.reset(p);for(int i=0;i<10000;++i)near(e1.sample(p),e2.sample(p));
+        // Either coordinate can freeze independently after an audible shape evolves.
+        p=Parameters{};e1.reset(p);for(int i=0;i<20;++i)e1.updateCycle(p);
+        auto frozen=m1;p.ampStep=0;
+        for(int i=0;i<100;++i)e1.updateCycle(p);
+        bool durationMoved=false;
+        for(int j=0;j<12;++j){check(m1[j].amp==frozen[j].amp,"amplitude-only freeze");durationMoved|=m1[j].dur!=frozen[j].dur;}
+        check(durationMoved,"duration must still move");
+        frozen=m1;p.ampStep=.1;p.durStep=0;
+        for(int i=0;i<100;++i)e1.updateCycle(p);
+        bool amplitudeMoved=false;
+        for(int j=0;j<12;++j){check(m1[j].dur==frozen[j].dur,"duration-only freeze");amplitudeMoved|=m1[j].amp!=frozen[j].amp;}
+        check(amplitudeMoved,"amplitude must still move");
         // Changing modes mid-segment applies only at the next segment.
         p.interp=1;e1.reset(p);e1.sample(p);p.interp=0;e1.sample(p);check(e1.mode==1,"midsegment mode switch");
         while(e1.index==0)e1.sample(p);check(e1.mode==0,"boundary mode switch");
