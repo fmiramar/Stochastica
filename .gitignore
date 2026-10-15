@@ -6,3 +6,6 @@
 __pycache__/
 *.py[cod]
 composition/
+
+# User-supplied copyrighted research article; never package or redistribute.
+/CMJ Roias Cadiz A Physically inspired.pdf

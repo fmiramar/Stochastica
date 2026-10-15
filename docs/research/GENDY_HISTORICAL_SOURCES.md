@@ -15,7 +15,7 @@ Audited 2026-10-13. This is a new, independent mathematical implementation in th
 | IDSS has two walk stages in each dimension; percussion contracts time-step mobility | Brown 2005 §§3, 4.1; Brown & Jenkins 2004 interface description identifies A/T Step1/2 and Max1/2 | High; GendyPerc uses two levels and contracts primary bounds, not merely an output envelope |
 | IDSS offers linear, cosine, square interpolation | Brown 2005 §4.2 | High for names; exact square transfer is unspecified; do not label hold as an exact IDSS square implementation |
 | Gendynish is an Arduino approximation, distinct from IDSS | Brown 2019, “Gendynish Algorithm” | High; cite as later context, not an algorithm source for historical classes |
-| DDSS introduces physical diffusion and drift into breakpoint amplitude motion | Rojas & Cádiz abstract; CMJ 45(2), 48–66, DOI below | Abstract verified only. Full equations NOT verified. Class/API gated |
+| DDSS introduces physical diffusion and drift into breakpoint amplitude motion | Rojas & Cádiz, full CMJ article, pp. 56–60, equations 19–21 and table 2 | Full text verified 2026-10-14; Bessel equation and mapping confirmed, numerical omissions documented in the DDSS source audit |
 | Neighbor coupling is an experimental extension | This project's plan and discrete ring Laplacian | New Stochastica design, never attribute it to Xenakis |
 
 ## Short verified quotation ledger
