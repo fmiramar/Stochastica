@@ -1,7 +1,7 @@
 title:: Stochastica
 summary:: A vocabulary of memory, probability, nonlinear feedback and collective organization
 categories:: UGens>Generators>Stochastic, UGens>Generators>Chaotic
-related:: Classes/WhiteNoise, Classes/BrownNoise, Classes/LFNoise0, Classes/TIRand, Classes/Stepper
+related:: Guides/Stochastica-GENDY, Classes/WhiteNoise, Classes/BrownNoise, Classes/LFNoise0, Classes/TIRand, Classes/Stepper
 
 description::
 image::scdoc_banner.jpg::
@@ -31,7 +31,7 @@ table::
 ## Triggered distributions || Independent scalar/vector draws for fixed parameters || link::Classes/TGammaRand::, link::Classes/TWeibullRand::, link::Classes/TLogNormalRand::, link::Classes/TCauchyRand::, link::Classes/TPoissonRand::, link::Classes/TGeometricRand::, link::Classes/TNegBinomialRand::, link::Classes/TTruncNormalRand::, link::Classes/TStableRand::, link::Classes/TLevyRand::, link::Classes/TVonMisesRand::, link::Classes/TDirichletRand::
 ## State and vector models || Discrete transitions, reinforced histories, instantaneous covariance or correlated trajectories || link::Classes/MarkovChain::, link::Classes/SemiMarkov::, link::Classes/MultiGaussNoise::, link::Classes/MultiOUProcess::, link::Classes/PolyaUrn::
 ## Explicit sonifiers || Rendering of mathematical state into frequency and level || link::Classes/HenonSonify::, link::Classes/GbmanSonify::, link::Classes/LatoocarfianSonify::
-## Stochastic waveform synthesis and activity || Remembered breakpoint motion, rendering, parameter trajectories, fields and neighbor interaction || link::Classes/Gendy1977::, link::Classes/Gendy1991::, link::Classes/GendyS709::, link::Classes/GendyField::, link::Classes/GendyPerc::, link::Classes/GendyInterp::, link::Classes/GendyDiffusion::, link::Classes/GendyCoupled::
+## Stochastic waveform synthesis and activity || Remembered breakpoint motion, rendering, parameter trajectories, fields and neighbor interaction || link::Classes/Gendy77::, link::Classes/Gendy91::, link::Classes/GendyS709::, link::Classes/GendyField::, link::Classes/GendyPerc::, link::Classes/GendyInterp::, link::Classes/GendyDiffusion::, link::Classes/GendyCoupled::
 ## Language-side visualization || Display of the exact server state being sonified || link::Classes/SDPhaseView::
 ::
 

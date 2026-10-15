@@ -16,8 +16,6 @@ Vanilla link::Classes/Dust:: provides independent random impulses. MarkovModulat
 
 image::round3-mmpp.png::
 
-subsection:: See also
-link::Classes/MarkovChain::, link::Classes/SemiMarkov::, link::Classes/RenewalTrig::, link::Classes/HawkesTrig::, link::Classes/RandomTelegraph::, link::Guides/Stochastica::
 
 classmethods::
 method:: ar, kr

@@ -15,11 +15,6 @@ subsection:: Transition and state view
 
 image::markov-chain-dynamics.png#Left: a three-state row-major transition matrix, where darker cells have greater weight. Right: one sampled state sequence; horizontal runs occur because the diagonal self-transition weights are strongest.::
 
-subsection:: See also
-
-link::Guides/Stochastica::
-link::Classes/SemiMarkov::
-link::Classes/MultiGaussNoise::
 
 classmethods::
 

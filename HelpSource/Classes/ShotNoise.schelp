@@ -19,12 +19,6 @@ subsection:: Process view
 
 image::shot-noise-dynamics.png#Arrival ticks, individual exponential responses, and their accumulated signal.::
 
-subsection:: See also
-
-link::Guides/Stochastica::
-link::Classes/RenewalTrig::
-link::Classes/Dust::
-link::Classes/Decay::
 
 classmethods::
 

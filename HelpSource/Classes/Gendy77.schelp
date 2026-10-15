@@ -1,7 +1,7 @@
-class:: Gendy1977
+class:: Gendy77
 summary:: First-order remembered breakpoint waveform synthesis
 categories:: UGens>Generators>Stochastic>GENDY
-related:: Guides/Stochastica, Guides/Stochastica-GENDY, Classes/Gendy1991
+related:: Guides/Stochastica, Guides/Stochastica-GENDY, Classes/Gendy91, Classes/GendyS709, Classes/GendyField, Classes/GendyPerc, Classes/GendyInterp, Classes/GendyDiffusion, Classes/GendyCoupled
 
 description::
 strong::Historical reconstruction.::
@@ -14,12 +14,10 @@ The oscillator remembers one amplitude and one incoming duration per point. Upda
 
 Construction/reset starts amplitudes at zero and durations at the midpoint of their bounds. Motion builds an audible waveform over the first cycles; zero amplitude mobility at construction stays silent. A later freeze retains the evolved waveform. Reset can deliberately interrupt continuity. Invalid selectors and numeric controls are conditioned to documented finite bounds; non-finite frequencies use 100/1000 Hz defaults.
 
-Like vanilla link::Classes/Gendy1::, this evolves a remembered polygon. Gendy1977 walks in duration measured in samples, starts flat and uses a private resettable PCG stream; Gendy1 maps its normalized state linearly to frequency and has different initialization and distributions.
+Like vanilla link::Classes/Gendy1::, this evolves a remembered polygon. Gendy77 walks in duration measured in samples, starts flat and uses a private resettable PCG stream; Gendy1 maps its normalized state linearly to frequency and has different initialization and distributions.
 
-image::gendy-gendy1977.png::
+image::gendy-gendy77.png::
 
-subsection:: See also
-link::Guides/Stochastica-GENDY::, link::Guides/Stochastica::, link::Classes/Gendy1991::
 
 classmethods::
 method:: ar
@@ -52,7 +50,7 @@ examples::
 subsection:: Minimal example
 code::
 (
-{ LeakDC.ar(Gendy1977.ar(seed: 1977)) ! 2 * 0.07 * Line.kr(0, 1, 0.05) }.play
+{ LeakDC.ar(Gendy77.ar(seed: 1977)) ! 2 * 0.07 * Line.kr(0, 1, 0.05) }.play
 )
 ::
 
@@ -61,8 +59,8 @@ Same seed and frequency bounds; left uses direct motion and right uses remembere
 code::
 (
 {
-    var first = Gendy1977.ar(minFreq: 100, maxFreq: 260, ampStep: 0.025, durStep: 0.02, seed: 73);
-    var second = Gendy1991.ar(minFreq: 100, maxFreq: 260, ampPrimaryRange: 0.025, durPrimaryRatio: 0.02, seed: 73);
+    var first = Gendy77.ar(minFreq: 100, maxFreq: 260, ampStep: 0.025, durStep: 0.02, seed: 73);
+    var second = Gendy91.ar(minFreq: 100, maxFreq: 260, ampPrimaryRange: 0.025, durPrimaryRatio: 0.02, seed: 73);
     LeakDC.ar([first, second]) * 0.07 * Line.kr(0, 1, 0.05)
 }.play
 )
@@ -74,8 +72,8 @@ code::
 (
 {
     var mobility = (Sweep.kr(0, 1) < 2) * 0.08;
-    var fixedShape = Gendy1977.ar(ampStep: mobility, durStep: 0.08, seed: 31);
-    var fixedTiming = Gendy1977.ar(ampStep: 0.08, durStep: mobility, seed: 31);
+    var fixedShape = Gendy77.ar(ampStep: mobility, durStep: 0.08, seed: 31);
+    var fixedTiming = Gendy77.ar(ampStep: 0.08, durStep: mobility, seed: 31);
     LeakDC.ar([fixedShape, fixedTiming]) * 0.07 * Line.kr(0, 1, 0.05)
 }.play
 )

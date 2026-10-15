@@ -2,14 +2,13 @@
 """Validate GENDY APIs, links, assets and export runnable examples."""
 import argparse,re
 from pathlib import Path
-NAMES=['Gendy1977','Gendy1991','GendyS709','GendyField','GendyPerc','GendyInterp','GendyDiffusion','GendyCoupled']
+NAMES=['Gendy77','Gendy91','GendyS709','GendyField','GendyPerc','GendyInterp','GendyDiffusion','GendyCoupled']
 p=argparse.ArgumentParser();p.add_argument('--export',type=Path);a=p.parse_args()
 root=Path(__file__).resolve().parents[2];sc=(root/'Classes/SDGendy.sc').read_text();blocks=[]
 for name in NAMES:
     page=root/'HelpSource/Classes'/f'{name}.schelp';s=page.read_text()
     assert s.startswith(f'class:: {name}\n')
     for guide in ['Guides/Stochastica','Guides/Stochastica-GENDY']:assert guide in re.search(r'^related:: (.+)$',s,re.M)[1]
-    assert s.index('subsection:: See also')<s.index('classmethods::')
     args=[x.split('=')[0].strip() for x in re.search(name+r' : .*?\*\w+ \{ \|(.*?)\|',sc,re.S)[1].split(',')]
     assert re.findall(r'^argument:: (\w+)$',s,re.M)==args,(name,'documented argument mismatch')
     assert 'image::gendy-' in s

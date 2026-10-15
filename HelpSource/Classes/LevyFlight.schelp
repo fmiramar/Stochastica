@@ -16,8 +16,6 @@ Like vanilla link::Classes/BrownNoise::, this remembers a random walk position. 
 
 image::round3-levy.png::
 
-subsection:: See also
-link::Classes/TStableRand::, link::Classes/TLevyRand::, link::Classes/OUProcess::, link::Classes/FBrownianMotion::, link::Classes/JumpDiffusion::, link::Guides/Stochastica::
 
 classmethods::
 method:: ar, kr

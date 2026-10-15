@@ -21,12 +21,6 @@ subsection:: Process view
 
 image::von-mises-circular.png#Polar sample histograms for concentration 0, 2, and 8. The wrap boundary is continuous.::
 
-subsection:: See also
-
-link::Guides/Stochastica::
-link::Classes/TTruncNormalRand::
-link::Classes/TRand::
-link::Classes/PanAz::
 
 classmethods::
 

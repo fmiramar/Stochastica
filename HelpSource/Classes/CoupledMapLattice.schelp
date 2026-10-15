@@ -17,10 +17,6 @@ subsection:: Space-time view
 
 image::coupled-map-lattice-space-time.png#A 48-cell lattice over 400 iterations with r = 3.88 and coupling = 0.14. Cell position runs horizontally and time downward; the restrained light-blue-plum scale encodes state from low to high.::
 
-subsection:: See also
-
-link::Guides/Stochastica::
-link::Classes/CoupledLogisticMap::
 
 classmethods::
 

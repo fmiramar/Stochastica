@@ -1,13 +1,16 @@
-Gendy1977 : UGen {
+Gendy77 : UGen {
     *ar { |ampDist=0, durDist=0, ampShape=1, durShape=1, minFreq=100, maxFreq=1000, ampStep=0.1, durStep=0.1, numPoints=12, reset=0, seed=0|
         ^this.multiNew('audio', ampDist, durDist, ampShape, durShape, minFreq, maxFreq, ampStep, durStep, numPoints, reset, seed)
     }
 }
-Gendy1991 : UGen {
+ Gendy1977 : Gendy77 {}
+
+Gendy91 : UGen {
     *ar { |ampDist=0, durDist=0, ampShape=1, durShape=1, minFreq=100, maxFreq=1000, ampPrimaryRange=0.1, durPrimaryRatio=0.5, ampPrimaryStep=0.1, durPrimaryStep=0.1, numPoints=12, reset=0, seed=0|
         ^this.multiNew('audio', ampDist, durDist, ampShape, durShape, minFreq, maxFreq, ampPrimaryRange, durPrimaryRatio, ampPrimaryStep, durPrimaryStep, numPoints, reset, seed)
     }
 }
+ Gendy1991 : Gendy91 {}
 GendyS709 : UGen {
     *ar { |ampDist=0, durDist=0, minFreq=100, maxFreq=1000, ampStep=0.1, durStep=0.1, modFreq=0.2, modShape=0, ampStepDepth=0.5, durStepDepth=0.5, freqRangeDepth=0, numPoints=12, reset=0, seed=0|
         ^this.multiNew('audio', ampDist, durDist, minFreq, maxFreq, ampStep, durStep, modFreq, modShape, ampStepDepth, durStepDepth, freqRangeDepth, numPoints, reset, seed)

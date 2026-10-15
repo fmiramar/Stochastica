@@ -15,11 +15,6 @@ subsection:: State and dwell view
 
 image::semi-markov-dynamics.png#Left: a three-state semi-Markov realization using fixed, gamma, and Weibull dwell laws. Right: remaining dwell time counting down and resampling at transitions; the varying ramp heights make timing part of the model state.::
 
-subsection:: See also
-
-link::Guides/Stochastica::
-link::Classes/MarkovChain::
-link::Classes/RenewalTrig::
 
 classmethods::
 

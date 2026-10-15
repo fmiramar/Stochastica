@@ -14,8 +14,6 @@ Like vanilla link::Classes/TRand::, values are drawn on trigger edges and held. 
 
 image::round3-dirichlet.png::
 
-subsection:: See also
-link::Classes/TGammaRand::, link::Classes/MultiGaussNoise::, link::Classes/PolyaUrn::, link::Guides/Stochastica::
 
 classmethods::
 method:: ar, kr

@@ -16,8 +16,6 @@ Like vanilla link::Classes/LFNoise2::, this can provide smooth random modulation
 
 image::round3-matern.png::
 
-subsection:: See also
-link::Classes/OUProcess::, link::Classes/FractionalNoise::, link::Classes/FBrownianMotion::, link::Classes/MultiOUProcess::, link::Guides/Stochastica::
 
 classmethods::
 method:: ar, kr

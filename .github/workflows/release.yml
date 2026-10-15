@@ -17,10 +17,6 @@ jobs:
             platform: linux
             arch: x64
             supernova: "ON"
-          - os: macos-13
-            platform: macos
-            arch: x64
-            supernova: "ON"
           - os: macos-14
             platform: macos
             arch: arm64

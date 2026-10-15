@@ -15,8 +15,6 @@ Like vanilla link::Classes/FBSineC:: this can make deterministic nonlinear modul
 image::round3-wilson.png::
 The displayed example changes only wEE from 0 to 16 with inputExc=3, wEI=12, wIE=15, wII=3, tauExc=0.02, tauInh=0.04, thresholds 4 and 3, and unit gains. These two settings were numerically checked; they are not universal bifurcation boundaries.
 
-subsection:: See also
-link::Classes/Izhikevich::, link::Classes/RulkovMap::, link::Classes/SelfCorrectingTrig::, link::Classes/MaternNoise::, link::Guides/Stochastica::
 
 classmethods::
 method:: ar, kr

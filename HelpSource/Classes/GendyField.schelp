@@ -1,7 +1,7 @@
 class:: GendyField
 summary:: Independent stochastic sound and silence fields
 categories:: UGens>Generators>Stochastic>GENDY
-related:: Guides/Stochastica, Guides/Stochastica-GENDY, Classes/Gendy1991
+related:: Guides/Stochastica, Guides/Stochastica-GENDY, Classes/Gendy77, Classes/Gendy91, Classes/GendyS709, Classes/GendyPerc, Classes/GendyInterp, Classes/GendyDiffusion, Classes/GendyCoupled
 
 description::
 strong::Historically informed PARAG subset.::
@@ -16,8 +16,6 @@ Like vanilla link::Classes/LFPulse::, each output alternates between zero and on
 
 image::gendy-gendyfield.png::
 
-subsection:: See also
-link::Guides/Stochastica-GENDY::, link::Guides/Stochastica::, link::Classes/Gendy1991::
 
 classmethods::
 method:: kr
@@ -53,7 +51,7 @@ code::
     var gates = GendyField.kr(6, 0.4, 0.55, seed: 99);
     var voices = Array.fill(6, { |i|
         var f = 80 * (1.25 ** i);
-        LeakDC.ar(Gendy1991.ar(minFreq: f, maxFreq: f * 1.4,
+        LeakDC.ar(Gendy91.ar(minFreq: f, maxFreq: f * 1.4,
             durPrimaryRatio: 0.01, seed: 100 + i)) * Lag.kr(gates[i], 0.025) * 0.035
     });
     Splay.ar(voices) * Line.kr(0, 1, 0.05)

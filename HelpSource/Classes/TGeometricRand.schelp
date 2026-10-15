@@ -15,11 +15,6 @@ subsection:: Probability mass
 
 image::geometric-mass.png#Failures-before-success mass functions for probability = 0.2, 0.5, and 0.8, shown in muted teal, blue, and plum. A smaller success probability produces the longer discrete tail.::
 
-subsection:: See also
-
-link::Guides/Stochastica::
-link::Classes/TPoissonRand::
-link::Classes/TIRand::
 
 classmethods::
 

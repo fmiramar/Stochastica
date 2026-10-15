@@ -17,10 +17,6 @@ subsection:: Cobweb view
 
 image::circle-map-cobweb.png#The map curve and a cobweb orbit for omega = 0.2 and k = 0.9. x(n) is horizontal and x(n+1) is vertical; the pale diagonal is the identity line.::
 
-subsection:: See also
-
-link::Guides/Stochastica::
-link::Classes/CoupledLogisticMap::
 
 classmethods::
 

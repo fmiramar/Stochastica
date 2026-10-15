@@ -1,7 +1,7 @@
 class:: GendyCoupled
 summary:: Collective breakpoint motion through neighboring proposals
 categories:: UGens>Generators>Stochastic>GENDY
-related:: Guides/Stochastica, Guides/Stochastica-GENDY, Classes/Gendy1991
+related:: Guides/Stochastica, Guides/Stochastica-GENDY, Classes/Gendy77, Classes/Gendy91, Classes/GendyS709, Classes/GendyField, Classes/GendyPerc, Classes/GendyInterp, Classes/GendyDiffusion
 
 description::
 strong::New Stochastica design.::
@@ -10,7 +10,7 @@ An experimental extension that couples neighboring breakpoint proposals around a
 
 First compute all stochastic proposals q[i] from the old point states. Then compute q[i] + kappa*(q[i-1]-2*q[i]+q[i+1]) synchronously, wrapping neighbor indices, and finally reflect into the amplitude or duration bounds. Separate coupling strengths operate on amplitude and duration. One pass computes proposals and one pass computes coupled results, so work is linear in point count; array write order cannot leak into neighbor updates.
 
-At kappa=0, output exactly matches Gendy1977 with shape controls at one, for identical seeds and inputs. At kappa=0.25, neighbor differences tend to shrink. The allowed endpoint 0.5 can preserve alternating patterns, so larger values do not always mean more smoothing. Coupling establishes spatial dependence between waveform points, distinct from slowing every independent walk.
+At kappa=0, output exactly matches Gendy77 with shape controls at one, for identical seeds and inputs. At kappa=0.25, neighbor differences tend to shrink. The allowed endpoint 0.5 can preserve alternating patterns, so larger values do not always mean more smoothing. Coupling establishes spatial dependence between waveform points, distinct from slowing every independent walk.
 
 The oscillator remembers one amplitude and one incoming duration per point. Updates occur once per waveform cycle, in index order; a newly evolved first point connects from the actual previous cycle endpoint. Durations are fractional sample counts with carried remainder and a one-sample minimum. High settings therefore saturate the achievable frequency range. There is no antialiasing, automatic DC removal or loudness normalization. Start quietly; the examples use LeakDC and a short fade.
 
@@ -20,8 +20,6 @@ Like vanilla link::Classes/Gendy1::, this evolves a stochastic polygon. GendyCou
 
 image::gendy-gendycoupled.png::
 
-subsection:: See also
-link::Guides/Stochastica-GENDY::, link::Guides/Stochastica::, link::Classes/Gendy1991::
 
 classmethods::
 method:: ar

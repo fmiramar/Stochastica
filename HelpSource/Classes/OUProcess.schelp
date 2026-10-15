@@ -15,11 +15,6 @@ subsection:: Process and stationary law
 
 image::ou-process-dynamics.png#Left: an exact finite-step OU trace with mean = 0, reversion = 1, and diffusion = 1. Right: its stationary Gaussian density; the process fluctuates continually but is pulled back toward the center.::
 
-subsection:: See also
-
-link::Guides/Stochastica::
-link::Classes/BrownNoise::
-link::Classes/FBrownianMotion::
 
 classmethods::
 

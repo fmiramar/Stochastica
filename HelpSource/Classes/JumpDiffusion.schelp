@@ -16,8 +16,6 @@ Vanilla link::Classes/BrownNoise:: provides audible random wandering; JumpDiffus
 
 image::round3-jump.png::
 
-subsection:: See also
-link::Classes/OUProcess::, link::Classes/ShotNoise::, link::Classes/TPoissonRand::, link::Classes/LevyFlight::, link::Guides/Stochastica::
 
 classmethods::
 method:: ar, kr

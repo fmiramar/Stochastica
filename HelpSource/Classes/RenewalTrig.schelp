@@ -15,11 +15,6 @@ subsection:: Event and interval view
 
 image::renewal-process-events.png#Left: event times from an exponential renewal process at rate = 4 with minInterval = 0.05. Right: the empirical interval density; the hard empty region before 0.05 is the refractory period.::
 
-subsection:: See also
-
-link::Guides/Stochastica::
-link::Classes/HawkesTrig::
-link::Classes/Dust::
 
 classmethods::
 

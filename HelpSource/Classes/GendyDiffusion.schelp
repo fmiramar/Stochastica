@@ -1,7 +1,7 @@
 class:: GendyDiffusion
 summary:: Radial diffusion shapes an evolving polygonal waveform
 categories:: UGens>Generators>Stochastic>GENDY
-related:: Guides/Stochastica, Guides/Stochastica-GENDY, Classes/Gendy1977, Classes/OUProcess
+related:: Guides/Stochastica, Guides/Stochastica-GENDY, Classes/Gendy77, Classes/Gendy91, Classes/GendyS709, Classes/GendyField, Classes/GendyPerc, Classes/GendyInterp, Classes/GendyCoupled, Classes/OUProcess
 
 description::
 strong::Implementation of the published DDSS concept by Emilio L. Rojas and Rodrigo F. Cádiz, with documented numerical reconstruction choices.::
@@ -22,8 +22,6 @@ Like vanilla link::Classes/Gendy1::, this evolves a polygon by stochastic update
 
 image::gendy-gendydiffusion.png::
 
-subsection:: See also
-link::Guides/Stochastica-GENDY::, link::Guides/Stochastica::, link::Classes/Gendy1977::, link::Classes/OUProcess::
 
 classmethods::
 method:: ar
@@ -55,11 +53,11 @@ code::
 ::
 
 subsection:: First-order DSS and radial diffusion
-Left is Gendy1977 with fixed durations; right is the DDSS reconstruction at the same pitch and moving-point count. They have different innovations, mapping and endpoint geometry, so equal seeds do not imply equal paths. The comparison isolates the practical sound of the models, not a controlled equation experiment.
+Left is Gendy77 with fixed durations; right is the DDSS reconstruction at the same pitch and moving-point count. They have different innovations, mapping and endpoint geometry, so equal seeds do not imply equal paths. The comparison isolates the practical sound of the models, not a controlled equation experiment.
 code::
 (
 {
-    var first = Gendy1977.ar(minFreq: 150, maxFreq: 150,
+    var first = Gendy77.ar(minFreq: 150, maxFreq: 150,
         ampStep: 0.03, durStep: 0, numPoints: 36, seed: 123);
     var diffusion = GendyDiffusion.ar(150, timeStep: 0.001,
         modFreq: 0, numPoints: 36, seed: 123);

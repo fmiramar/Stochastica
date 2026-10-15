@@ -19,12 +19,6 @@ subsection:: Process view
 
 image::double-well-dynamics.png#The quartic potential and a trajectory showing noise-driven transitions between its two stable regions.::
 
-subsection:: See also
-
-link::Guides/Stochastica::
-link::Classes/OUProcess::
-link::Classes/RandomTelegraph::
-link::Classes/BrownNoise::
 
 classmethods::
 

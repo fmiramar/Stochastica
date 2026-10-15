@@ -15,11 +15,6 @@ subsection:: Visualizing the internal dynamics
 
 See link::Classes/GbmanMap:: for the recurrence's static portrait and exact-state live view. The sonifier does not expose its internal coordinates, so a separately instantiated map would be illustrative but not synchronized to its audio orbit.
 
-subsection:: See also
-
-link::Guides/Stochastica::
-link::Classes/GbmanMap::
-link::Classes/HenonSonify::
 
 classmethods::
 

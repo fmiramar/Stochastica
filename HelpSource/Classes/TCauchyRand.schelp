@@ -15,11 +15,6 @@ subsection:: Distribution shape
 
 image::cauchy-density.png#Centered Cauchy densities with scale = 0.5, 1, and 2, shown in muted teal, blue, and plum over a deliberately finite display interval. Larger scale lowers the center and puts more probability in the heavy tails.::
 
-subsection:: See also
-
-link::Guides/Stochastica::
-link::Classes/TStableRand::
-link::Classes/TRand::
 
 classmethods::
 

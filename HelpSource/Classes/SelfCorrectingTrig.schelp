@@ -17,11 +17,6 @@ subsection:: Process view
 
 image::self-correcting-dynamics.png#Event ticks and intensity: a Poisson case beside inhibitory suppression and recovery.::
 
-subsection:: See also
-
-link::Guides/Stochastica::
-link::Classes/HawkesTrig::
-link::Classes/Dust::
 
 classmethods::
 

@@ -15,11 +15,6 @@ subsection:: Covariance view
 
 image::multigauss-correlation.png#Samples from covariance [[1, 0.8], [0.8, 1]]. The green arrow marks the high-variance principal direction and the red arrow the low-variance direction; the elongated cloud is the correlation made geometric.::
 
-subsection:: See also
-
-link::Guides/Stochastica::
-link::Classes/MarkovChain::
-link::Classes/NRand::
 
 classmethods::
 

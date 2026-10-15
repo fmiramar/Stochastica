@@ -17,11 +17,6 @@ subsection:: Distribution shape
 
 image::levy-density.png#One-sided Lévy densities with location = 0 and scale = 0.5, 1, and 2, shown in muted teal, blue, and plum over a finite display interval. The density begins above the location and retains a very long right tail.::
 
-subsection:: See also
-
-link::Guides/Stochastica::
-link::Classes/TStableRand::
-link::Classes/TCauchyRand::
 
 classmethods::
 

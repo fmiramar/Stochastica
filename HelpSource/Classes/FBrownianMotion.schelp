@@ -15,11 +15,6 @@ subsection:: Persistence view
 
 image::fbrownian-paths.png#Finite-memory paths for Hurst = 0.2, 0.5, and 0.8, shown in muted teal, blue, and plum. Each path is vertically normalized for comparing texture: low H reverses direction often, while high H sustains trends.::
 
-subsection:: See also
-
-link::Guides/Stochastica::
-link::Classes/FractionalNoise::
-link::Classes/OUProcess::
 
 classmethods::
 

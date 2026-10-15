@@ -29,7 +29,6 @@ def main():
         if page!=guide:
             assert source.startswith('class:: '+page.stem+'\n'),page
             assert 'Guides/Stochastica' in re.search(r'^related:: (.*)$',source,re.M).group(1),page
-            assert source.index('subsection:: See also') < source.index('classmethods::'),page
         for target in re.findall(r'link::([^#:\n]+)(?:::|#)',source):
             if target.startswith(('Classes/','Guides/')):
                 exists=(root/'HelpSource'/f'{target}.schelp').exists()

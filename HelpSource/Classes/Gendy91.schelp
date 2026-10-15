@@ -1,7 +1,7 @@
-class:: Gendy1991
+class:: Gendy91
 summary:: Second-order reflected breakpoint dynamics
 categories:: UGens>Generators>Stochastic>GENDY
-related:: Guides/Stochastica, Guides/Stochastica-GENDY, Classes/Gendy1977
+related:: Guides/Stochastica, Guides/Stochastica-GENDY, Classes/Gendy77, Classes/GendyS709, Classes/GendyField, Classes/GendyPerc, Classes/GendyInterp, Classes/GendyDiffusion, Classes/GendyCoupled
 
 description::
 strong::Historical reconstruction.::
@@ -14,12 +14,10 @@ The oscillator remembers one amplitude and one incoming duration per point. Upda
 
 Construction/reset starts amplitudes at zero and durations at the midpoint of their bounds. Motion builds an audible waveform over the first cycles; zero amplitude mobility at construction stays silent. A later freeze retains the evolved waveform. Reset can deliberately interrupt continuity. Invalid selectors and numeric controls are conditioned to documented finite bounds; non-finite frequencies use 100/1000 Hz defaults.
 
-Vanilla link::Classes/Gendy2:: also remembers amplitude/time increments. Its amplitude drive includes a Lehmer-style generator and its scaling differs; Gendy1991 exposes independent primary barriers and innovations using the same private PCG for both coordinates.
+Vanilla link::Classes/Gendy2:: also remembers amplitude/time increments. Its amplitude drive includes a Lehmer-style generator and its scaling differs; Gendy91 exposes independent primary barriers and innovations using the same private PCG for both coordinates.
 
-image::gendy-gendy1991.png::
+image::gendy-gendy91.png::
 
-subsection:: See also
-link::Guides/Stochastica-GENDY::, link::Guides/Stochastica::, link::Classes/Gendy1977::
 
 classmethods::
 method:: ar
@@ -56,7 +54,7 @@ examples::
 subsection:: Minimal example
 code::
 (
-{ LeakDC.ar(Gendy1991.ar(seed: 1991)) ! 2 * 0.07 * Line.kr(0, 1, 0.05) }.play
+{ LeakDC.ar(Gendy91.ar(seed: 1991)) ! 2 * 0.07 * Line.kr(0, 1, 0.05) }.play
 )
 ::
 
@@ -65,7 +63,7 @@ Small primary innovations change the persistent direction slowly; low range rati
 code::
 (
 {
-    var x = Gendy1991.ar(minFreq: 90, maxFreq: 240, ampPrimaryRange: 0.03,
+    var x = Gendy91.ar(minFreq: 90, maxFreq: 240, ampPrimaryRange: 0.03,
         durPrimaryRatio: 0.015, ampPrimaryStep: 0.025, durPrimaryStep: 0.025, seed: 67);
     LeakDC.ar(x) ! 2 * 0.07 * Line.kr(0, 1, 0.05)
 }.play

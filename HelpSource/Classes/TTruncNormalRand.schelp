@@ -15,10 +15,6 @@ subsection:: Conditioned density
 
 image::truncated-normal-density.png#An ordinary standard-normal density in muted teal and the true density conditioned to [-1, 1] in blue. Probability outside the interval is removed and the density inside is renormalized, not clipped or folded.::
 
-subsection:: See also
-
-link::Guides/Stochastica::
-link::Classes/TRand::
 
 classmethods::
 

@@ -14,8 +14,6 @@ Vanilla link::Classes/TWindex:: also selects a weighted category. PolyaUrn carri
 
 image::round3-urn.png::
 
-subsection:: See also
-link::Classes/MarkovChain::, link::Classes/SemiMarkov::, link::Classes/TDirichletRand::, link::Guides/Stochastica::
 
 classmethods::
 method:: ar, kr

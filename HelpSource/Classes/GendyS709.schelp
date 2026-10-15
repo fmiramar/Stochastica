@@ -1,14 +1,14 @@
 class:: GendyS709
 summary:: Internal periodic modulation of stochastic waveform motion
 categories:: UGens>Generators>Stochastic>GENDY
-related:: Guides/Stochastica, Guides/Stochastica-GENDY, Classes/Gendy1991
+related:: Guides/Stochastica, Guides/Stochastica-GENDY, Classes/Gendy77, Classes/Gendy91, Classes/GendyField, Classes/GendyPerc, Classes/GendyInterp, Classes/GendyDiffusion, Classes/GendyCoupled
 
 description::
 strong::Historically informed adaptation.::
 
 Adds sine or sawtooth parameter modulation to a first-order remembered waveform. Luque (2006), printed p. 31, describes such modulation in S.709 (1994), link::https://sergioluque.com/stochastics::. Hoffmann's 2023 dictionary distinguishes its direct breakpoint drive from Gendy3's intermediary walks: link::https://www.iannis-xenakis.org/en/stochastic-synthesis/::.
 
-The original routing, depths and exact parameter values are not sufficiently specified by these sources. This class uses one bipolar internal modulator m and positive exponential factors 2.pow(depth*m) for amplitude mobility, duration mobility and a common frequency shift. Those routes are Stochastica choices, not a bit-exact S.709 reconstruction. The phase runs at audio rate; walk controls are sampled at cycle boundaries. All depths zero exactly matches Gendy1977 with shape controls at one.
+The original routing, depths and exact parameter values are not sufficiently specified by these sources. This class uses one bipolar internal modulator m and positive exponential factors 2.pow(depth*m) for amplitude mobility, duration mobility and a common frequency shift. Those routes are Stochastica choices, not a bit-exact S.709 reconstruction. The phase runs at audio rate; walk controls are sampled at cycle boundaries. All depths zero exactly matches Gendy77 with shape controls at one.
 
 The oscillator remembers one amplitude and one incoming duration per point. Updates occur once per waveform cycle, in index order; a newly evolved first point connects from the actual previous cycle endpoint. Durations are fractional sample counts with carried remainder and a one-sample minimum. High settings therefore saturate the achievable frequency range. There is no antialiasing, automatic DC removal or loudness normalization. Start quietly; the examples use LeakDC and a short fade.
 
@@ -18,8 +18,6 @@ Like vanilla link::Classes/Gendy1:: with external periodic control signals, this
 
 image::gendy-gendys709.png::
 
-subsection:: See also
-link::Guides/Stochastica-GENDY::, link::Guides/Stochastica::, link::Classes/Gendy1991::
 
 classmethods::
 method:: ar

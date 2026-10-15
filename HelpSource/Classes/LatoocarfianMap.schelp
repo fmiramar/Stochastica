@@ -17,11 +17,6 @@ subsection:: State-space portrait
 
 image::latoocarfian-map-phase.png#A Latoocarfian attractor at the documented defaults. x is horizontal and y is vertical; point density reveals how often the orbit visits each region.::
 
-subsection:: See also
-
-link::Guides/Stochastica::
-link::Classes/LatoocarfianSonify::
-link::Classes/CliffordMap::
 
 classmethods::
 

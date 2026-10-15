@@ -21,12 +21,6 @@ subsection:: Process view
 
 image::kuramoto-coherence.png#The phase circle and order vector for weak and strong coupling. Vector length is r; its angle is psi.::
 
-subsection:: See also
-
-link::Guides/Stochastica::
-link::Classes/Chua::
-link::Classes/MultiOUProcess::
-link::Classes/SinOsc::
 
 classmethods::
 

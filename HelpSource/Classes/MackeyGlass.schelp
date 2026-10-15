@@ -15,10 +15,6 @@ subsection:: Dynamics view
 
 image::mackey-glass-dynamics.png#Left: a settled time trace at the documented defaults. Right: the delay portrait x(t) against x(t - 17), which exposes recurrence structure that a time trace alone hides.::
 
-subsection:: See also
-
-link::Guides/Stochastica::
-link::Classes/Chua::
 
 classmethods::
 

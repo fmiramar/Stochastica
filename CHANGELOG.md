@@ -2,7 +2,7 @@
 
 ## GENDY expansion (unreleased)
 
-- Add Gendy1977, Gendy1991, GendyS709, GendyField, GendyPerc, GendyInterp, GendyDiffusion and GendyCoupled.
+- Add Gendy77, Gendy91, GendyS709, GendyField, GendyPerc, GendyInterp, GendyDiffusion and GendyCoupled.
 - Add a shared bounded waveform engine, local seeds/reset, independent math/statistical/lifecycle checks, and a dedicated sourced GENDY guide with reproducible figures.
 - Implement the full-paper Rojas–Cádiz DDSS equation, radial/angle mapping and explicit numerical reconstruction choices, with independent traces, timestep checks and a Gaussian-DSS comparison figure. Existing Gendy1–5 and earlier Stochastica algorithms are unchanged.
 

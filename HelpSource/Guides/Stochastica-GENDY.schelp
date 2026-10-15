@@ -1,15 +1,13 @@
-title:: Stochastica-GENDY
+title:: Stochastica Gendy (Xtochastica)
 summary:: Dynamic Stochastic Synthesis: history, waveform memory, hierarchy and extensions
 categories:: UGens>Generators>Stochastic>GENDY
-related:: Guides/Stochastica, Classes/Gendy1977, Classes/Gendy1991, Classes/GendyS709, Classes/GendyField, Classes/GendyPerc, Classes/GendyInterp, Classes/GendyDiffusion, Classes/GendyCoupled
+related:: Guides/Stochastica, Classes/Gendy77, Classes/Gendy91, Classes/GendyS709, Classes/GendyField, Classes/GendyPerc, Classes/GendyInterp, Classes/GendyDiffusion, Classes/GendyCoupled, Classes/Gendy1, Classes/Gendy2, Classes/Gendy3, Classes/BoundedWalk, Classes/OUProcess
 
 description::
 Dynamic Stochastic Synthesis (DSS) makes the waveform itself remember and change. Imagine a polygon repeated as sound. Each corner retains its amplitude and the time needed to reach it. At the next repetition these values move by stochastic increments, so a recurring shape can wander, deform, stabilize or become noisy. This differs from using noise to control the frequency of an otherwise fixed oscillator: the changing polygon is the oscillator.
 
 The eight implemented Stochastica classes separate historical reconstructions, historically informed adaptations, post-Xenakis extensions and a new collective design. GendyDiffusion implements the published Rojas–Cádiz radial diffusion equation with explicit numerical reconstruction choices. These classes coexist with SuperCollider's Gendy1–3 and optional sc3-plugins Gendy4–5. They do not replace or promise sample equivalence with those implementations.
 
-subsection:: See also
-link::Guides/Stochastica::, link::Classes/Gendy1::, link::Classes/Gendy2::, link::Classes/Gendy3::, link::Classes/BoundedWalk::, link::Classes/OUProcess::
 
 section:: Origins and historical distinctions
 
@@ -27,7 +25,7 @@ section:: Three scales of organization
 
 At the waveform scale, amplitude and duration walks produce the audible shape. At the parameter scale, a modulator or mobility trajectory changes the rules under which that shape evolves. At the activity scale, fields decide when complete voices sound. Keeping these scales separate lets a patch combine a chosen waveform model with an independent architecture of entrances and silences.
 
-Gendy1977 and Gendy1991 describe waveform motion. GendyS709 adds changing parameters; GendyPerc contracts them over a gesture. GendyField supplies activity gates and does not synthesize a waveform. GendyInterp changes rendering, while GendyCoupled changes interactions between points. GendyDiffusion maps physical radial motion into fixed-pitch waveform amplitudes. None of these distinctions is captured by calling every output simply random noise.
+Gendy77 and Gendy91 describe waveform motion. GendyS709 adds changing parameters; GendyPerc contracts them over a gesture. GendyField supplies activity gates and does not synthesize a waveform. GendyInterp changes rendering, while GendyCoupled changes interactions between points. GendyDiffusion maps physical radial motion into fixed-pitch waveform amplitudes. None of these distinctions is captured by calling every output simply random noise.
 
 section:: Remembered breakpoints and elastic barriers
 
@@ -56,7 +54,7 @@ secondary = (secondary + primary).fold(-1, 1);
 ::
 The primary position is the secondary increment. A persistent positive primary state repeatedly pushes the secondary state toward its upper barrier, with local reflection, until the primary tendency changes. Thus reducing primary innovation to zero retains its current direction; reducing its range to zero actually freezes the secondary coordinate. The tests and figure examine barrier residence, not just output variance.
 
-image::../Classes/gendy-gendy1991.png::
+image::../Classes/gendy-gendy91.png::
 
 section:: Distributions and exact modern parameterization
 
@@ -76,7 +74,7 @@ The exponential mapping is asymmetric and can bias motion. Cauchy and logistic h
 
 section:: Modulation, fields and percussive mobility
 
-GendyS709 uses one internal bipolar sine or ascending saw. It multiplies mobility and/or both frequency bounds by code::2.pow(depth*m)::, retaining positive scales and the bound ratio until safety caps apply. This exponential mapping and routing are new choices. Zero depths recover Gendy1977 exactly for matched seeds and shape one. Zero modulator frequency holds its current phase; reset returns it to zero.
+GendyS709 uses one internal bipolar sine or ascending saw. It multiplies mobility and/or both frequency bounds by code::2.pow(depth*m)::, retaining positive scales and the bound ratio until safety caps apply. This exponential mapping and routing are new choices. Zero depths recover Gendy77 exactly for matched seeds and shape one. Zero modulator frequency holds its current phase; reset returns it to zero.
 
 PARAG organized voices into time fields. GendyField implements only the exponential-duration/Bernoulli-activity part described by Luque and Hoffmann. It does not reproduce the original voice tables, complete sections, ordering or envelopes. A new field can choose the same gate again, so gate dwell time is not identical to field duration. Each voice has an independent stream and may gate any synthesis process. Apply short fades externally to avoid sharp audio discontinuities.
 
@@ -106,8 +104,8 @@ section:: Choosing a model
 
 table::
 ## Want to study or hear || Start with || Provenance
-## Direct deformation of a remembered polygon || link::Classes/Gendy1977:: || Historical method reconstruction
-## Persistent increments and barrier residence || link::Classes/Gendy1991:: || Historical two-level reconstruction
+## Direct deformation of a remembered polygon || link::Classes/Gendy77:: || Historical method reconstruction
+## Persistent increments and barrier residence || link::Classes/Gendy91:: || Historical two-level reconstruction
 ## Periodic changes to stochastic rules || link::Classes/GendyS709:: || Historically informed adaptation
 ## Independent entrances and rests || link::Classes/GendyField:: || PARAG timing subset
 ## Roughness settling into a stable waveform || link::Classes/GendyPerc:: || IDSS-inspired extension
@@ -138,4 +136,4 @@ Brown (2019), Gendynish: link::https://research-repository.griffith.edu.au/serve
 
 Rojas and Cádiz (2021 issue), A Physically Inspired Implementation of Xenakis's Stochastic Synthesis: Diffusion Dynamic Stochastic Synthesis, CMJ 45(2), 48–66: link::https://doi.org/10.1162/comj_a_00606::. Full article inspected; see the installed docs/research/GendyDiffusion-source-notes.md for the equation audit.
 
-Xenakis (1992), Formalized Music, and Serra (1993), Stochastic Composition and Stochastic Timbre: Gendy3 by Iannis Xenakis, Perspectives of New Music 31(1), 236–257, are cited through the inspected historical accounts; no claim of direct inspection of those editions is made.
+Xenakis (1992), Formalized Music, and Serra (1993), Stochastic Composition and Stochastic Timbre: Gendy3 by Iannis Xenakis, Perspectives of New Music 31(1), 236–257.

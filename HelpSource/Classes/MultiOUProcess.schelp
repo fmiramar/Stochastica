@@ -19,12 +19,6 @@ subsection:: Process view
 
 image::multi-ou-dynamics.png#A two-dimensional path and its component time series reveal temporal memory and correlated geometry.::
 
-subsection:: See also
-
-link::Guides/Stochastica::
-link::Classes/OUProcess::
-link::Classes/MultiGaussNoise::
-link::Classes/LFNoise1::
 
 classmethods::
 

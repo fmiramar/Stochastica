@@ -5,14 +5,14 @@ var mode = thisProcess.argv[2] ? "integration";
 var score = List.new;
 var definition = SynthDef(\gendyIntegration, { |reset = 0|
     var build = {
-        [Gendy1977.ar(seed: 123, reset: reset), Gendy1991.ar(seed: 123, reset: reset),
+        [Gendy77.ar(seed: 123, reset: reset), Gendy91.ar(seed: 123, reset: reset),
             GendyS709.ar(seed: 123, reset: reset), GendyPerc.ar(reset, seed: 123),
             GendyInterp.ar(seed: 123, reset: reset), GendyCoupled.ar(seed: 123, reset: reset),
             GendyDiffusion.ar(seed: 123, reset: reset)]
             ++ K2A.ar(GendyField.kr(4, 0.1, 0.5, reset, 123))
     };
     var first = build.value, second = build.value;
-    var baseline = Gendy1977.ar(seed: 999, reset: reset);
+    var baseline = Gendy77.ar(seed: 999, reset: reset);
     var zero = [GendyCoupled.ar(0, seed: 999, reset: reset),
         GendyInterp.ar(seed: 999, reset: reset),
         GendyS709.ar(ampStepDepth: 0, durStepDepth: 0, seed: 999, reset: reset)];
@@ -34,8 +34,8 @@ if(mode == "stress") {
     score.add([0, [\d_recv, SynthDef(\gendyStress, {
         var reset = Impulse.ar(19);
         var waveforms = [2,64].collect { |n|
-            [Gendy1977.ar(minFreq: 1e20, maxFreq: 1e20, numPoints: n, reset: reset, seed: 51),
-                Gendy1991.ar(minFreq: 1e20, maxFreq: 1e20, numPoints: n, reset: reset, seed: 52),
+            [Gendy77.ar(minFreq: 1e20, maxFreq: 1e20, numPoints: n, reset: reset, seed: 51),
+                Gendy91.ar(minFreq: 1e20, maxFreq: 1e20, numPoints: n, reset: reset, seed: 52),
                 GendyS709.ar(modFreq: 1e20, numPoints: n, reset: reset, seed: 53),
                 GendyPerc.ar(reset, 0, numPoints: n, seed: 54),
                 GendyInterp.ar(LFNoise0.kr(100).range(0,3), minFreq: 1e20, maxFreq: 1e20, numPoints: n, reset: reset, seed: 55),

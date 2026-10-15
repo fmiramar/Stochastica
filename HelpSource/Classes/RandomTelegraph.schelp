@@ -19,11 +19,6 @@ subsection:: Process view
 
 image::random-telegraph-dynamics.png#Two-level trajectory with asymmetric dwell times; the high regime has twice the expected duration.::
 
-subsection:: See also
-
-link::Guides/Stochastica::
-link::Classes/SemiMarkov::
-link::Classes/LFNoise0::
 
 classmethods::
 

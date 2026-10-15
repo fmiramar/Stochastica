@@ -17,10 +17,6 @@ subsection:: State-space portrait
 
 image::ikeda-map-phase.png#The default Ikeda orbit after its transient. x is horizontal and y is vertical; the folded bands result from contraction and state-dependent rotation.::
 
-subsection:: See also
-
-link::Guides/Stochastica::
-link::Classes/HenonMap::
 
 classmethods::
 

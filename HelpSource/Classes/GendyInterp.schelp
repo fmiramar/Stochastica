@@ -1,7 +1,7 @@
 class:: GendyInterp
 summary:: Four renderers for identical stochastic breakpoint histories
 categories:: UGens>Generators>Stochastic>GENDY
-related:: Guides/Stochastica, Guides/Stochastica-GENDY, Classes/Gendy1991
+related:: Guides/Stochastica, Guides/Stochastica-GENDY, Classes/Gendy77, Classes/Gendy91, Classes/GendyS709, Classes/GendyField, Classes/GendyPerc, Classes/GendyDiffusion, Classes/GendyCoupled
 
 description::
 strong::Post-Xenakis interpolation extension.::
@@ -20,8 +20,6 @@ Like vanilla link::Classes/Gendy1::, linear mode renders remembered stochastic b
 
 image::gendy-gendyinterp.png::
 
-subsection:: See also
-link::Guides/Stochastica-GENDY::, link::Guides/Stochastica::, link::Classes/Gendy1991::
 
 classmethods::
 method:: ar

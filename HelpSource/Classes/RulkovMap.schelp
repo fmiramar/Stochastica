@@ -17,10 +17,6 @@ subsection:: Fast-slow portrait
 
 image::rulkov-map-phase.png#The default Rulkov orbit after its transient. Fast state x is horizontal and slow state y is vertical; the long excursion corresponds to a burst cycle.::
 
-subsection:: See also
-
-link::Guides/Stochastica::
-link::Classes/Izhikevich::
 
 classmethods::
 

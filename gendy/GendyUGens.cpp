@@ -13,6 +13,8 @@ struct GendyUnit : Unit {
     int resetIndex;
     double modPhase, gestureTime;
 };
+struct Gendy77 : GendyUnit {};
+struct Gendy91 : GendyUnit {};
 struct Gendy1977 : GendyUnit {};
 struct Gendy1991 : GendyUnit {};
 struct GendyS709 : GendyUnit {};
@@ -91,12 +93,16 @@ void construct(GendyUnit* unit,Model model,int pointIndex,int resetIndex,int see
     unit->parameters=parametersAt(unit,0);e.reset(unit->parameters);
     SETCALC(Gendy_next);OUT0(0)=0; // Constructor consumes no samples or random draws.
 }
+void Gendy77_Ctor(Gendy77* u){construct(u,Model::First,8,9,10);}
+void Gendy91_Ctor(Gendy91* u){construct(u,Model::Second,10,11,12);}
 void Gendy1977_Ctor(Gendy1977* u){construct(u,Model::First,8,9,10);}
 void Gendy1991_Ctor(Gendy1991* u){construct(u,Model::Second,10,11,12);}
 void GendyS709_Ctor(GendyS709* u){construct(u,Model::Modulated,11,12,13);}
 void GendyPerc_Ctor(GendyPerc* u){construct(u,Model::Percussion,8,0,10);}
 void GendyInterp_Ctor(GendyInterp* u){construct(u,Model::Interpolation,7,8,9);}
 void GendyCoupled_Ctor(GendyCoupled* u){construct(u,Model::Coupled,8,9,10);}
+void Gendy77_Dtor(Gendy77* u){sd::freeRT(u,u->engine.points);}
+void Gendy91_Dtor(Gendy91* u){sd::freeRT(u,u->engine.points);}
 void Gendy1977_Dtor(Gendy1977* u){sd::freeRT(u,u->engine.points);}
 void Gendy1991_Dtor(Gendy1991* u){sd::freeRT(u,u->engine.points);}
 void GendyS709_Dtor(GendyS709* u){sd::freeRT(u,u->engine.points);}
@@ -157,6 +163,7 @@ void GendyDiffusion_Dtor(GendyDiffusion* unit){sd::freeRT(unit,unit->engine.poin
 }
 void registerSDGendy()
 {
+    DefineDtorCantAliasUnit(Gendy77);DefineDtorCantAliasUnit(Gendy91);
     DefineDtorCantAliasUnit(Gendy1977);DefineDtorCantAliasUnit(Gendy1991);
     DefineDtorCantAliasUnit(GendyS709);DefineDtorCantAliasUnit(GendyField);
     DefineDtorCantAliasUnit(GendyPerc);DefineDtorCantAliasUnit(GendyInterp);

@@ -15,11 +15,6 @@ subsection:: Boundary comparison
 
 image::bounded-walk-boundaries.png#The same seeded uniform increments under three rules: reflect at left, wrap at center, and absorb at right. Reflection reverses overshoot, wrapping jumps to the opposite edge, and absorption remains at the first boundary reached.::
 
-subsection:: See also
-
-link::Guides/Stochastica::
-link::Classes/OUProcess::
-link::Classes/BrownNoise::
 
 classmethods::
 

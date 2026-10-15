@@ -15,11 +15,6 @@ subsection:: Intensity and event view
 
 image::hawkes-events-intensity.png#A Hawkes realization with baseRate = 0.6, excitation = 8, and decay = 10. The teal curve is intensity and the blue ticks are events; each event raises intensity, making short clusters visibly more likely.::
 
-subsection:: See also
-
-link::Guides/Stochastica::
-link::Classes/RenewalTrig::
-link::Classes/Dust::
 
 classmethods::
 

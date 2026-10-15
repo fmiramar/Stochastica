@@ -17,11 +17,6 @@ subsection:: State-space portrait
 
 image::gbman-map-phase.png#The default Gingerbreadman orbit after its transient. x is horizontal and y is vertical; points are iterations, not a continuous trajectory.::
 
-subsection:: See also
-
-link::Guides/Stochastica::
-link::Classes/GbmanSonify::
-link::Classes/HenonMap::
 
 classmethods::
 

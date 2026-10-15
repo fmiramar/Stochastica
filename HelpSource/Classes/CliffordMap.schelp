@@ -17,11 +17,6 @@ subsection:: State-space portrait
 
 image::clifford-map-phase.png#The Clifford attractor at the documented defaults. x is horizontal and y is vertical; overlapping points make the more frequently visited regions darker.::
 
-subsection:: See also
-
-link::Guides/Stochastica::
-link::Classes/DeJongMap::
-link::Classes/LatoocarfianMap::
 
 classmethods::
 

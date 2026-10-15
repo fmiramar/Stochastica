@@ -16,8 +16,6 @@ There is no close vanilla UGen exposing this continuous cyclic lattice. The prac
 
 image::round3-lorenz.png::
 
-subsection:: See also
-link::Classes/CoupledMapLattice::, link::Classes/Chua::, link::Classes/KuramotoNetwork::, link::Guides/Stochastica::
 
 classmethods::
 method:: ar, kr

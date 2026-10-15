@@ -17,11 +17,6 @@ subsection:: State-space portrait
 
 image::henon-map-phase.png#The default Hénon attractor after a 2,000-iteration transient. x is horizontal and y is vertical; each coordinate is fitted independently to use the frame clearly.::
 
-subsection:: See also
-
-link::Guides/Stochastica::
-link::Classes/HenonSonify::
-link::Classes/GbmanMap::
 
 classmethods::
 

@@ -17,11 +17,6 @@ subsection:: Stable-family shape
 
 image::stable-density.png#Smoothed empirical S0 densities with beta = 0, scale = 1, and alpha = 2, 1.5, and 1, shown in muted teal, blue, and plum over a finite display interval. Smaller alpha makes the center sharper and the tails heavier.::
 
-subsection:: See also
-
-link::Guides/Stochastica::
-link::Classes/TCauchyRand::
-link::Classes/TRand::
 
 classmethods::
 

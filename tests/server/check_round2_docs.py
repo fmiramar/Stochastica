@@ -14,7 +14,7 @@ def main():
         source=page.read_text()
         if page.stem!='Stochastica':
             assert source.startswith('class:: '+page.stem+'\n'),page
-            assert 'subsection:: See also' in source and 'link::Guides/Stochastica::' in source,page
+            assert 'Guides/Stochastica' in re.search(r'^related:: (.*)$', source, re.M).group(1), page
         examples=re.findall(r'code::\s*\n(.*?)\n::',source,re.S)
         assert examples,page
         for i,code in enumerate(examples):
